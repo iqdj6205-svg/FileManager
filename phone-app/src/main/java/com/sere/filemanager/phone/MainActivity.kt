@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -37,15 +38,25 @@ fun PhoneCompanionApp(viewModel: PhoneViewModel = viewModel()) {
         ) {
             Text("FileManager Companion", style = MaterialTheme.typography.headlineSmall)
             Text("Pair with your Wear OS watch, transfer files, and manage remote access.")
-            Text(state.statusMessage)
+
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Status", style = MaterialTheme.typography.titleMedium)
+                    Text(state.statusMessage)
+                }
+            }
+
             OutlinedTextField(
                 value = state.remoteUrl,
                 onValueChange = viewModel::setRemoteUrl,
                 label = { Text("Watch HTTP URL") },
                 modifier = Modifier.fillMaxWidth(),
             )
+
             Button(onClick = viewModel::startPairing, modifier = Modifier.fillMaxWidth()) { Text("Pair watch") }
-            Button(onClick = { }, modifier = Modifier.fillMaxWidth()) { Text("Open remote manager") }
+            Button(onClick = viewModel::startRemoteServer, modifier = Modifier.fillMaxWidth()) { Text("Start watch server") }
+            Button(onClick = viewModel::stopRemoteServer, modifier = Modifier.fillMaxWidth()) { Text("Stop watch server") }
+            Button(onClick = viewModel::openRemoteManager, modifier = Modifier.fillMaxWidth()) { Text("Open remote manager") }
             Button(onClick = viewModel::sendFiles, modifier = Modifier.fillMaxWidth()) { Text("Send files") }
         }
     }

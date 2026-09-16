@@ -9,11 +9,7 @@ import kotlinx.coroutines.launch
 import java.net.ServerSocket
 import java.net.Socket
 
-/**
- * Minimal blocking HTTP engine suitable for a first prototype.
- * Production hardening should add streaming, upload parsing, request limits,
- * foreground-service integration, and stronger error handling.
- */
+/** Minimal blocking HTTP engine for the first prototype. */
 class SimpleHttpEngine(
     private val fileRepository: FileRepository,
     private val config: RemoteConfig = RemoteConfig(),
@@ -48,9 +44,7 @@ class SimpleHttpEngine(
             val input = client.getInputStream().bufferedReader()
             val output = client.getOutputStream()
             val requestLine = input.readLine().orEmpty()
-            while (input.readLine().orEmpty().isNotEmpty()) {
-                // Drain headers for this simple prototype.
-            }
+            while (input.readLine().orEmpty().isNotEmpty()) Unit
             val parts = requestLine.split(" ")
             val path = parts.getOrNull(1).orEmpty()
             val response = runCatching { route(path) }.getOrElse { HttpResponses.serverError(it.message ?: "Server error") }
@@ -72,6 +66,8 @@ class SimpleHttpEngine(
 
     private suspend fun listResponse(path: String): String {
         val requestedPath = HttpRequestTools.queryParam(path, "path") ?: "/sdcard"
+        val validation = RemotePathGuard.validate(requestedPath)
+        if (validation != null) return HttpResponses.forbidden(validation)
         val providedPin = HttpRequestTools.queryParam(path, "pin")
         if (config.requirePin && !auth.isPinValid(pin, providedPin)) return HttpResponses.unauthorized()
         val items = fileRepository.list(requestedPath).joinToString(prefix = "[", postfix = "]") {
@@ -81,9 +77,12 @@ class SimpleHttpEngine(
     }
 
     private fun downloadResponse(path: String): String {
+        val requestedPath = HttpRequestTools.queryParam(path, "path") ?: return HttpResponses.badRequest("Missing path")
+        val validation = RemotePathGuard.validate(requestedPath)
+        if (validation != null) return HttpResponses.forbidden(validation)
         val providedPin = HttpRequestTools.queryParam(path, "pin")
         if (config.requirePin && !auth.isPinValid(pin, providedPin)) return HttpResponses.unauthorized()
-        return HttpResponses.text("Download streaming will be enabled in the hardened server implementation.")
+        return HttpResponses.text("Download streaming reserved for: $requestedPath")
     }
 
     private fun String.escapeJson(): String = replace("\\", "\\\\").replace("\"", "\\\"")
