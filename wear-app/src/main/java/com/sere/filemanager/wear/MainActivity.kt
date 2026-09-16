@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,6 +30,7 @@ import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.ScalingLazyColumn
 import androidx.wear.compose.material.Switch
 import androidx.wear.compose.material.Text
+import com.sere.filemanager.core.files.StorageFormatter
 import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
 import com.sere.filemanager.core.model.RemoteServerState
@@ -42,24 +42,71 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private enum class WearScreen { Home, Files, Media, Remote, Settings, Advanced }
+private enum class WearScreen { Home, Files, FileActions, FileDetails, ConfirmDelete, Media, Remote, Settings, Advanced, Permissions, StorageAccess }
 
 @Composable
 fun WearFileManagerApp(viewModel: FileManagerViewModel = viewModel()) {
     val screen = remember { mutableStateOf(WearScreen.Home) }
     val state by viewModel.state.collectAsState()
+    val selected = viewModel.selectedItem()
+
     MaterialTheme {
         Box(
             modifier = Modifier.fillMaxSize().background(Color.Black),
             contentAlignment = Alignment.Center,
         ) {
+            state.operation.message?.let { message ->
+                OperationMessageScreen(message = message, onDismiss = viewModel::clearMessage)
+                return@Box
+            }
             when (screen.value) {
                 WearScreen.Home -> HomeScreen(onOpen = { screen.value = it })
-                WearScreen.Files -> FileBrowserScreen(state.browser, viewModel::openItem, viewModel::goUp) { screen.value = WearScreen.Home }
+                WearScreen.Files -> FileBrowserScreen(
+                    state = state.browser,
+                    onOpen = { path, type ->
+                        if (type == FileItemType.Directory) viewModel.openItem(path, type) else {
+                            viewModel.selectItem(path)
+                            screen.value = WearScreen.FileActions
+                        }
+                    },
+                    onLongAction = { item ->
+                        viewModel.selectItem(item.path)
+                        screen.value = WearScreen.FileActions
+                    },
+                    onUp = viewModel::goUp,
+                    onCreateFolder = { viewModel.createQuickFolder() },
+                    onHome = { screen.value = WearScreen.Home },
+                )
+                WearScreen.FileActions -> selected?.let { item ->
+                    FileActionSheet(
+                        item = item,
+                        onDetails = { screen.value = WearScreen.FileDetails },
+                        onRename = { viewModel.renameSelected(QuickTextInputPresets.copyName(item.name)); screen.value = WearScreen.Files },
+                        onCopy = { viewModel.copySelected(); screen.value = WearScreen.Files },
+                        onMove = { viewModel.copySelected(); screen.value = WearScreen.Files },
+                        onDelete = { screen.value = WearScreen.ConfirmDelete },
+                        onFavorite = { screen.value = WearScreen.Files },
+                        onBack = { screen.value = WearScreen.Files },
+                    )
+                } ?: run { screen.value = WearScreen.Files }
+                WearScreen.FileDetails -> selected?.let { item ->
+                    FileDetailsScreen(item, StorageFormatter.bytes(item.sizeBytes)) { screen.value = WearScreen.FileActions }
+                } ?: run { screen.value = WearScreen.Files }
+                WearScreen.ConfirmDelete -> selected?.let { item ->
+                    ConfirmDeleteScreen(fileName = item.name, onConfirm = { viewModel.deleteSelected(); screen.value = WearScreen.Files }, onCancel = { screen.value = WearScreen.FileActions })
+                } ?: run { screen.value = WearScreen.Files }
                 WearScreen.Media -> MediaScreen { screen.value = WearScreen.Home }
                 WearScreen.Remote -> RemoteScreen(state.remoteSession.state, state.remoteSession.url, state.remoteSession.pin, viewModel::startRemoteServer, viewModel::stopRemoteServer) { screen.value = WearScreen.Home }
-                WearScreen.Settings -> SettingsScreen(state.batterySaverEnabled, viewModel::setBatterySaver) { screen.value = WearScreen.Home }
+                WearScreen.Settings -> SettingsScreen(
+                    batterySaver = state.batterySaverEnabled,
+                    onBatterySaver = viewModel::setBatterySaver,
+                    onPermissions = { screen.value = WearScreen.Permissions },
+                    onStorage = { screen.value = WearScreen.StorageAccess },
+                    onBack = { screen.value = WearScreen.Home },
+                )
                 WearScreen.Advanced -> AdvancedScreen(state.advancedModeEnabled, viewModel::setAdvancedMode) { screen.value = WearScreen.Home }
+                WearScreen.Permissions -> PermissionScreen(onRequestMedia = { }, onBack = { screen.value = WearScreen.Settings })
+                WearScreen.StorageAccess -> StorageAccessScreen(onMedia = { screen.value = WearScreen.Permissions }, onAdvanced = { screen.value = WearScreen.Advanced }, onBack = { screen.value = WearScreen.Settings })
             }
         }
     }
@@ -87,7 +134,7 @@ private fun HomeChip(label: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun FileBrowserScreen(state: BrowserState, onOpen: (String, FileItemType) -> Unit, onUp: () -> Unit, onHome: () -> Unit) {
+private fun FileBrowserScreen(state: BrowserState, onOpen: (String, FileItemType) -> Unit, onLongAction: (FileItem) -> Unit, onUp: () -> Unit, onCreateFolder: () -> Unit, onHome: () -> Unit) {
     ScalingLazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 22.dp),
@@ -96,15 +143,16 @@ private fun FileBrowserScreen(state: BrowserState, onOpen: (String, FileItemType
         item { Text("Files", textAlign = TextAlign.Center) }
         item { Text(state.currentPath, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center) }
         item { Chip(label = { Text("Up") }, onClick = onUp, modifier = Modifier.fillMaxWidth()) }
+        item { Chip(label = { Text("New folder") }, onClick = onCreateFolder, modifier = Modifier.fillMaxWidth()) }
         if (state.isLoading) item { Text("Loading…") }
         state.error?.let { item { Text(it, color = Color.Red, textAlign = TextAlign.Center) } }
-        items(state.items.size) { index -> FileRow(state.items[index], onOpen) }
+        items(state.items.size) { index -> FileRow(state.items[index], onOpen, onLongAction) }
         item { Button(onClick = onHome) { Text("Home") } }
     }
 }
 
 @Composable
-private fun FileRow(item: FileItem, onOpen: (String, FileItemType) -> Unit) {
+private fun FileRow(item: FileItem, onOpen: (String, FileItemType) -> Unit, onLongAction: (FileItem) -> Unit) {
     val icon = when (item.type) {
         FileItemType.Directory -> "📁"
         FileItemType.Image -> "🖼"
@@ -119,8 +167,16 @@ private fun FileRow(item: FileItem, onOpen: (String, FileItemType) -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(icon)
+        Text(icon, modifier = Modifier.clickable { onLongAction(item) })
         Text(item.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+@Composable
+private fun OperationMessageScreen(message: String, onDismiss: () -> Unit) {
+    ScalingLazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        item { Text(message, textAlign = TextAlign.Center) }
+        item { Button(onClick = onDismiss) { Text("OK") } }
     }
 }
 
@@ -130,11 +186,7 @@ private fun MediaScreen(onBack: () -> Unit) = SimpleListScreen("Media", listOf("
 @Composable
 private fun RemoteScreen(state: RemoteServerState, url: String?, pin: String?, onStart: () -> Unit, onStop: () -> Unit, onBack: () -> Unit) {
     val running = state == RemoteServerState.Running
-    ScalingLazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 26.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
+    ScalingLazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 18.dp, vertical = 26.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         item { Text("Remote") }
         item { Text(if (running) "Server running" else "Server stopped", textAlign = TextAlign.Center) }
         if (url != null) item { Text(url, textAlign = TextAlign.Center) }
@@ -146,11 +198,12 @@ private fun RemoteScreen(state: RemoteServerState, url: String?, pin: String?, o
 }
 
 @Composable
-private fun SettingsScreen(batterySaver: Boolean, onBatterySaver: (Boolean) -> Unit, onBack: () -> Unit) {
+private fun SettingsScreen(batterySaver: Boolean, onBatterySaver: (Boolean) -> Unit, onPermissions: () -> Unit, onStorage: () -> Unit, onBack: () -> Unit) {
     ScalingLazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         item { Text("Settings") }
         item { ToggleRow("Battery safe", batterySaver, onBatterySaver) }
-        item { Text("Permissions") }
+        item { Chip(label = { Text("Permissions") }, onClick = onPermissions, modifier = Modifier.fillMaxWidth()) }
+        item { Chip(label = { Text("Storage access") }, onClick = onStorage, modifier = Modifier.fillMaxWidth()) }
         item { Text("Theme: dark") }
         item { Text("Haptics: on") }
         item { Button(onClick = onBack) { Text("Back") } }
