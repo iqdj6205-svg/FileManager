@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import java.io.File
 import java.net.ServerSocket
 import java.net.Socket
 
@@ -13,11 +14,13 @@ import java.net.Socket
 class SimpleHttpEngine(
     private val fileRepository: FileRepository,
     private val config: RemoteConfig = RemoteConfig(),
+    private val auditLog: RemoteAuditLog = InMemoryRemoteAuditLog(),
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
 ) {
     private var serverSocket: ServerSocket? = null
     private var job: Job? = null
     private val auth = RemoteAuth()
+    private val downloadPlanner = DownloadPlanner()
     private var pin: String? = null
 
     fun start(sessionPin: String) {
@@ -48,38 +51,42 @@ class SimpleHttpEngine(
             val parts = requestLine.split(" ")
             val method = parts.getOrNull(0).orEmpty()
             val path = parts.getOrNull(1).orEmpty()
-            val response = runCatching { route(method, path) }.getOrElse { HttpResponses.serverError(it.message ?: "Server error") }
-            output.write(response.toByteArray())
+            val response = runCatching { route(method, path) }.getOrElse {
+                auditLog.record(RemoteAuditEvent(RemoteAuditEventType.Error, it.message ?: "Server error"))
+                HttpResponseFactory.serverError(it.message ?: "Server error")
+            }
+            HttpResponseWriter.write(output, response)
             output.flush()
         }
     }
 
-    private suspend fun route(method: String, path: String): String {
+    private suspend fun route(method: String, path: String): HttpResponse {
         val route = HttpRequestTools.routePath(path)
         return when (route) {
-            RemoteRoutes.INDEX -> if (method == "GET") HttpResponses.html(WebManagerPage.html()) else HttpResponses.badRequest("Unsupported method")
-            RemoteRoutes.API_STATUS -> if (method == "GET") HttpResponses.json("{\"status\":\"running\"}") else HttpResponses.badRequest("Unsupported method")
-            RemoteRoutes.API_LIST -> if (method == "GET") listResponse(path) else HttpResponses.badRequest("Unsupported method")
-            RemoteRoutes.API_DOWNLOAD -> if (method == "GET") downloadResponse(path) else HttpResponses.badRequest("Unsupported method")
-            else -> HttpResponses.notFound()
+            RemoteRoutes.INDEX -> if (method == "GET") HttpResponseFactory.html(WebManagerPage.html()) else HttpResponseFactory.badRequest("Unsupported method")
+            RemoteRoutes.API_STATUS -> if (method == "GET") HttpResponseFactory.json("{\"status\":\"running\"}") else HttpResponseFactory.badRequest("Unsupported method")
+            RemoteRoutes.API_LIST -> if (method == "GET") listResponse(path) else HttpResponseFactory.badRequest("Unsupported method")
+            RemoteRoutes.API_DOWNLOAD -> if (method == "GET") downloadResponse(path) else HttpResponseFactory.badRequest("Unsupported method")
+            else -> HttpResponseFactory.notFound()
         }
     }
 
-    private suspend fun listResponse(path: String): String {
+    private suspend fun listResponse(path: String): HttpResponse {
         val requestedPath = HttpRequestTools.queryParam(path, "path") ?: "/sdcard"
         val validation = RemotePathGuard.validate(requestedPath)
-        if (validation != null) return HttpResponses.forbidden(validation)
+        if (validation != null) return HttpResponseFactory.forbidden(validation)
         val providedPin = HttpRequestTools.queryParam(path, "pin")
-        if (config.requirePin && !auth.isPinValid(pin, providedPin)) return HttpResponses.unauthorized()
-        return HttpResponses.json(RemoteDirectorySerializer.serialize(fileRepository.list(requestedPath)))
+        if (config.requirePin && !auth.isPinValid(pin, providedPin)) return HttpResponseFactory.unauthorized()
+        auditLog.record(RemoteAuditEvent(RemoteAuditEventType.ListDirectory, "Directory listed", requestedPath))
+        return HttpResponseFactory.json(RemoteDirectorySerializer.serialize(fileRepository.list(requestedPath)))
     }
 
-    private fun downloadResponse(path: String): String {
-        val requestedPath = HttpRequestTools.queryParam(path, "path") ?: return HttpResponses.badRequest("Missing path")
-        val validation = RemotePathGuard.validate(requestedPath)
-        if (validation != null) return HttpResponses.forbidden(validation)
+    private fun downloadResponse(path: String): HttpResponse {
+        val requestedPath = HttpRequestTools.queryParam(path, "path") ?: return HttpResponseFactory.badRequest("Missing path")
         val providedPin = HttpRequestTools.queryParam(path, "pin")
-        if (config.requirePin && !auth.isPinValid(pin, providedPin)) return HttpResponses.unauthorized()
-        return HttpResponses.text("Download streaming reserved for: $requestedPath")
+        if (config.requirePin && !auth.isPinValid(pin, providedPin)) return HttpResponseFactory.unauthorized()
+        val plan = downloadPlanner.plan(requestedPath).getOrElse { return HttpResponseFactory.badRequest(it.message ?: "Cannot download") }
+        auditLog.record(RemoteAuditEvent(RemoteAuditEventType.DownloadRequested, "Download requested", plan.path))
+        return HttpResponse.FileStream(file = File(plan.path), contentType = plan.mimeType, downloadName = plan.fileName)
     }
 }
