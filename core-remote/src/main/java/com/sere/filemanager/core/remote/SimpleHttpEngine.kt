@@ -11,8 +11,8 @@ import java.net.Socket
 
 /**
  * Minimal blocking HTTP engine suitable for a first prototype.
- * Production hardening should add streaming, MIME detection, upload parsing,
- * request limits, foreground-service integration, and better error handling.
+ * Production hardening should add streaming, upload parsing, request limits,
+ * foreground-service integration, and stronger error handling.
  */
 class SimpleHttpEngine(
     private val fileRepository: FileRepository,
@@ -48,31 +48,43 @@ class SimpleHttpEngine(
             val input = client.getInputStream().bufferedReader()
             val output = client.getOutputStream()
             val requestLine = input.readLine().orEmpty()
+            while (input.readLine().orEmpty().isNotEmpty()) {
+                // Drain headers for this simple prototype.
+            }
             val parts = requestLine.split(" ")
             val path = parts.getOrNull(1).orEmpty()
-            val response = route(path)
+            val response = runCatching { route(path) }.getOrElse { HttpResponses.serverError(it.message ?: "Server error") }
             output.write(response.toByteArray())
             output.flush()
         }
     }
 
     private suspend fun route(path: String): String {
-        return when {
-            path == "/" -> okHtml(WebManagerPage.html())
-            path.startsWith(RemoteRoutes.API_STATUS) -> okJson("{\"status\":\"running\"}")
-            path.startsWith(RemoteRoutes.API_LIST) -> {
-                val requestedPath = path.substringAfter("path=", "/sdcard")
-                val items = fileRepository.list(requestedPath).joinToString(prefix = "[", postfix = "]") {
-                    "{\"name\":\"${it.name.escapeJson()}\",\"path\":\"${it.path.escapeJson()}\",\"type\":\"${it.type}\"}"
-                }
-                okJson(items)
-            }
-            else -> notFound()
+        val route = HttpRequestTools.routePath(path)
+        return when (route) {
+            RemoteRoutes.INDEX -> HttpResponses.html(WebManagerPage.html())
+            RemoteRoutes.API_STATUS -> HttpResponses.json("{\"status\":\"running\"}")
+            RemoteRoutes.API_LIST -> listResponse(path)
+            RemoteRoutes.API_DOWNLOAD -> downloadResponse(path)
+            else -> HttpResponses.notFound()
         }
     }
 
-    private fun okHtml(body: String) = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: ${body.toByteArray().size}\r\n\r\n$body"
-    private fun okJson(body: String) = "HTTP/1.1 200 OK\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: ${body.toByteArray().size}\r\n\r\n$body"
-    private fun notFound() = "HTTP/1.1 404 Not Found\r\nContent-Length: 9\r\n\r\nNot Found"
+    private suspend fun listResponse(path: String): String {
+        val requestedPath = HttpRequestTools.queryParam(path, "path") ?: "/sdcard"
+        val providedPin = HttpRequestTools.queryParam(path, "pin")
+        if (config.requirePin && !auth.isPinValid(pin, providedPin)) return HttpResponses.unauthorized()
+        val items = fileRepository.list(requestedPath).joinToString(prefix = "[", postfix = "]") {
+            "{\"name\":\"${it.name.escapeJson()}\",\"path\":\"${it.path.escapeJson()}\",\"type\":\"${it.type}\",\"sizeBytes\":${it.sizeBytes ?: 0}}"
+        }
+        return HttpResponses.json(items)
+    }
+
+    private fun downloadResponse(path: String): String {
+        val providedPin = HttpRequestTools.queryParam(path, "pin")
+        if (config.requirePin && !auth.isPinValid(pin, providedPin)) return HttpResponses.unauthorized()
+        return HttpResponses.text("Download streaming will be enabled in the hardened server implementation.")
+    }
+
     private fun String.escapeJson(): String = replace("\\", "\\\\").replace("\"", "\\\"")
 }
