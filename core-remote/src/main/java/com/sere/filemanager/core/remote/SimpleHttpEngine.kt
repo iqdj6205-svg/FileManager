@@ -46,20 +46,21 @@ class SimpleHttpEngine(
             val requestLine = input.readLine().orEmpty()
             while (input.readLine().orEmpty().isNotEmpty()) Unit
             val parts = requestLine.split(" ")
+            val method = parts.getOrNull(0).orEmpty()
             val path = parts.getOrNull(1).orEmpty()
-            val response = runCatching { route(path) }.getOrElse { HttpResponses.serverError(it.message ?: "Server error") }
+            val response = runCatching { route(method, path) }.getOrElse { HttpResponses.serverError(it.message ?: "Server error") }
             output.write(response.toByteArray())
             output.flush()
         }
     }
 
-    private suspend fun route(path: String): String {
+    private suspend fun route(method: String, path: String): String {
         val route = HttpRequestTools.routePath(path)
         return when (route) {
-            RemoteRoutes.INDEX -> HttpResponses.html(WebManagerPage.html())
-            RemoteRoutes.API_STATUS -> HttpResponses.json("{\"status\":\"running\"}")
-            RemoteRoutes.API_LIST -> listResponse(path)
-            RemoteRoutes.API_DOWNLOAD -> downloadResponse(path)
+            RemoteRoutes.INDEX -> if (method == "GET") HttpResponses.html(WebManagerPage.html()) else HttpResponses.badRequest("Unsupported method")
+            RemoteRoutes.API_STATUS -> if (method == "GET") HttpResponses.json("{\"status\":\"running\"}") else HttpResponses.badRequest("Unsupported method")
+            RemoteRoutes.API_LIST -> if (method == "GET") listResponse(path) else HttpResponses.badRequest("Unsupported method")
+            RemoteRoutes.API_DOWNLOAD -> if (method == "GET") downloadResponse(path) else HttpResponses.badRequest("Unsupported method")
             else -> HttpResponses.notFound()
         }
     }
@@ -70,10 +71,7 @@ class SimpleHttpEngine(
         if (validation != null) return HttpResponses.forbidden(validation)
         val providedPin = HttpRequestTools.queryParam(path, "pin")
         if (config.requirePin && !auth.isPinValid(pin, providedPin)) return HttpResponses.unauthorized()
-        val items = fileRepository.list(requestedPath).joinToString(prefix = "[", postfix = "]") {
-            "{\"name\":\"${it.name.escapeJson()}\",\"path\":\"${it.path.escapeJson()}\",\"type\":\"${it.type}\",\"sizeBytes\":${it.sizeBytes ?: 0}}"
-        }
-        return HttpResponses.json(items)
+        return HttpResponses.json(RemoteDirectorySerializer.serialize(fileRepository.list(requestedPath)))
     }
 
     private fun downloadResponse(path: String): String {
@@ -84,6 +82,4 @@ class SimpleHttpEngine(
         if (config.requirePin && !auth.isPinValid(pin, providedPin)) return HttpResponses.unauthorized()
         return HttpResponses.text("Download streaming reserved for: $requestedPath")
     }
-
-    private fun String.escapeJson(): String = replace("\\", "\\\\").replace("\"", "\\\"")
 }
