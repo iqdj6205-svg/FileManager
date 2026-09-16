@@ -4,73 +4,63 @@ Full-featured file manager for Wear OS, designed for round watches and advanced 
 
 ## Vision
 
-Build a powerful, battery-aware file manager for Wear OS with:
+Build a powerful, battery-aware file manager for Wear OS with a companion Android phone app.
+
+Core goals:
 
 - Round-watch optimized UI
 - Gesture-first navigation
 - Local file browsing
+- File operations: open, share, rename, copy, move, delete, details
 - Media gallery
-- Audio/video playback
+- Audio/video playback foundation
 - HTTP server for browser-based remote management
-- Optional FTP/WebDAV-style remote access
+- Optional future FTP/WebDAV-style remote access
 - Safe permission handling for media and documents
-- Advanced ADB workflows for full storage access where Android allows it
+- Advanced ADB workflows for power users
 - Optional Android phone companion app
+- Battery and security conscious defaults
 
-## Main modules
+## Modules
 
-### Wear OS app
+```text
+wear-app      Wear OS app
+phone-app     Android phone companion
+core-model    Shared models
+core-files    File browsing, operations, analyzer
+core-media    Media classification/library foundations
+core-remote   Remote server/session/security foundations
+core-ui       Shared UI helpers
+```
 
-- File browser
-- Favorites and recent files
-- Search
-- Copy, move, rename, delete
-- Archive support
-- Storage overview
-- Permission onboarding
-- Battery-aware background behavior
+## Current status
 
-### Media tools
+The repository contains an Android multi-module project skeleton with Wear OS and phone app foundations, product specs, security model, file operation architecture, remote access design, media foundations, diagnostics, and storage analyzer foundations.
 
-- Image gallery
-- Video preview/player
-- Audio player
-- Metadata display
-- Share/open-with actions
+## Build
 
-### Remote access
+Open in Android Studio and let Gradle sync. Then run:
 
-- Local HTTP server
-- QR code connection from phone/desktop
-- Upload/download files
-- Basic authentication / session PIN
-- Network and battery safety limits
+```powershell
+.\gradlew.bat build
+```
 
-### Advanced mode
+or on macOS/Linux:
 
-- ADB instructions
-- Developer warnings
-- Extended path access where supported
-- Diagnostics and logs
+```bash
+./gradlew build
+```
 
-### Phone companion
+See `docs/BUILD_AND_TEST.md` and `docs/NEXT_STEPS.md`.
 
-- Setup assistant
-- File transfer
-- Remote server control
-- Storage dashboard
-- Watch connection status
+## Documentation
 
-## Tech direction
-
-- Kotlin
-- Jetpack Compose for Wear OS
-- Material 3 / Wear Material components
-- Coroutines + Flow
-- Media3 for playback
-- Android Storage Access Framework where appropriate
-- Lightweight embedded HTTP server
-
-## Status
-
-Project created. Architecture and implementation plan are in progress.
+- `docs/PRODUCT_SPEC.md`
+- `docs/ARCHITECTURE.md`
+- `docs/FEATURE_MATRIX.md`
+- `docs/SECURITY_MODEL.md`
+- `docs/REMOTE_ACCESS.md`
+- `docs/MEDIA_PLAN.md`
+- `docs/ADB_ADVANCED_MODE.md`
+- `docs/STORAGE_ANALYZER.md`
+- `docs/BUILD_AND_TEST.md`
