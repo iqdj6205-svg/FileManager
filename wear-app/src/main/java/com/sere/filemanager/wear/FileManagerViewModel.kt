@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sere.filemanager.core.files.FileRepository
 import com.sere.filemanager.core.files.LocalFileRepository
+import com.sere.filemanager.core.files.SafeFileOperations
+import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
 import com.sere.filemanager.core.remote.InMemoryRemoteServerController
 import com.sere.filemanager.core.remote.RemoteServerController
@@ -16,6 +18,7 @@ import kotlinx.coroutines.launch
 class FileManagerViewModel(
     private val fileRepository: FileRepository = LocalFileRepository(),
     private val remoteController: RemoteServerController = InMemoryRemoteServerController(),
+    private val safeOperations: SafeFileOperations = SafeFileOperations(fileRepository),
 ) : ViewModel() {
     private val _state = MutableStateFlow(WearAppState())
     val state: StateFlow<WearAppState> = _state.asStateFlow()
@@ -45,6 +48,43 @@ class FileManagerViewModel(
         _state.update { it.copy(browser = it.browser.copy(selectedPath = path)) }
     }
 
+    fun selectedItem(): FileItem? {
+        val selected = _state.value.browser.selectedPath ?: return null
+        return _state.value.browser.items.firstOrNull { it.path == selected }
+    }
+
+    fun copySelected() {
+        val item = selectedItem() ?: return
+        execute(BrowserController.copyOperation(item.path))
+    }
+
+    fun deleteSelected() {
+        val item = selectedItem() ?: return
+        execute(BrowserController.deleteOperation(item.path))
+    }
+
+    fun renameSelected(newName: String) {
+        val item = selectedItem() ?: return
+        execute(BrowserController.renameOperation(item.path, newName))
+    }
+
+    fun createQuickFolder(name: String = "New folder") {
+        execute(BrowserController.createFolderOperation(_state.value.browser.currentPath, name))
+    }
+
+    private fun execute(operation: com.sere.filemanager.core.files.FileOperation) {
+        viewModelScope.launch {
+            _state.update { it.copy(operation = it.operation.copy(inProgress = true, message = null)) }
+            val result = safeOperations.execute(operation)
+            _state.update { it.copy(operation = it.operation.copy(inProgress = false, message = ActionMessages.from(result)), browser = it.browser.copy(selectedPath = null)) }
+            openPath(_state.value.browser.currentPath)
+        }
+    }
+
+    fun clearMessage() {
+        _state.update { it.copy(operation = it.operation.copy(message = null)) }
+    }
+
     fun startRemoteServer() {
         viewModelScope.launch {
             val session = remoteController.start()
@@ -59,11 +99,6 @@ class FileManagerViewModel(
         }
     }
 
-    fun setAdvancedMode(enabled: Boolean) {
-        _state.update { it.copy(advancedModeEnabled = enabled) }
-    }
-
-    fun setBatterySaver(enabled: Boolean) {
-        _state.update { it.copy(batterySaverEnabled = enabled) }
-    }
+    fun setAdvancedMode(enabled: Boolean) { _state.update { it.copy(advancedModeEnabled = enabled) } }
+    fun setBatterySaver(enabled: Boolean) { _state.update { it.copy(batterySaverEnabled = enabled) } }
 }

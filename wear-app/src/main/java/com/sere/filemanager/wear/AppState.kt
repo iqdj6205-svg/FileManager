@@ -16,6 +16,7 @@ data class BrowserState(
 @Immutable
 data class WearAppState(
     val browser: BrowserState = BrowserState(),
+    val operation: OperationUiState = OperationUiState(),
     val remoteSession: RemoteSession = RemoteSession(),
     val advancedModeEnabled: Boolean = false,
     val batterySaverEnabled: Boolean = true,
