@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 61%.
+Approximate implementation progress: 62%.
 
 ## Completed
 
@@ -15,6 +15,7 @@ Approximate implementation progress: 61%.
 - Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
 - Remote server prototype, web manager, route policies, validation/audit/rate-limit foundations.
 - Remote route executor wired into SimpleHttpEngine for status/list/mkdir/rename/delete/upload validation.
+- Upload writer/request parser foundations.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.
 
@@ -29,7 +30,7 @@ Approximate implementation progress: 61%.
 - Full copy/move flows across path and SAF roots.
 - Real Media3 playback and image rendering.
 - Full remote web manager route hardening.
-- Upload body persistence.
+- Binary-safe upload body persistence.
 - Persistent DataStore settings wiring in both apps.
 - UI/UX polish for round Wear screens.
 - End-to-end phone-watch file transfer testing.

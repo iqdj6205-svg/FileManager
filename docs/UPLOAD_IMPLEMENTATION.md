@@ -2,17 +2,19 @@
 
 ## Added
 
-- `UploadLimits`
-- `UploadPlan`
-- `UploadPlanner`
-- filename safety checks
-- target path validation
+- `RemoteUploadWriter` for guarded raw upload persistence.
+- Filename sanitization for upload targets.
+- Upload size enforcement with cleanup on overflow.
+- `HttpRequest` and parser foundation.
+- Raw request body parser foundation.
+
+## Notes
+
+The current upload path is a raw body foundation used by the remote web manager's fetch upload. Multipart form parsing is still pending for broader browser compatibility.
 
 ## Remaining
 
-- Parse multipart/form-data bodies.
-- Enforce max upload size while streaming.
-- Write to temporary file first.
-- Rename temp file only after successful upload.
-- Add audit log events.
-- Add UI toggle for allowing uploads during a remote session.
+- Wire binary-safe input stream handling instead of text reader body fallback.
+- Add multipart/form-data parser.
+- Add progress reporting and audit entries with client IP.
+- Add UI status to remote web manager.
