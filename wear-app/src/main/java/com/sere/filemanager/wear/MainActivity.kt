@@ -23,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -46,7 +47,6 @@ import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
 import com.sere.filemanager.core.model.RemoteServerState
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -113,7 +113,8 @@ private fun RotaryScalingLazyColumn(modifier: Modifier = Modifier, contentPaddin
     ScalingLazyColumn(
         state = state,
         modifier = modifier.fillMaxSize().focusRequester(focusRequester).focusable().onRotaryScrollEvent {
-            scope.launch { state.scrollBy(it.verticalScrollPixels) }
+            val nextIndex = (state.centerItemIndex + if (it.verticalScrollPixels > 0) 1 else -1).coerceAtLeast(0)
+            scope.launch { state.scrollToItem(nextIndex) }
             true
         },
         contentPadding = contentPadding,
