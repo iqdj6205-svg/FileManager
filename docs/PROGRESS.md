@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 58%.
+Approximate implementation progress: 59%.
 
 ## Completed
 
@@ -10,7 +10,7 @@ Approximate implementation progress: 58%.
 - Wear permission hub and concrete ADB advanced guidance foundation.
 - Wear remote dashboard/settings foundations wired into navigation.
 - Wear media library/preview foundations.
-- Wear clipboard/copy-move UX foundations.
+- Wear clipboard/copy-move UX foundations wired into browser UI.
 - Wear file operation action controller wired into ViewModel.
 - Shared storage access/root selector foundations.
 - Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
@@ -20,9 +20,8 @@ Approximate implementation progress: 58%.
 
 ## Current focus
 
-- Expose Wear clipboard paste controls in browser/action UI.
+- Harden route execution and upload handling.
 - Complete transfer progress UX.
-- Harden remote server routes.
 - Improve standalone watch experience.
 
 ## Remaining major areas
