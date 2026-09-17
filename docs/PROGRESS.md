@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 41%.
+Approximate implementation progress: 42%.
 
 ## Completed
 
@@ -11,6 +11,7 @@ Approximate implementation progress: 41%.
 - Wear remote dashboard/settings foundations wired into navigation.
 - Wear media library/preview foundations.
 - Shared storage access/root selector foundations.
+- Phone storage root state wiring foundation.
 - Shared media playback controller and phone/watch playback UI foundations.
 - Shared app settings model/repository/use-case foundations.
 - DataStore app settings implementation.

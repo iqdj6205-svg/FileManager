@@ -6,6 +6,7 @@ enum class PhoneScreen {
     PhoneFileActions,
     PhoneFileDetails,
     PhoneConfirmDelete,
+    PhoneStorageRoots,
     PhoneMedia,
     PhoneMediaPreview,
     PhoneMediaPlayer,
