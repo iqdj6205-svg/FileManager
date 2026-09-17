@@ -8,8 +8,11 @@
 - Added `FileRepositoryDefaults` for future root discovery expansion.
 - Migrated module Gradle scripts from deprecated `kotlinOptions` to Kotlin `compilerOptions`.
 - Aligned Java compile target with Kotlin JVM target: Java 17 / Kotlin JVM 17 in every module.
+- Fixed `core-media` unresolved `FileRepository` by adding dependency on `:core-files`.
 
-## Current user build issue fixed
+## Current user build issues fixed
+
+### JVM target mismatch
 
 Gradle failed with inconsistent JVM target:
 
@@ -17,3 +20,9 @@ Gradle failed with inconsistent JVM target:
 - Kotlin compile task: 17
 
 Fix: added `compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }` to all Android modules.
+
+### core-media unresolved core-files references
+
+`MediaLibraryUseCase` imports `com.sere.filemanager.core.files.FileRepository`, but `core-media` did not depend on `:core-files`.
+
+Fix: added `implementation(project(":core-files"))` to `core-media/build.gradle.kts`.

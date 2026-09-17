@@ -23,6 +23,7 @@ kotlin {
 
 dependencies {
     implementation(project(":core-model"))
+    implementation(project(":core-files"))
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 }
