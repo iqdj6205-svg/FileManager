@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 36%.
+Approximate implementation progress: 39%.
 
 ## Completed
 
@@ -18,12 +18,13 @@ Approximate implementation progress: 36%.
 - Phone file action/details/delete UI foundations.
 - Phone storage analyzer foundation.
 - Phone media library/gallery foundation wired to ViewModel/UI.
-- Remote server prototype and foreground service path.
+- Remote server prototype, web manager, validation/audit/rate-limit foundations.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.
 
 ## Current focus
 
+- Harden remote server routes.
 - Improve standalone watch experience and reduce duplicated permission prompts.
 - Turn phone app into a full file manager, not only a watch companion.
 - Wire media browsing and playback.
@@ -34,7 +35,7 @@ Approximate implementation progress: 36%.
 - Full file operation flows.
 - Proper storage permissions and SAF roots.
 - Real Media3 playback and image rendering.
-- Full remote web manager.
+- Full remote web manager route hardening.
 - Upload hardening.
 - Persistent DataStore settings wiring in both apps.
 - UI/UX polish for round Wear screens.
