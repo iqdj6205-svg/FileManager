@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 22%.
+Approximate implementation progress: 24%.
 
 ## Completed
 
@@ -8,6 +8,7 @@ Approximate implementation progress: 22%.
 - Successful local Gradle build milestone.
 - Wear app launches and basic navigation works.
 - Phone app shell and file browser foundation.
+- Phone file action/details/delete UI foundations.
 - Remote server prototype and foreground service path.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.

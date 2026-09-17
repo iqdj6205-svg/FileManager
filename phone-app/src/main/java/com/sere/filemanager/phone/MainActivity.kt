@@ -46,11 +46,15 @@ fun PhoneFileManagerApp() {
     val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> if (uri != null) viewModel.onPickedFile(uri) }
     val screen = remember { mutableStateOf(PhoneScreen.Home) }
     val state by viewModel.state.collectAsState()
+    val selected = state.fileActions.selected
     BackHandler(enabled = screen.value != PhoneScreen.Home) { screen.value = PhoneScreen.Home }
     FileManagerTheme {
         when (screen.value) {
             PhoneScreen.Home -> PhoneHomeScreen(state.statusMessage, { screen.value = PhoneScreen.PhoneFiles }, { screen.value = PhoneScreen.PhoneMedia }, { screen.value = PhoneScreen.StorageAnalyzer }, { screen.value = PhoneScreen.WatchCompanion }, { screen.value = PhoneScreen.RemoteManager }, { screen.value = PhoneScreen.RemoteSettings }, { screen.value = PhoneScreen.Settings })
-            PhoneScreen.PhoneFiles -> PhoneFilesScreen(state.browser, viewModel::openPhoneItem, viewModel::phoneGoUp) { screen.value = PhoneScreen.Home }
+            PhoneScreen.PhoneFiles -> PhoneFilesScreen(state.browser, { path, type -> if (type == FileItemType.Directory) viewModel.openPhoneItem(path, type) else { viewModel.selectPhoneFile(path); screen.value = PhoneScreen.PhoneFileActions } }, viewModel::phoneGoUp) { screen.value = PhoneScreen.Home }
+            PhoneScreen.PhoneFileActions -> selected?.let { PhoneFileActionScreen(it, { screen.value = PhoneScreen.PhoneFileDetails }, { viewModel.renameSelectedPhoneFileAsCopy(); screen.value = PhoneScreen.PhoneFiles }, { viewModel.copySelectedPhoneFile(); screen.value = PhoneScreen.PhoneFiles }, { screen.value = PhoneScreen.PhoneConfirmDelete }, { screen.value = PhoneScreen.PhoneFiles }) } ?: run { screen.value = PhoneScreen.PhoneFiles }
+            PhoneScreen.PhoneFileDetails -> selected?.let { PhoneFileDetailsScreen(it) { screen.value = PhoneScreen.PhoneFileActions } } ?: run { screen.value = PhoneScreen.PhoneFiles }
+            PhoneScreen.PhoneConfirmDelete -> selected?.let { PhoneConfirmDeleteScreen(it.name, { viewModel.deleteSelectedPhoneFile(); screen.value = PhoneScreen.PhoneFiles }, { screen.value = PhoneScreen.PhoneFileActions }) } ?: run { screen.value = PhoneScreen.PhoneFiles }
             PhoneScreen.PhoneMedia -> PhoneMediaScreen(state.browser.items) { screen.value = PhoneScreen.Home }
             PhoneScreen.StorageAnalyzer -> PlaceholderScreen("Storage Analyzer", "Largest files, categories, duplicates and cleanup suggestions will appear here.") { screen.value = PhoneScreen.Home }
             PhoneScreen.WatchCompanion -> WatchCompanionScreen(state.remoteUrl, state.statusMessage, viewModel::setRemoteUrl, viewModel::startPairing, viewModel::startRemoteServer, viewModel::stopRemoteServer, viewModel::requestWatchStatus, viewModel::refreshRemoteSnapshot, { filePicker.launch(arrayOf("*/*")) }) { screen.value = PhoneScreen.Home }
