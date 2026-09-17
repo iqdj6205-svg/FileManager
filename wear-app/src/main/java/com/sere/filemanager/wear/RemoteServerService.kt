@@ -15,6 +15,7 @@ import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.remote.RemoteConfig
 import com.sere.filemanager.core.remote.RemoteServerController
 import com.sere.filemanager.core.remote.RemoteServerControllerFactory
+import com.sere.filemanager.core.remote.RemoteServerStatusStore
 
 class RemoteServerService : Service() {
     private val handler = Handler(Looper.getMainLooper())
@@ -27,52 +28,42 @@ class RemoteServerService : Service() {
         override fun run() {
             if (lifecyclePolicy.shouldStopForTimeout(startedAtMillis, System.currentTimeMillis(), config)) {
                 stopServerAndSelf()
-            } else {
-                handler.postDelayed(this, 30_000L)
-            }
+            } else handler.postDelayed(this, 30_000L)
         }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
-
-    override fun onCreate() {
-        super.onCreate()
-        ensureChannel()
-    }
+    override fun onCreate() { super.onCreate(); ensureChannel() }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
-            ACTION_START -> startServer()
-            ACTION_STOP -> stopServerAndSelf()
-        }
+        when (intent?.action) { ACTION_START -> startServer(); ACTION_STOP -> stopServerAndSelf() }
         return START_NOT_STICKY
     }
 
     override fun onDestroy() {
         handler.removeCallbacks(timeoutCheck)
         controller?.let { runCatching { kotlinx.coroutines.runBlocking { it.stop() } } }
+        RemoteServerStatusStore.clear()
         controller = null
         super.onDestroy()
     }
 
     private fun startServer() {
         val battery = BatteryMonitor(this).batteryPercent()
-        if (!lifecyclePolicy.shouldAllowStart(battery, config)) {
-            stopSelf()
-            return
-        }
-        val fileRepository = LocalFileRepository()
-        val server = RemoteServerControllerFactory.create(fileRepository, useEmbeddedPrototype = true)
+        if (!lifecyclePolicy.shouldAllowStart(battery, config)) { stopSelf(); return }
+        val server = RemoteServerControllerFactory.create(LocalFileRepository(), useEmbeddedPrototype = true)
         controller = server
         val session = kotlinx.coroutines.runBlocking { server.start() }
+        RemoteServerStatusStore.update(session)
         startedAtMillis = session.startedAtMillis
-        startForeground(NOTIFICATION_ID, notification("Remote server: ${session.url} PIN ${session.pin}"))
+        startForeground(NOTIFICATION_ID, notification("Remote: ${session.url} PIN ${session.pin}"))
         handler.postDelayed(timeoutCheck, 30_000L)
     }
 
     private fun stopServerAndSelf() {
         handler.removeCallbacks(timeoutCheck)
         controller?.let { runCatching { kotlinx.coroutines.runBlocking { it.stop() } } }
+        RemoteServerStatusStore.clear()
         controller = null
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -81,9 +72,7 @@ class RemoteServerService : Service() {
     private fun ensureChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(NotificationManager::class.java)
-            val channel = NotificationChannel(CHANNEL_ID, "Remote access", NotificationManager.IMPORTANCE_LOW)
-            channel.description = "Shown while FileManager remote access is running"
-            manager.createNotificationChannel(channel)
+            manager.createNotificationChannel(NotificationChannel(CHANNEL_ID, "Remote access", NotificationManager.IMPORTANCE_LOW).apply { description = "Shown while FileManager remote access is running" })
         }
     }
 
