@@ -9,14 +9,17 @@ import java.io.File
 class WearChannelListenerService : WearableListenerService() {
     override fun onChannelOpened(channel: ChannelClient.Channel) {
         if (channel.path != WearBridgePaths.CHANNEL_FILE_TRANSFER) return
-        val targetDir = File(filesDir, "received")
-        targetDir.mkdirs()
-        val target = File(targetDir, "received-${System.currentTimeMillis()}.bin")
-        val inputTask = Wearable.getChannelClient(this).getInputStream(channel)
-        inputTask.addOnSuccessListener { input ->
-            runCatching {
-                input.use { source -> target.outputStream().use { out -> source.copyTo(out, bufferSize = 32 * 1024) } }
-            }
+        val request = WearPendingTransferStore.consume()
+        val target = resolveTargetFile(request?.targetPath, request?.fileName)
+        target.parentFile?.mkdirs()
+        Wearable.getChannelClient(this).getInputStream(channel).addOnSuccessListener { input ->
+            runCatching { input.use { source -> target.outputStream().use { out -> source.copyTo(out, bufferSize = 32 * 1024) } } }
         }
+    }
+
+    private fun resolveTargetFile(targetPath: String?, fileName: String?): File {
+        val safeName = (fileName ?: "received-${System.currentTimeMillis()}.bin").replace('/', '_').replace('\\', '_')
+        val requested = targetPath?.takeIf { it.isNotBlank() }
+        return if (requested != null && requested.startsWith(filesDir.absolutePath)) File(requested) else File(File(filesDir, "received"), safeName)
     }
 }

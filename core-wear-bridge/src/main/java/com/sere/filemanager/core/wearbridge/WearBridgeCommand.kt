@@ -8,6 +8,7 @@ enum class WearBridgeCommandType {
     GetWatchServerStatus,
     SyncSettings,
     GetStorageStatus,
+    PrepareFileTransfer,
     SendFileToWatch,
     RequestFileFromWatch,
 }

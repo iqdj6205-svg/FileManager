@@ -3,11 +3,13 @@ package com.sere.filemanager.phone
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import com.sere.filemanager.core.wearbridge.WearBridgeTransferCodec
 import com.sere.filemanager.core.wearbridge.WearFileTransferRequest
 import com.sere.filemanager.core.wearbridge.WearTransferDirection
 
 class PhoneTransferController(
     private val context: Context,
+    private val bridgeClient: WearBridgePhoneClient = WearBridgePhoneClient(context),
     private val channelClient: WearChannelTransferClient = WearChannelTransferClient(context),
 ) {
     fun describe(uri: Uri): PickedFile {
@@ -24,13 +26,9 @@ class PhoneTransferController(
         return PickedFile(uri, name, size)
     }
 
-    suspend fun sendToWatch(file: PickedFile, targetDirectory: String) = channelClient.sendFileToFirstWatch(
-        WearFileTransferRequest(
-            fileName = file.displayName,
-            targetPath = targetDirectory.trimEnd('/') + "/" + file.displayName,
-            direction = WearTransferDirection.PhoneToWatch,
-            sizeBytes = file.sizeBytes,
-        ),
-        file.uri,
-    )
+    suspend fun sendToWatch(file: PickedFile, targetDirectory: String): Result<com.sere.filemanager.core.wearbridge.WearFileTransferProgress> {
+        val request = WearFileTransferRequest(fileName = file.displayName, targetPath = targetDirectory.trimEnd('/') + "/" + file.displayName, direction = WearTransferDirection.PhoneToWatch, sizeBytes = file.sizeBytes)
+        bridgeClient.prepareFileTransfer(WearBridgeTransferCodec.encode(request)).getOrThrow()
+        return channelClient.sendFileToFirstWatch(request, file.uri)
+    }
 }

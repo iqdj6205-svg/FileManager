@@ -8,9 +8,10 @@ class PhoneViewModelFactory(private val context: Context) : ViewModelProvider.Fa
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val appContext = context.applicationContext
+        val bridge = WearBridgePhoneClient(appContext)
         return PhoneViewModel(
-            wearBridgeClient = WearBridgePhoneClient(appContext),
-            transferController = PhoneTransferController(appContext),
+            wearBridgeClient = bridge,
+            transferController = PhoneTransferController(appContext, bridge),
         ) as T
     }
 }
