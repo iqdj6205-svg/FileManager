@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 56%.
+Approximate implementation progress: 57%.
 
 ## Completed
 
@@ -11,6 +11,7 @@ Approximate implementation progress: 56%.
 - Wear remote dashboard/settings foundations wired into navigation.
 - Wear media library/preview foundations.
 - Wear clipboard/copy-move UX foundations.
+- Wear file operation action controller foundation.
 - Shared storage access/root selector foundations.
 - Phone storage roots screen wired into navigation and ViewModel.
 - Phone document-tree picker connected to root state.
@@ -32,11 +33,11 @@ Approximate implementation progress: 56%.
 
 ## Current focus
 
+- Complete Wear copy/move UX.
 - Complete transfer progress UX.
 - Complete copy/move UX.
 - Wire storage roots and SAF access.
 - Harden remote server routes.
-- Improve standalone watch experience.
 
 ## Remaining major areas
 
