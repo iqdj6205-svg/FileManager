@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 59%.
+Approximate implementation progress: 60%.
 
 ## Completed
 
@@ -12,14 +12,15 @@ Approximate implementation progress: 59%.
 - Wear media library/preview foundations.
 - Wear clipboard/copy-move UX foundations wired into browser UI.
 - Wear file operation action controller wired into ViewModel.
-- Shared storage access/root selector foundations.
 - Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
 - Remote server prototype, web manager, route policies, validation/audit/rate-limit foundations.
+- Remote route executor foundation with validation and audit.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.
 
 ## Current focus
 
+- Wire route executor into HTTP engine.
 - Harden route execution and upload handling.
 - Complete transfer progress UX.
 - Improve standalone watch experience.
