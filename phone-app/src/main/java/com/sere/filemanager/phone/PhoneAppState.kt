@@ -8,6 +8,7 @@ data class PhoneAppState(
     val companion: CompanionState = CompanionState(),
     val browser: PhoneFileBrowserState = PhoneFileBrowserState(),
     val analyzer: PhoneAnalyzerState = PhoneAnalyzerState(),
+    val media: PhoneMediaState = PhoneMediaState(),
     val remoteSettings: PhoneRemoteSettingsState = PhoneRemoteSettingsState(),
     val transfer: PhoneTransferState = PhoneTransferState(),
     val fileActions: PhoneFileActionState = PhoneFileActionState(),
