@@ -32,6 +32,7 @@ class PhoneViewModel(
     private val insights = StorageInsights()
     private val rootResolver = StorageRootResolver()
     private val clipboard = FileClipboard()
+    private val imagePreviewController = ImagePreviewController()
     private val _state = MutableStateFlow(PhoneAppState())
     val state: StateFlow<PhoneAppState> = _state.asStateFlow()
 
@@ -42,11 +43,11 @@ class PhoneViewModel(
         playbackController?.let { controller -> viewModelScope.launch { controller.session.collect { session -> _state.update { it.copy(playback = session) } } } }
     }
 
-    fun refreshTransferProgress() {
-        val progress = PhoneTransferProgressStore.latest()
-        if (progress == null) _state.update { it.copy(statusMessage = "No transfer progress yet") }
-        else _state.update { it.copy(transfer = it.transfer.copy(latestProgress = progress, message = progress.message), statusMessage = progress.message ?: progress.state.name) }
-    }
+    fun refreshTransferProgress() { val progress = PhoneTransferProgressStore.latest(); if (progress == null) _state.update { it.copy(statusMessage = "No transfer progress yet") } else _state.update { it.copy(transfer = it.transfer.copy(latestProgress = progress, message = progress.message), statusMessage = progress.message ?: progress.state.name) } }
+    fun openImagePreview(item: MediaItem) { _state.update { it.copy(media = it.media.copy(selected = item), imagePreview = imagePreviewController.open(item), statusMessage = item.displayName) } }
+    fun imageZoomToggle() { _state.update { it.copy(imagePreview = imagePreviewController.reduce(it.imagePreview, ImagePreviewAction.ZoomToggle)) } }
+    fun imageRotateLeft() { _state.update { it.copy(imagePreview = imagePreviewController.reduce(it.imagePreview, ImagePreviewAction.RotateLeft)) } }
+    fun imageRotateRight() { _state.update { it.copy(imagePreview = imagePreviewController.reduce(it.imagePreview, ImagePreviewAction.RotateRight)) } }
 
     fun selectStorageRoot(root: StorageRoot) { storageAccessManager.selectRoot(root.id); when { rootResolver.canUsePath(root) -> openPhonePath(root.path!!); rootResolver.canUseSaf(root) -> openSafRoot(root); else -> _state.update { it.copy(statusMessage = "${root.title} opens in its own screen") } } }
     fun addStorageTree(uri: Uri?) { if (uri == null) return; val name = safController?.persistAndName(uri) ?: "Selected folder"; storageAccessManager.addSafTree(name, uri.toString()); _state.update { it.copy(statusMessage = "Folder access added: $name") } }

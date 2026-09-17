@@ -11,6 +11,7 @@ enum class PhoneScreen {
     PhoneStorageRoots,
     PhoneMedia,
     PhoneMediaPreview,
+    PhoneImagePreview,
     PhoneMediaPlayer,
     StorageAnalyzer,
     WatchCompanion,

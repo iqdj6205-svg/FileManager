@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 67%.
+Approximate implementation progress: 68%.
 
 ## Completed
 
@@ -12,6 +12,7 @@ Approximate implementation progress: 67%.
 - Wear MediaStore-backed gallery/audio/video lists wired into navigation.
 - Wear media preview and Media3 playback screen wiring.
 - Image preview model and phone/watch Coil UI foundations.
+- Phone image preview state and navigation wired for image media.
 - Wear clipboard/copy-move UX foundations wired into browser UI.
 - Wear file operation action controller wired into ViewModel.
 - Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
@@ -24,7 +25,7 @@ Approximate implementation progress: 67%.
 
 ## Current focus
 
-- Wire image preview state into ViewModels/navigation.
+- Wire Wear image preview state/navigation.
 - Harden downloads/uploads and audit consistency.
 - Improve standalone watch experience.
 
