@@ -3,11 +3,16 @@ package com.sere.filemanager.phone
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import com.sere.filemanager.core.files.FileOperationProgressSink
+import com.sere.filemanager.core.files.InMemoryFileOperationProgressSink
 import com.sere.filemanager.core.files.SafFileOperations
 import com.sere.filemanager.core.model.FileItem
 
-class PhoneSafController(private val context: Context) {
-    private val operations = SafFileOperations(context)
+class PhoneSafController(
+    private val context: Context,
+    val progressSink: FileOperationProgressSink = InMemoryFileOperationProgressSink(),
+) {
+    private val operations = SafFileOperations(context, progressSink = progressSink)
 
     fun persistAndName(uri: Uri): String {
         runCatching { context.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION) }

@@ -41,6 +41,7 @@ class PhoneViewModel(
         viewModelScope.launch { storageAccessManager.roots.collect { roots -> _state.update { it.copy(storageRoots = roots) } } }
         viewModelScope.launch { settingsUseCase.settings.collect { settings -> _state.update { it.copy(appSettings = settings, remoteSettings = PhoneRemoteSettingsState.from(settings.remoteServer, settings.advancedMode, settings.showHiddenFiles)) } } }
         playbackController?.let { controller -> viewModelScope.launch { controller.session.collect { session -> _state.update { it.copy(playback = session) } } } }
+        safController?.let { controller -> viewModelScope.launch { controller.progressSink.progress.collect { progress -> _state.update { it.copy(operationProgress = PhoneOperationProgressState(progress)) } } } }
     }
 
     fun refreshTransferProgress() { val progress = PhoneTransferProgressStore.latest(); if (progress == null) _state.update { it.copy(statusMessage = "No transfer progress yet") } else _state.update { it.copy(transfer = it.transfer.copy(latestProgress = progress, message = progress.message), statusMessage = progress.message ?: progress.state.name) } }

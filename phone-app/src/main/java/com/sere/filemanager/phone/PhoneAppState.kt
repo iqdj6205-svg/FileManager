@@ -12,6 +12,7 @@ data class PhoneAppState(
     val companion: CompanionState = CompanionState(),
     val browser: PhoneFileBrowserState = PhoneFileBrowserState(),
     val storageRoots: StorageRootState = StorageRootState(),
+    val operationProgress: PhoneOperationProgressState = PhoneOperationProgressState(),
     val analyzer: PhoneAnalyzerState = PhoneAnalyzerState(),
     val media: PhoneMediaState = PhoneMediaState(),
     val playback: MediaPlaybackSession = MediaPlaybackSession(),
