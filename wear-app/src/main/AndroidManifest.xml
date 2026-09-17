@@ -11,23 +11,20 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
-    <application
-        android:allowBackup="true"
-        android:label="FileManager"
-        android:theme="@style/AppTheme">
+    <application android:allowBackup="true" android:label="FileManager" android:theme="@style/AppTheme">
+        <meta-data android:name="com.google.android.wearable.standalone" android:value="true" />
+        <meta-data android:name="com.google.android.gms.wearable.standalone" android:value="true" />
 
-        <meta-data
-            android:name="com.google.android.wearable.standalone"
-            android:value="true" />
+        <service android:name=".RemoteServerService" android:exported="false" android:foregroundServiceType="dataSync" />
 
-        <service
-            android:name=".RemoteServerService"
-            android:exported="false"
-            android:foregroundServiceType="dataSync" />
+        <service android:name=".WearBridgeListenerService" android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/filemanager" />
+            </intent-filter>
+        </service>
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
+        <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

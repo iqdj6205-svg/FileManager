@@ -25,16 +25,14 @@ android {
     }
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
-    }
-}
+kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
 
 dependencies {
     implementation(project(":core-model"))
+    implementation(project(":core-files"))
     implementation(project(":core-remote"))
     implementation(project(":core-ui"))
+    implementation(project(":core-wear-bridge"))
 
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.activity:activity-compose:1.9.3")
