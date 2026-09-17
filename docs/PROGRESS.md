@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 72%.
+Approximate implementation progress: 73%.
 
 ## Completed
 
@@ -18,13 +18,14 @@ Approximate implementation progress: 72%.
 - Remote route executor wired into SimpleHttpEngine.
 - Binary-safe raw HTTP request parser and upload persistence foundation.
 - Remote audit routes wired into HTTP engine and web UI.
+- Remote route policies and rate limiting wired into HTTP engine.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.
 
 ## Current focus
 
-- Harden uploads and route policy consistency.
-- Improve standalone watch experience.
+- Improve transfer/reactive status UX.
+- Complete SAF/path copy and move matrix.
 - Prepare build validation pass.
 
 ## Remaining major areas
