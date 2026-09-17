@@ -17,16 +17,17 @@ class PhoneViewModelFactory(private val context: Context) : ViewModelProvider.Fa
         val appContext = context.applicationContext
         val bridge = WearBridgePhoneClient(appContext)
         val files = LocalFileRepository()
+        val saf = PhoneSafController(appContext)
         return PhoneViewModel(
             fileRepository = files,
             wearBridgeClient = bridge,
             transferController = PhoneTransferController(appContext, bridge),
-            fileOperationsController = PhoneFileOperationsController(SafeFileOperations(files)),
+            fileOperationsController = PhoneFileOperationsController(SafeFileOperations(files), saf),
             mediaController = PhoneMediaController.create(AndroidMediaStoreRepository(appContext)),
             playbackController = InMemoryMediaPlaybackController(),
             settingsUseCase = AppSettingsUseCase(DataStoreAppSettingsRepository(appContext)),
             storageAccessManager = StorageAccessManager(),
-            safController = PhoneSafController(appContext),
+            safController = saf,
         ) as T
     }
 }

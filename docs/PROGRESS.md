@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 46%.
+Approximate implementation progress: 47%.
 
 ## Completed
 
@@ -15,6 +15,7 @@ Approximate implementation progress: 46%.
 - Phone document-tree picker connected to root state.
 - SAF access and DocumentFile operation foundations.
 - SAF roots now open through phone browser listing.
+- SAF-aware phone rename/delete action foundations.
 - Shared media playback controller and phone/watch playback UI foundations.
 - Shared app settings model/repository/use-case foundations.
 - DataStore app settings implementation.
@@ -29,16 +30,15 @@ Approximate implementation progress: 46%.
 
 ## Current focus
 
+- Complete file operation UX.
 - Wire storage roots and SAF access.
 - Harden remote server routes.
 - Improve standalone watch experience and reduce duplicated permission prompts.
-- Turn phone app into a full file manager, not only a watch companion.
 - Wire media browsing and playback.
 
 ## Remaining major areas
 
-- Full file operation flows.
-- Proper SAF file operations in UI paths.
+- Full copy/move flows across path and SAF roots.
 - Real Media3 playback and image rendering.
 - Full remote web manager route hardening.
 - Upload hardening.
