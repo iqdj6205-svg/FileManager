@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 48%.
+Approximate implementation progress: 49%.
 
 ## Completed
 
@@ -16,15 +16,12 @@ Approximate implementation progress: 48%.
 - SAF access and DocumentFile operation foundations.
 - SAF roots now open through phone browser listing.
 - SAF-aware phone rename/delete/create-folder action foundations.
-- Phone rename/create-folder input screen foundations.
+- Phone rename/create-folder input flows wired into UI.
 - Shared media playback controller and phone/watch playback UI foundations.
 - Shared app settings model/repository/use-case foundations.
 - DataStore app settings implementation.
 - Phone playback state is wired into ViewModel and media preview/player navigation.
-- Phone app shell and file browser foundation.
-- Phone file action/details/delete UI foundations.
-- Phone storage analyzer foundation.
-- Phone media library/gallery foundation wired to ViewModel/UI.
+- Phone storage analyzer and media library wired to ViewModel/UI.
 - Remote server prototype, web manager, route policies, validation/audit/rate-limit foundations.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.

@@ -41,35 +41,17 @@ class PhoneViewModel(
         playbackController?.let { controller -> viewModelScope.launch { controller.session.collect { session -> _state.update { it.copy(playback = session) } } } }
     }
 
-    fun selectStorageRoot(root: StorageRoot) {
-        storageAccessManager.selectRoot(root.id)
-        when {
-            rootResolver.canUsePath(root) -> openPhonePath(root.path!!)
-            rootResolver.canUseSaf(root) -> openSafRoot(root)
-            else -> _state.update { it.copy(statusMessage = "${root.title} opens in its own screen") }
-        }
-    }
-
-    fun addStorageTree(uri: Uri?) {
-        if (uri == null) return
-        val name = safController?.persistAndName(uri) ?: "Selected folder"
-        storageAccessManager.addSafTree(name, uri.toString())
-        _state.update { it.copy(statusMessage = "Folder access added: $name") }
-    }
-
-    private fun openSafRoot(root: StorageRoot) {
-        val uri = rootResolver.safUri(root) ?: return
-        val controller = safController ?: run { _state.update { it.copy(statusMessage = "SAF unavailable") }; return }
-        viewModelScope.launch {
-            _state.update { it.copy(browser = it.browser.copy(currentPath = rootResolver.preferredDisplayPath(root), isLoading = true, error = null)) }
-            runCatching { controller.list(uri) }
-                .onSuccess { items -> _state.update { it.copy(browser = it.browser.copy(items = items, isLoading = false), statusMessage = "Opened ${root.title}") } }
-                .onFailure { error -> _state.update { it.copy(browser = it.browser.copy(isLoading = false, error = error.message ?: "Cannot open folder"), statusMessage = error.message ?: "Cannot open folder") } }
-        }
-    }
-
+    fun selectStorageRoot(root: StorageRoot) { storageAccessManager.selectRoot(root.id); when { rootResolver.canUsePath(root) -> openPhonePath(root.path!!); rootResolver.canUseSaf(root) -> openSafRoot(root); else -> _state.update { it.copy(statusMessage = "${root.title} opens in its own screen") } } }
+    fun addStorageTree(uri: Uri?) { if (uri == null) return; val name = safController?.persistAndName(uri) ?: "Selected folder"; storageAccessManager.addSafTree(name, uri.toString()); _state.update { it.copy(statusMessage = "Folder access added: $name") } }
+    private fun openSafRoot(root: StorageRoot) { val uri = rootResolver.safUri(root) ?: return; val controller = safController ?: run { _state.update { it.copy(statusMessage = "SAF unavailable") }; return }; viewModelScope.launch { _state.update { it.copy(browser = it.browser.copy(currentPath = rootResolver.preferredDisplayPath(root), isLoading = true, error = null)) }; runCatching { controller.list(uri) }.onSuccess { items -> _state.update { it.copy(browser = it.browser.copy(items = items, isLoading = false), statusMessage = "Opened ${root.title}") } }.onFailure { error -> _state.update { it.copy(browser = it.browser.copy(isLoading = false, error = error.message ?: "Cannot open folder"), statusMessage = error.message ?: "Cannot open folder") } } } }
     fun openSelectedStorageRoot() = openPhonePath(storageAccessManager.selectedPathOrDefault())
     fun openPhonePath(path: String) { viewModelScope.launch { _state.update { it.copy(browser = it.browser.copy(currentPath = path, isLoading = true, error = null)) }; runCatching { fileRepository.list(path) }.onSuccess { items -> _state.update { it.copy(browser = it.browser.copy(items = items, isLoading = false)) } }.onFailure { error -> _state.update { it.copy(browser = it.browser.copy(isLoading = false, error = error.message ?: "Cannot open folder")) } } } }
+    fun beginCreateFolder() { _state.update { it.copy(edit = it.edit.copy(createFolderValue = "New Folder", message = null)) } }
+    fun updateCreateFolderName(value: String) { _state.update { it.copy(edit = it.edit.copy(createFolderValue = value)) } }
+    fun createFolderFromInput() { val name = _state.value.edit.createFolderValue.trim(); if (name.isBlank()) { _state.update { it.copy(statusMessage = "Folder name required") }; return }; val controller = fileOperationsController ?: return; val parent = _state.value.browser.currentPath; viewModelScope.launch { val result = controller.createFolder(parent, name); _state.update { it.copy(statusMessage = result.message ?: if (result.success) "Folder created" else "Create failed") }; openPhonePath(parent) } }
+    fun beginRenameSelected() { val item = _state.value.fileActions.selected; _state.update { it.copy(edit = it.edit.copy(renameValue = item?.name.orEmpty(), message = null)) } }
+    fun updateRenameValue(value: String) { _state.update { it.copy(edit = it.edit.copy(renameValue = value)) } }
+    fun renameSelectedFromInput() { val name = _state.value.edit.renameValue.trim(); if (name.isBlank()) { _state.update { it.copy(statusMessage = "New name required") }; return }; executePhoneFileAction("Renaming…") { controller, item -> controller.rename(item, name) } }
     fun analyzeCurrentPhoneFolder() { viewModelScope.launch { val path = _state.value.browser.currentPath; _state.update { it.copy(analyzer = it.analyzer.copy(isLoading = true, message = "Analyzing $path")) }; runCatching { analyzer.analyze(path) }.onSuccess { analysis -> _state.update { it.copy(analyzer = it.analyzer.copy(analysis = analysis, insights = insights.fromAnalysis(analysis), isLoading = false, message = "Analysis complete"), statusMessage = "Analysis complete") } }.onFailure { error -> _state.update { it.copy(analyzer = it.analyzer.copy(isLoading = false, message = error.message ?: "Analysis failed"), statusMessage = error.message ?: "Analysis failed") } } } }
     fun loadPhoneMedia() { val controller = mediaController ?: run { _state.update { it.copy(statusMessage = "Media unavailable") }; return }; viewModelScope.launch { _state.update { it.copy(media = it.media.copy(isLoading = true, message = "Loading media…")) }; runCatching { controller.loadLibrary() }.onSuccess { library -> _state.update { it.copy(media = it.media.copy(buckets = library.buckets, items = library.items, isLoading = false, message = "Loaded ${library.items.size} media files"), statusMessage = "Loaded media") } }.onFailure { error -> _state.update { it.copy(media = it.media.copy(isLoading = false, message = error.message ?: "Media load failed"), statusMessage = error.message ?: "Media load failed") } } } }
     fun selectMedia(item: MediaItem) { _state.update { it.copy(media = it.media.copy(selected = item), statusMessage = item.displayName) }; playbackController?.prepare(item) }
