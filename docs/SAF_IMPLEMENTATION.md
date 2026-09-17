@@ -12,10 +12,11 @@
 - Move uses copy plus delete after successful copy.
 - Simple MIME guessing for path-to-SAF writes.
 - Phone operation controller now routes SAF/path copy and move combinations.
+- SAF conflict resolver for keep-both/replace/skip/fail strategies.
+- SAF copy targets now avoid name collisions by default.
 
 ## Remaining
 
-- Progress callbacks for large stream copies.
-- Conflict resolution UI for existing target names.
+- Progress callbacks for recursive directory copies.
 - Directory recursive copy via SAF.
 - More detailed SAF errors.

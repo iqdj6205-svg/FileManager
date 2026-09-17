@@ -10,6 +10,7 @@ class SafFileOperations(
     private val context: Context,
     private val streamCopy: StreamCopy = StreamCopy(),
     private val progressSink: FileOperationProgressSink = InMemoryFileOperationProgressSink(),
+    private val conflictResolver: SafConflictResolver = SafConflictResolver(),
 ) {
     val progress = progressSink.progress
 
@@ -36,20 +37,23 @@ class SafFileOperations(
 
     fun copyToTree(sourceUri: Uri, targetTreeUri: Uri, targetName: String, mimeType: String = "application/octet-stream"): Boolean {
         val parent = DocumentFile.fromTreeUri(context, targetTreeUri) ?: return false
+        val decision = conflictResolver.resolve(parent, targetName)
+        if (!decision.shouldWrite) return false
+        if (decision.shouldReplace) decision.existing?.delete()
         val source = DocumentFile.fromSingleUri(context, sourceUri) ?: DocumentFile.fromTreeUri(context, sourceUri)
         val total = source?.length()?.takeIf { it > 0L }
-        val target = parent.createFile(mimeType, OperationNamePolicy.sanitizeInputName(targetName)) ?: return false
+        val target = parent.createFile(mimeType, decision.targetName) ?: return false
         return copyStreams(sourceUri, target.uri, "Copy", total)
     }
 
     fun copyTreeDocumentToPath(sourceUri: Uri, targetFilePath: String): Boolean {
-        val target = java.io.File(targetFilePath)
+        val target = java.io.File(FileConflictResolver().resolve(targetFilePath).targetPath)
         val source = DocumentFile.fromSingleUri(context, sourceUri) ?: DocumentFile.fromTreeUri(context, sourceUri)
         val total = source?.length()?.takeIf { it > 0L }
         target.parentFile?.mkdirs()
         return context.contentResolver.openInputStream(sourceUri)?.use { input ->
-            target.outputStream().use { output -> streamCopy.copy(input, output, total) { done, all -> progressSink.update(FileOperationProgress("Copy", sourceUri.toString(), targetFilePath, done, all)) } }
-            progressSink.update(FileOperationProgress("Copy", sourceUri.toString(), targetFilePath, total ?: target.length(), total, completed = true, message = "Copied ${target.name}"))
+            target.outputStream().use { output -> streamCopy.copy(input, output, total) { done, all -> progressSink.update(FileOperationProgress("Copy", sourceUri.toString(), target.absolutePath, done, all)) } }
+            progressSink.update(FileOperationProgress("Copy", sourceUri.toString(), target.absolutePath, total ?: target.length(), total, completed = true, message = "Copied ${target.name}"))
             true
         } ?: false
     }
@@ -58,7 +62,10 @@ class SafFileOperations(
         val source = java.io.File(sourcePath)
         if (!source.exists() || !source.isFile) return false
         val parent = DocumentFile.fromTreeUri(context, targetTreeUri) ?: return false
-        val target = parent.createFile(MimeTypeMap.guess(source.name), OperationNamePolicy.sanitizeInputName(targetName ?: source.name)) ?: return false
+        val decision = conflictResolver.resolve(parent, targetName ?: source.name)
+        if (!decision.shouldWrite) return false
+        if (decision.shouldReplace) decision.existing?.delete()
+        val target = parent.createFile(MimeTypeMap.guess(source.name), decision.targetName) ?: return false
         return context.contentResolver.openOutputStream(target.uri)?.use { output ->
             source.inputStream().use { input -> streamCopy.copy(input, output, source.length()) { done, all -> progressSink.update(FileOperationProgress("Copy", sourcePath, target.uri.toString(), done, all)) } }
             progressSink.update(FileOperationProgress("Copy", sourcePath, target.uri.toString(), source.length(), source.length(), completed = true, message = "Copied ${source.name}"))
