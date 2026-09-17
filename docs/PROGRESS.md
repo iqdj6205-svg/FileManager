@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 65%.
+Approximate implementation progress: 66%.
 
 ## Completed
 
@@ -9,8 +9,8 @@ Approximate implementation progress: 65%.
 - Wear app launches and basic navigation works.
 - Wear permission hub and concrete ADB advanced guidance foundation.
 - Wear remote dashboard/settings foundations wired into navigation.
-- Wear media library/preview foundations.
-- Wear MediaStore loading and Media3 playback state wired into ViewModel.
+- Wear MediaStore-backed gallery/audio/video lists wired into navigation.
+- Wear media preview and Media3 playback screen wiring.
 - Wear clipboard/copy-move UX foundations wired into browser UI.
 - Wear file operation action controller wired into ViewModel.
 - Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
@@ -23,9 +23,8 @@ Approximate implementation progress: 65%.
 
 ## Current focus
 
-- Wire Wear media UI navigation to MediaStore-backed lists and playback.
+- Add image rendering/polish and Media3 lifecycle cleanup.
 - Harden downloads/uploads and audit consistency.
-- Complete transfer progress UX.
 - Improve standalone watch experience.
 
 ## Remaining major areas

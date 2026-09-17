@@ -18,36 +18,25 @@ import com.sere.filemanager.core.ui.UiFormatters
 import androidx.compose.runtime.Composable
 
 @Composable
-fun WearMediaLibraryScreen(
-    title: String,
-    items: List<MediaItem>,
-    isLoading: Boolean,
-    message: String?,
-    onRefresh: () -> Unit,
-    onOpen: (MediaItem) -> Unit,
-    onBack: () -> Unit,
-) {
+fun WearMediaLibraryScreen(title: String, items: List<MediaItem>, isLoading: Boolean, message: String?, onRefresh: () -> Unit, onOpen: (MediaItem) -> Unit, onBack: () -> Unit) {
     ScalingLazyColumn(modifier = Modifier.fillMaxSize().padding(10.dp), contentPadding = PaddingValues(vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         item { Text(title, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
         item { Button(onClick = onRefresh, modifier = Modifier.fillMaxWidth()) { Text(if (isLoading) "Loading" else "Refresh") } }
         message?.let { item { Text(it, textAlign = TextAlign.Center) } }
         if (!isLoading && items.isEmpty()) item { Text("No media visible", textAlign = TextAlign.Center) }
-        items(items.size) { index ->
-            val item = items[index]
-            Chip(label = { Text(item.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) }, secondaryLabel = { Text(UiFormatters.compactBytes(item.sizeBytes)) }, onClick = { onOpen(item) }, modifier = Modifier.fillMaxWidth())
-        }
+        items(items.size) { index -> val item = items[index]; Chip(label = { Text(item.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) }, secondaryLabel = { Text(UiFormatters.compactBytes(item.sizeBytes)) }, onClick = { onOpen(item) }, modifier = Modifier.fillMaxWidth()) }
         item { Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Back") } }
     }
 }
 
 @Composable
-fun WearMediaPreviewScreen(item: MediaItem, onBack: () -> Unit) {
+fun WearMediaPreviewScreen(item: MediaItem, onPlay: () -> Unit, onBack: () -> Unit) {
     ScalingLazyColumn(modifier = Modifier.fillMaxSize().padding(10.dp), contentPadding = PaddingValues(vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         item { Text("Preview", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
         item { Text(item.displayName, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center) }
         item { Text(item.mimeType, textAlign = TextAlign.Center) }
         item { Text(UiFormatters.compactBytes(item.sizeBytes), textAlign = TextAlign.Center) }
-        item { Text("Viewer/player controls will be optimized for round screens.", textAlign = TextAlign.Center) }
+        item { Chip(label = { Text("Open player") }, onClick = onPlay, modifier = Modifier.fillMaxWidth()) }
         item { Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Back") } }
     }
 }
