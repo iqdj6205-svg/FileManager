@@ -1,32 +1,24 @@
 # ADB Advanced Mode
 
-Advanced mode is for users who understand Android storage restrictions.
+ADB mode is for advanced users who want broader file visibility on their own watch.
 
-## Important truth
-
-A normal Wear OS application cannot magically access every protected system folder. Access depends on Android permissions, app sandboxing, user-selected folders, device policy, debug access, and sometimes root.
-
-## Supported approach
-
-The app should provide clear guidance instead of unsafe promises:
-
-1. Use normal media/document permissions for normal users.
-2. Use Storage Access Framework where available.
-3. Use ADB push/pull workflows for advanced users.
-4. Explain risks before destructive commands.
-
-## Example ADB commands
+## Commands
 
 ```bash
 adb devices
-adb shell ls /sdcard
-adb pull /sdcard/Download ./watch-download
-adb push ./file.txt /sdcard/Download/file.txt
+adb shell appops set com.sere.filemanager.wear MANAGE_EXTERNAL_STORAGE allow
+adb shell pm grant com.sere.filemanager.wear android.permission.READ_EXTERNAL_STORAGE
+adb shell pm grant com.sere.filemanager.wear android.permission.READ_MEDIA_IMAGES
+adb shell pm grant com.sere.filemanager.wear android.permission.READ_MEDIA_VIDEO
+adb shell pm grant com.sere.filemanager.wear android.permission.READ_MEDIA_AUDIO
+adb shell am force-stop com.sere.filemanager.wear
 ```
 
-## Safety rules
+Then start FileManager again on the watch.
 
-- Do not run random commands from the internet.
-- Do not delete system directories.
-- Keep backups of important files.
-- Treat root access as unsupported advanced behavior.
+## Notes
+
+- Some Wear OS builds restrict broad storage access regardless of ADB commands.
+- Android 13+ uses separate media permissions.
+- ADB should not be required for normal media browsing.
+- The watch app must remain fully usable without the phone companion.
