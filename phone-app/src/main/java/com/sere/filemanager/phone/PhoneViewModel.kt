@@ -26,9 +26,11 @@ class PhoneViewModel(
     private val playbackController: MediaPlaybackController? = null,
     private val settingsUseCase: AppSettingsUseCase = AppSettingsUseCase(InMemoryAppSettingsRepository()),
     private val storageAccessManager: StorageAccessManager = StorageAccessManager(),
+    private val safController: PhoneSafController? = null,
 ) : ViewModel() {
     private val analyzer = StorageAnalyzer(fileRepository)
     private val insights = StorageInsights()
+    private val rootResolver = StorageRootResolver()
     private val _state = MutableStateFlow(PhoneAppState())
     val state: StateFlow<PhoneAppState> = _state.asStateFlow()
 
@@ -39,8 +41,33 @@ class PhoneViewModel(
         playbackController?.let { controller -> viewModelScope.launch { controller.session.collect { session -> _state.update { it.copy(playback = session) } } } }
     }
 
-    fun selectStorageRoot(root: StorageRoot) { storageAccessManager.selectRoot(root.id); root.path?.let { openPhonePath(it) } ?: root.uri?.let { _state.update { s -> s.copy(statusMessage = "SAF root selected") } } }
-    fun addStorageTree(uri: Uri?) { if (uri == null) return; storageAccessManager.addSafTree("Folder", uri.toString()); _state.update { it.copy(statusMessage = "Folder access added") } }
+    fun selectStorageRoot(root: StorageRoot) {
+        storageAccessManager.selectRoot(root.id)
+        when {
+            rootResolver.canUsePath(root) -> openPhonePath(root.path!!)
+            rootResolver.canUseSaf(root) -> openSafRoot(root)
+            else -> _state.update { it.copy(statusMessage = "${root.title} opens in its own screen") }
+        }
+    }
+
+    fun addStorageTree(uri: Uri?) {
+        if (uri == null) return
+        val name = safController?.persistAndName(uri) ?: "Selected folder"
+        storageAccessManager.addSafTree(name, uri.toString())
+        _state.update { it.copy(statusMessage = "Folder access added: $name") }
+    }
+
+    private fun openSafRoot(root: StorageRoot) {
+        val uri = rootResolver.safUri(root) ?: return
+        val controller = safController ?: run { _state.update { it.copy(statusMessage = "SAF unavailable") }; return }
+        viewModelScope.launch {
+            _state.update { it.copy(browser = it.browser.copy(currentPath = rootResolver.preferredDisplayPath(root), isLoading = true, error = null)) }
+            runCatching { controller.list(uri) }
+                .onSuccess { items -> _state.update { it.copy(browser = it.browser.copy(items = items, isLoading = false), statusMessage = "Opened ${root.title}") } }
+                .onFailure { error -> _state.update { it.copy(browser = it.browser.copy(isLoading = false, error = error.message ?: "Cannot open folder"), statusMessage = error.message ?: "Cannot open folder") } }
+        }
+    }
+
     fun openSelectedStorageRoot() = openPhonePath(storageAccessManager.selectedPathOrDefault())
     fun openPhonePath(path: String) { viewModelScope.launch { _state.update { it.copy(browser = it.browser.copy(currentPath = path, isLoading = true, error = null)) }; runCatching { fileRepository.list(path) }.onSuccess { items -> _state.update { it.copy(browser = it.browser.copy(items = items, isLoading = false)) } }.onFailure { error -> _state.update { it.copy(browser = it.browser.copy(isLoading = false, error = error.message ?: "Cannot open folder")) } } } }
     fun analyzeCurrentPhoneFolder() { viewModelScope.launch { val path = _state.value.browser.currentPath; _state.update { it.copy(analyzer = it.analyzer.copy(isLoading = true, message = "Analyzing $path")) }; runCatching { analyzer.analyze(path) }.onSuccess { analysis -> _state.update { it.copy(analyzer = it.analyzer.copy(analysis = analysis, insights = insights.fromAnalysis(analysis), isLoading = false, message = "Analysis complete"), statusMessage = "Analysis complete") } }.onFailure { error -> _state.update { it.copy(analyzer = it.analyzer.copy(isLoading = false, message = error.message ?: "Analysis failed"), statusMessage = error.message ?: "Analysis failed") } } } }
@@ -64,6 +91,8 @@ class PhoneViewModel(
     fun toggleSettingsHaptics() { viewModelScope.launch { settingsUseCase.setHaptics(!_state.value.appSettings.hapticsEnabled) } }
     fun toggleUploads() { viewModelScope.launch { settingsUseCase.updateRemoteSettings { it.copy(allowUploads = !it.allowUploads) } } }
     fun toggleDelete() { viewModelScope.launch { settingsUseCase.updateRemoteSettings { it.copy(allowDelete = !it.allowDelete) } } }
+    fun toggleSettingsAdvancedMode() = toggleSettingsAdvanced()
+    fun toggleShowHidden() = toggleSettingsHidden()
     fun syncSettingsToWatch() { val s = _state.value.remoteSettings; val payload = WearBridgeSettingsPayload(remote = RemoteServerSettings(s.port, s.requirePin, s.allowUploads, s.allowDelete, s.autoStopMinutes, s.localNetworkOnly), advancedMode = s.advancedMode, showHiddenFiles = s.showHiddenFiles); sendWearCommand(WearBridgeCommandType.SyncSettings, "Syncing settings…", WearBridgeSettingsStringCodec.encode(payload)) }
     fun startPairing() { val bridge = wearBridgeClient ?: run { _state.update { it.copy(statusMessage = "Bridge unavailable") }; return }; viewModelScope.launch { bridge.connectedWatchNames().onSuccess { names -> _state.update { it.copy(statusMessage = if (names.isEmpty()) "No connected Wear OS watch" else "Connected: ${names.joinToString()}") } }.onFailure { error -> _state.update { it.copy(statusMessage = error.message ?: "Pairing check failed") } } } }
     fun startRemoteServer() = sendWearCommand(WearBridgeCommandType.StartWatchServer, "Starting watch server…")
