@@ -18,7 +18,6 @@ android {
         versionName = "0.1.0"
     }
 
-    buildFeatures { compose = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -30,16 +29,15 @@ kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
 dependencies {
     implementation(project(":core-model"))
     implementation(project(":core-files"))
+    implementation(project(":core-media"))
     implementation(project(":core-remote"))
     implementation(project(":core-ui"))
     implementation(project(":core-wear-bridge"))
-
-    implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     implementation("androidx.compose.ui:ui:1.7.4")
     implementation("androidx.compose.material3:material3:1.3.0")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.7.4")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.7.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
+    implementation("androidx.media3:media3-exoplayer:1.4.1")
+    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("com.google.android.gms:play-services-wearable:18.2.0")
 }

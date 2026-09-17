@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 66%.
+Approximate implementation progress: 67%.
 
 ## Completed
 
@@ -11,6 +11,7 @@ Approximate implementation progress: 66%.
 - Wear remote dashboard/settings foundations wired into navigation.
 - Wear MediaStore-backed gallery/audio/video lists wired into navigation.
 - Wear media preview and Media3 playback screen wiring.
+- Image preview model and phone/watch Coil UI foundations.
 - Wear clipboard/copy-move UX foundations wired into browser UI.
 - Wear file operation action controller wired into ViewModel.
 - Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
@@ -23,14 +24,14 @@ Approximate implementation progress: 66%.
 
 ## Current focus
 
-- Add image rendering/polish and Media3 lifecycle cleanup.
+- Wire image preview state into ViewModels/navigation.
 - Harden downloads/uploads and audit consistency.
 - Improve standalone watch experience.
 
 ## Remaining major areas
 
 - Full copy/move flows across path and SAF roots.
-- Image rendering and polished Media3 playback.
+- Image preview polish and Media3 lifecycle cleanup.
 - Multipart upload compatibility.
 - Persistent DataStore settings wiring in both apps.
 - UI/UX polish for round Wear screens.
