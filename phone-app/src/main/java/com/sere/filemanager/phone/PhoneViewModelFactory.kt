@@ -3,6 +3,8 @@ package com.sere.filemanager.phone
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.sere.filemanager.core.files.AppSettingsUseCase
+import com.sere.filemanager.core.files.DataStoreAppSettingsRepository
 import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.files.SafeFileOperations
 import com.sere.filemanager.core.media.AndroidMediaStoreRepository
@@ -21,6 +23,7 @@ class PhoneViewModelFactory(private val context: Context) : ViewModelProvider.Fa
             fileOperationsController = PhoneFileOperationsController(SafeFileOperations(files)),
             mediaController = PhoneMediaController.create(AndroidMediaStoreRepository(appContext)),
             playbackController = InMemoryMediaPlaybackController(),
+            settingsUseCase = AppSettingsUseCase(DataStoreAppSettingsRepository(appContext)),
         ) as T
     }
 }

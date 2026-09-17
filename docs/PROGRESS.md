@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 35%.
+Approximate implementation progress: 36%.
 
 ## Completed
 
@@ -12,6 +12,7 @@ Approximate implementation progress: 35%.
 - Wear media library/preview foundations.
 - Shared media playback controller and phone/watch playback UI foundations.
 - Shared app settings model/repository/use-case foundations.
+- DataStore app settings implementation.
 - Phone playback state is wired into ViewModel and media preview/player navigation.
 - Phone app shell and file browser foundation.
 - Phone file action/details/delete UI foundations.
@@ -35,6 +36,6 @@ Approximate implementation progress: 35%.
 - Real Media3 playback and image rendering.
 - Full remote web manager.
 - Upload hardening.
-- Persistent DataStore settings wiring.
+- Persistent DataStore settings wiring in both apps.
 - UI/UX polish for round Wear screens.
 - End-to-end phone-watch file transfer testing.
