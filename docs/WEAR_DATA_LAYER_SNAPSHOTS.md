@@ -7,7 +7,10 @@
 - Settings DataMap codec.
 - Wear-side `WearStatusPublisher`.
 - Phone-side remote status store.
-- Phone listener now handles DataClient status changes.
+- Phone listener handles DataClient status changes.
+- `RemoteServerService` publishes status when server starts, stops, is destroyed, and during periodic timeout checks.
+- Phone ViewModel can read the latest remote snapshot and update the UI/server URL.
+- Phone Watch Companion UI has a `Read latest status` action.
 
 ## Purpose
 
@@ -22,6 +25,6 @@ Messages are good for commands. Data snapshots are better for current state:
 
 ## Next
 
-- Publish status whenever `RemoteServerService` starts/stops.
-- Read status in phone ViewModel and show it in UI.
 - Add settings sync from phone to watch.
+- Replace polling/status-store with reactive Flow.
+- Add capability declarations.
