@@ -7,6 +7,7 @@ import com.sere.filemanager.core.model.CompanionState
 data class PhoneAppState(
     val companion: CompanionState = CompanionState(),
     val browser: PhoneFileBrowserState = PhoneFileBrowserState(),
+    val remoteSettings: PhoneRemoteSettingsState = PhoneRemoteSettingsState(),
     val remoteUrl: String = "",
     val statusMessage: String = "Phone file manager ready",
 )
