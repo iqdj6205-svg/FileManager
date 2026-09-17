@@ -16,4 +16,18 @@ class WearBridgePhoneClient(private val context: Context) {
         Wearable.getMessageClient(context).sendMessage(node.id, WearBridgePaths.MESSAGE_COMMAND, WearBridgeCodec.encode(command)).await()
         "Sent ${type.name} to ${node.displayName}"
     }
+
+    suspend fun connectedWatchNames(): Result<List<String>> = runCatching {
+        Wearable.getNodeClient(context).connectedNodes.await().map { it.displayName }
+    }
+
+    fun latestResultText(): String? {
+        val result = PhoneBridgeStatusStore.latest() ?: return null
+        return buildString {
+            append(if (result.success) "OK" else "Failed")
+            append(": ")
+            append(result.message ?: result.commandId)
+            result.payload?.let { append(" — ").append(it) }
+        }
+    }
 }

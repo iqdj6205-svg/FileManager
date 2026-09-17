@@ -7,6 +7,7 @@ import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.model.CompanionCommand
 import com.sere.filemanager.core.model.FileItemType
 import com.sere.filemanager.core.wearbridge.WearBridgeCommandType
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,12 +44,15 @@ class PhoneViewModel(
         openPhonePath(parent)
     }
 
-    fun setRemoteUrl(url: String) {
-        _state.update { it.copy(remoteUrl = url, statusMessage = if (url.isBlank()) "Remote URL empty" else "Ready to connect") }
-    }
+    fun setRemoteUrl(url: String) { _state.update { it.copy(remoteUrl = url, statusMessage = if (url.isBlank()) "Remote URL empty" else "Ready to connect") } }
 
     fun startPairing() {
-        _state.update { it.copy(statusMessage = "Pairing uses Android Wear companion connection. Keep watch nearby and Bluetooth/Wi‑Fi enabled.") }
+        val bridge = wearBridgeClient ?: run { _state.update { it.copy(statusMessage = "Bridge unavailable") }; return }
+        viewModelScope.launch {
+            bridge.connectedWatchNames()
+                .onSuccess { names -> _state.update { it.copy(statusMessage = if (names.isEmpty()) "No connected Wear OS watch" else "Connected: ${names.joinToString()}") } }
+                .onFailure { error -> _state.update { it.copy(statusMessage = error.message ?: "Pairing check failed") } }
+        }
     }
 
     fun startRemoteServer() = sendWearCommand(WearBridgeCommandType.StartWatchServer, "Starting watch server…")
@@ -64,19 +68,18 @@ class PhoneViewModel(
 
     private fun sendWearCommand(type: WearBridgeCommandType, pendingMessage: String) {
         val bridge = wearBridgeClient
-        if (bridge == null) {
-            issue(protocolClient.startRemoteServer(), "$pendingMessage Bridge unavailable in preview")
-            return
-        }
+        if (bridge == null) { issue(protocolClient.startRemoteServer(), "$pendingMessage Bridge unavailable in preview"); return }
         viewModelScope.launch {
             _state.update { it.copy(statusMessage = pendingMessage) }
             bridge.sendToFirstWatch(type)
-                .onSuccess { message -> _state.update { it.copy(statusMessage = message) } }
+                .onSuccess { message ->
+                    _state.update { it.copy(statusMessage = message) }
+                    delay(700)
+                    bridge.latestResultText()?.let { result -> _state.update { it.copy(statusMessage = result) } }
+                }
                 .onFailure { error -> _state.update { it.copy(statusMessage = error.message ?: "Wear command failed") } }
         }
     }
 
-    private fun issue(command: CompanionCommand, message: String) {
-        _state.update { it.copy(statusMessage = "$message (${command.id})") }
-    }
+    private fun issue(command: CompanionCommand, message: String) { _state.update { it.copy(statusMessage = "$message (${command.id})") } }
 }
