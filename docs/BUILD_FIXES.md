@@ -10,6 +10,8 @@
 - Aligned Java compile target with Kotlin JVM target: Java 17 / Kotlin JVM 17 in every module.
 - Fixed `core-media` unresolved `FileRepository` by adding dependency on `:core-files`.
 - Fixed Wear lint error `WearStandaloneAppFlag` by adding `com.google.android.wearable.standalone=true` metadata to the Wear manifest.
+- Fixed rotary compile error by replacing unavailable `scrollBy` with `scrollToItem`.
+- Migrated Wear main screen list APIs from deprecated `androidx.wear.compose.material` lazy list imports to `androidx.wear.compose.foundation.lazy`.
 
 ## Current user build issues fixed
 

@@ -35,13 +35,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
+import androidx.wear.compose.foundation.lazy.ScalingLazyListScope
+import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.ScalingLazyColumn
 import androidx.wear.compose.material.Switch
 import androidx.wear.compose.material.Text
-import androidx.wear.compose.material.rememberScalingLazyListState
 import com.sere.filemanager.core.files.StorageFormatter
 import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
@@ -105,7 +106,7 @@ private fun WearFileManagerContent(viewModel: FileManagerViewModel) {
 }
 
 @Composable
-private fun RotaryScalingLazyColumn(modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues(18.dp), horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally, content: androidx.wear.compose.material.ScalingLazyListScope.() -> Unit) {
+private fun RotaryScalingLazyColumn(modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues(18.dp), horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally, content: ScalingLazyListScope.() -> Unit) {
     val state = rememberScalingLazyListState()
     val focusRequester = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
