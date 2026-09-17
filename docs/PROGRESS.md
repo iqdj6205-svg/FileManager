@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 28%.
+Approximate implementation progress: 29%.
 
 ## Completed
 
@@ -8,6 +8,7 @@ Approximate implementation progress: 28%.
 - Successful local Gradle build milestone.
 - Wear app launches and basic navigation works.
 - Wear permission hub and concrete ADB advanced guidance foundation.
+- Wear remote dashboard/settings foundations.
 - Phone app shell and file browser foundation.
 - Phone file action/details/delete UI foundations.
 - Phone storage analyzer foundation.
