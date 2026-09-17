@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 50%.
+Approximate implementation progress: 51%.
 
 ## Completed
 
@@ -18,6 +18,7 @@ Approximate implementation progress: 50%.
 - SAF-aware phone rename/delete/create-folder action foundations.
 - Phone rename/create-folder input flows wired into UI.
 - Shared file clipboard and copy/move operation foundations.
+- Phone clipboard copy/move actions wired in ViewModel.
 - Shared media playback controller and phone/watch playback UI foundations.
 - Shared app settings model/repository/use-case foundations.
 - DataStore app settings implementation.

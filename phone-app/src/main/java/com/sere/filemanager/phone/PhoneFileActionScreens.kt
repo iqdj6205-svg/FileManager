@@ -19,6 +19,8 @@ fun PhoneFileActionScreen(
     onDetails: () -> Unit,
     onRename: () -> Unit,
     onCopy: () -> Unit,
+    onMove: () -> Unit,
+    onCopyHere: () -> Unit,
     onDelete: () -> Unit,
     onBack: () -> Unit,
 ) {
@@ -26,8 +28,10 @@ fun PhoneFileActionScreen(
         Text("File actions")
         Card(modifier = Modifier.fillMaxWidth()) { Column(modifier = Modifier.padding(16.dp)) { Text(item.name); Text(item.path) } }
         Button(onClick = onDetails, modifier = Modifier.fillMaxWidth()) { Text("Details") }
-        Button(onClick = onRename, modifier = Modifier.fillMaxWidth()) { Text("Rename as copy") }
-        Button(onClick = onCopy, modifier = Modifier.fillMaxWidth()) { Text("Copy here") }
+        Button(onClick = onRename, modifier = Modifier.fillMaxWidth()) { Text("Rename") }
+        Button(onClick = onCopy, modifier = Modifier.fillMaxWidth()) { Text("Copy to…") }
+        Button(onClick = onMove, modifier = Modifier.fillMaxWidth()) { Text("Move to…") }
+        Button(onClick = onCopyHere, modifier = Modifier.fillMaxWidth()) { Text("Duplicate here") }
         Button(onClick = onDelete, modifier = Modifier.fillMaxWidth()) { Text("Delete") }
         Button(onClick = onBack) { Text("Back") }
     }
