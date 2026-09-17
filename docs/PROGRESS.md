@@ -1,25 +1,22 @@
 # Project Progress
 
-Approximate implementation progress: 76%.
+Approximate implementation progress: 77%.
 
 ## Completed
 
 - Repository and Android multi-module project.
 - Successful local Gradle build milestone.
-- Wear app launches and basic navigation works.
-- Wear MediaStore/image/playback foundations wired.
-- Wear clipboard/copy-move UX foundations wired into browser UI.
+- Wear standalone file/media/remote foundations.
 - Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
 - SAF stream copy/move matrix foundation wired for phone operations.
-- File operation progress sink and stream-copy progress surfaced in phone file browser.
-- Phone image preview state and navigation wired for image media.
+- File operation progress surfaced in phone browser.
+- Conflict resolution policy foundation for local copy/move operations.
 - Remote route executor, audit routes, policies, rate limiting and upload persistence foundations.
-- Wear Data Layer command/status/settings foundations.
-- ChannelClient transfer foundations.
+- Wear Data Layer command/status/settings and ChannelClient transfer foundations.
 
 ## Current focus
 
-- Add conflict handling.
+- Apply conflict handling to SAF targets.
 - Improve transfer/reactive status UX.
 - Prepare build validation pass.
 
