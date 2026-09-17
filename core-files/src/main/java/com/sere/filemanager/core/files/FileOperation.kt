@@ -9,7 +9,7 @@ sealed interface FileOperation {
 }
 
 data class FileOperationResult(
-    val operation: FileOperation,
     val success: Boolean,
     val message: String? = null,
+    val operation: FileOperation? = null,
 )

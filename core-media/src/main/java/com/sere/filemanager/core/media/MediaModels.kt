@@ -6,4 +6,8 @@ data class MediaItem(
     val title: String,
     val mimeType: String? = null,
     val durationMillis: Long? = null,
+    val displayName: String = title,
+    val uri: String = path,
+    val bucketName: String? = null,
+    val sizeBytes: Long? = null,
 )

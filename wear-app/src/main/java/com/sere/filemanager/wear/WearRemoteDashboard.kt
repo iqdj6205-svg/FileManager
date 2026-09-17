@@ -11,12 +11,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Text
-import com.sere.filemanager.core.remote.RemoteServerSession
+import com.sere.filemanager.core.model.RemoteSession
 import com.sere.filemanager.core.remote.RemoteServerStatusStore
 
 @Composable
 fun WearRemoteDashboard(
-    session: RemoteServerSession = RemoteServerStatusStore.current(),
+    session: RemoteSession = RemoteServerStatusStore.current(),
     networkLabel: String,
     batteryPercent: Int?,
     onStart: () -> Unit,

@@ -25,8 +25,8 @@ fun WearPlaybackControls(
     onSeekBack: () -> Unit,
     onSeekForward: () -> Unit,
     onStop: () -> Unit,
-    onBack: () -> Unit,
     notification: MediaNotificationState = MediaNotificationState(),
+    onBack: () -> Unit,
 ) {
     ScalingLazyColumn(modifier = Modifier.fillMaxSize().padding(10.dp), contentPadding = PaddingValues(vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         item { Text("Player", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }

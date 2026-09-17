@@ -16,8 +16,8 @@ class RemoteAuditRouteController(
         return buildString {
             append("{\"summary\":{")
             append("\"total\":${summary.total},")
-            append("\"success\":${summary.successCount},")
-            append("\"failed\":${summary.failureCount}")
+            append("\"success\":${summary.successful},")
+            append("\"failed\":${summary.failed}")
             append("},\"entries\":[")
             entries.forEachIndexed { index, entry ->
                 if (index > 0) append(',')
@@ -34,6 +34,8 @@ class RemoteAuditRouteController(
     }
 
     fun exportText(limit: Int = 200): String = exporter.toText(audit.latest(limit))
+
+    fun exportJson(limit: Int = 200): String = exporter.toJson(audit.latest(limit))
 
     private fun String.escape(): String = replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
 }

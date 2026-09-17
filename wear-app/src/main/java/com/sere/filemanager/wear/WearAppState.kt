@@ -3,7 +3,7 @@ package com.sere.filemanager.wear
 import androidx.compose.runtime.Immutable
 import com.sere.filemanager.core.media.ImagePreviewState
 import com.sere.filemanager.core.media.MediaPlaybackSession
-import com.sere.filemanager.core.remote.RemoteServerSession
+import com.sere.filemanager.core.model.RemoteSession
 
 @Immutable
 data class WearAppState(
@@ -15,7 +15,7 @@ data class WearAppState(
     val playback: MediaPlaybackSession = MediaPlaybackSession(),
     val mediaSession: WearMediaSessionState = WearMediaSessionState(),
     val imagePreview: ImagePreviewState = ImagePreviewState(),
-    val remoteSession: RemoteServerSession = RemoteServerSession.stopped(),
+    val remoteSession: RemoteSession = RemoteSession.stopped(),
     val advancedModeEnabled: Boolean = false,
     val batterySaverEnabled: Boolean = true,
 )

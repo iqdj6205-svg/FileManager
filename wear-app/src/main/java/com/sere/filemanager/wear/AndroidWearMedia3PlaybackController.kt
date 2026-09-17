@@ -24,7 +24,7 @@ class AndroidWearMedia3PlaybackController(context: Context) : MediaPlaybackContr
             override fun onPlaybackStateChanged(playbackState: Int) {
                 val mapped = when (playbackState) {
                     Player.STATE_BUFFERING -> PlaybackState.Preparing
-                    Player.STATE_ENDED -> PlaybackState.Ended
+                    Player.STATE_ENDED -> PlaybackState.Completed
                     Player.STATE_READY -> if (player.isPlaying) PlaybackState.Playing else PlaybackState.Paused
                     else -> _session.value.state
                 }

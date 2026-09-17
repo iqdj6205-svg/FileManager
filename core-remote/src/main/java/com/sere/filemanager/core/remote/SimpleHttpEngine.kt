@@ -1,6 +1,7 @@
 package com.sere.filemanager.core.remote
 
 import com.sere.filemanager.core.files.FileRepository
+import com.sere.filemanager.core.model.RemoteSession
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +31,7 @@ class SimpleHttpEngine(
     private val rateLimiter = RemoteRateLimiter()
     private val routePolicies = RemoteRoutePolicyResolver()
     private var pin: String? = null
-    private var session: RemoteServerSession = RemoteServerSession.stopped()
+    private var session: RemoteSession = RemoteSession.stopped()
 
     fun start(sessionPin: String) {
         if (job?.isActive == true) return
@@ -49,7 +50,7 @@ class SimpleHttpEngine(
         }
     }
 
-    fun stop() { val socket = serverSocket; serverSocket = null; runCatching { socket?.close() }; job?.cancel(); job = null; session = RemoteServerSession.stopped() }
+    fun stop() { val socket = serverSocket; serverSocket = null; runCatching { socket?.close() }; job?.cancel(); job = null; session = RemoteSession.stopped() }
 
     private suspend fun handle(socket: Socket) {
         socket.use { client ->
@@ -57,7 +58,7 @@ class SimpleHttpEngine(
             val clientKey = client.inetAddress?.hostAddress ?: "unknown"
             if (!rateLimiter.allow(clientKey)) {
                 auditSink.record(RemoteAuditEntry(action = RemoteAuditAction.Denied, path = "/", success = false, message = "Rate limit", client = clientKey))
-                HttpResponseWriter.write(output, HttpResponse.Text(429, "Too many requests", "text/plain; charset=utf-8")); output.flush(); return
+                HttpResponseWriter.write(output, HttpResponse.Text("429 Too Many Requests", "text/plain; charset=utf-8", "Too many requests")); output.flush(); return
             }
             val request = runCatching { HttpRawRequestParser.parse(client.getInputStream()) }.getOrElse {
                 HttpResponseWriter.write(output, HttpResponseFactory.badRequest(it.message ?: "Bad request")); output.flush(); return
@@ -101,7 +102,7 @@ class SimpleHttpEngine(
     }
 
     private fun guardedAuditJson(pinParam: String?): HttpResponse = if (!config.requirePin || auth.isPinValid(pin, pinParam)) HttpResponseFactory.json(auditRoutes.latestJson()) else HttpResponseFactory.unauthorized()
-    private fun guardedAuditExport(pinParam: String?): HttpResponse = if (!config.requirePin || auth.isPinValid(pin, pinParam)) HttpResponse.Text(200, auditRoutes.exportText(), "text/plain; charset=utf-8") else HttpResponseFactory.unauthorized()
+    private fun guardedAuditExport(pinParam: String?): HttpResponse = if (!config.requirePin || auth.isPinValid(pin, pinParam)) HttpResponse.Text("200 OK", "text/plain; charset=utf-8", auditRoutes.exportText()) else HttpResponseFactory.unauthorized()
     private fun authorized(path: String): Boolean = !config.requirePin || auth.isPinValid(pin, HttpRequestTools.queryParam(path, "pin"))
 
     private fun downloadResponse(path: String, clientKey: String): HttpResponse {
@@ -123,7 +124,16 @@ class SimpleHttpEngine(
         return result.toHttpText()
     }
 
-    private fun currentSessionForStatus(): RemoteServerSession = RemoteServerStatusStore.current().let { if (it.state.name == "Stopped") session else it }
-    private fun RemoteExecutionResult.toHttpJson(): HttpResponse = if (success) HttpResponseFactory.json(body) else HttpResponse.Text(statusCode, body, "text/plain; charset=utf-8")
-    private fun RemoteExecutionResult.toHttpText(): HttpResponse = HttpResponse.Text(statusCode, body, "text/plain; charset=utf-8")
+    private fun currentSessionForStatus(): RemoteSession = RemoteServerStatusStore.current().let { if (it.state.name == "Stopped") session else it }
+    private fun RemoteExecutionResult.toHttpJson(): HttpResponse = if (success) HttpResponseFactory.json(body) else HttpResponse.Text(statusLine(statusCode), "text/plain; charset=utf-8", body)
+    private fun RemoteExecutionResult.toHttpText(): HttpResponse = HttpResponse.Text(statusLine(statusCode), "text/plain; charset=utf-8", body)
+    private fun statusLine(code: Int): String = when (code) {
+        200 -> "200 OK"
+        400 -> "400 Bad Request"
+        403 -> "403 Forbidden"
+        404 -> "404 Not Found"
+        429 -> "429 Too Many Requests"
+        500 -> "500 Internal Server Error"
+        else -> "$code"
+    }
 }

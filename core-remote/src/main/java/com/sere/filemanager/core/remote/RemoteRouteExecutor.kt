@@ -3,6 +3,7 @@ package com.sere.filemanager.core.remote
 import com.sere.filemanager.core.files.FileOperation
 import com.sere.filemanager.core.files.FileRepository
 import com.sere.filemanager.core.files.SafeFileOperations
+import com.sere.filemanager.core.model.RemoteSession
 
 class RemoteRouteExecutor(
     private val repository: FileRepository,
@@ -12,7 +13,7 @@ class RemoteRouteExecutor(
     private val validator: RemoteRequestValidator = RemoteRequestValidator(config),
     private val uploadPolicy: RemoteUploadPolicy = RemoteUploadPolicy(),
 ) {
-    fun status(session: RemoteServerSession): String {
+    fun status(session: RemoteSession): String {
         audit.record(RemoteAuditEntry(action = RemoteAuditAction.Status, path = "/", success = true))
         return RemoteStatusJson.render(session, RemoteAuditSummarizer().summarize(audit.latest()))
     }
@@ -23,7 +24,7 @@ class RemoteRouteExecutor(
         return runCatching {
             val items = repository.list(path)
             audit.record(RemoteAuditEntry(action = RemoteAuditAction.List, path = path, success = true))
-            RemoteExecutionResult.ok(RemoteDirectorySerializer.toJson(path, items))
+            RemoteExecutionResult.ok(RemoteDirectorySerializer.serialize(items))
         }.getOrElse { error -> failed(RemoteAuditAction.List, path, error.message) }
     }
 

@@ -25,4 +25,5 @@ dependencies {
     implementation(project(":core-model"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("androidx.documentfile:documentfile:1.0.1")
 }

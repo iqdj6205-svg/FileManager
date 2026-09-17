@@ -8,4 +8,8 @@ data class RemoteSession(
     val pin: String? = null,
     val startedAtMillis: Long? = null,
     val errorMessage: String? = null,
-)
+) {
+    companion object {
+        fun stopped(): RemoteSession = RemoteSession(state = RemoteServerState.Stopped)
+    }
+}

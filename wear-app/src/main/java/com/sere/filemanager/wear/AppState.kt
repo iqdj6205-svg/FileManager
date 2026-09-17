@@ -2,7 +2,6 @@ package com.sere.filemanager.wear
 
 import androidx.compose.runtime.Immutable
 import com.sere.filemanager.core.model.FileItem
-import com.sere.filemanager.core.model.RemoteSession
 
 @Immutable
 data class BrowserState(
@@ -11,13 +10,4 @@ data class BrowserState(
     val selectedPath: String? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
-)
-
-@Immutable
-data class WearAppState(
-    val browser: BrowserState = BrowserState(),
-    val operation: OperationUiState = OperationUiState(),
-    val remoteSession: RemoteSession = RemoteSession(),
-    val advancedModeEnabled: Boolean = false,
-    val batterySaverEnabled: Boolean = true,
 )

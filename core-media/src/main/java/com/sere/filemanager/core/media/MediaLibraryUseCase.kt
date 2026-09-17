@@ -1,10 +1,14 @@
 package com.sere.filemanager.core.media
 
-import com.sere.filemanager.core.files.FileRepository
-import com.sere.filemanager.core.model.FileItem
-
-class MediaLibraryUseCase(private val fileRepository: FileRepository) {
-    suspend fun imagesIn(path: String): List<FileItem> = fileRepository.list(path).filter(MediaClassifier::isImage)
-    suspend fun audioIn(path: String): List<FileItem> = fileRepository.list(path).filter(MediaClassifier::isAudio)
-    suspend fun videoIn(path: String): List<FileItem> = fileRepository.list(path).filter(MediaClassifier::isVideo)
+class MediaLibraryUseCase(private val mediaRepository: MediaRepository) {
+    suspend fun loadLibrary(query: MediaStoreQuery = MediaStoreQuery()): MediaLibraryState {
+        val images = if (query.includeImages) mediaRepository.listImages() else emptyList()
+        val audio = if (query.includeAudio) mediaRepository.listAudio() else emptyList()
+        val video = if (query.includeVideo) mediaRepository.listVideo() else emptyList()
+        return MediaLibraryState(
+            images = images.take(query.limit),
+            audio = audio.take(query.limit),
+            video = video.take(query.limit),
+        )
+    }
 }

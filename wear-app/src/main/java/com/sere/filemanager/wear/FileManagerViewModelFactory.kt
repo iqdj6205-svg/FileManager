@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.files.SafeFileOperations
 import com.sere.filemanager.core.media.AndroidMediaStoreRepository
-import com.sere.filemanager.core.remote.RemoteServerControllerFactory
 
 class FileManagerViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
@@ -15,7 +14,7 @@ class FileManagerViewModelFactory(private val context: Context) : ViewModelProvi
         val files = LocalFileRepository()
         return FileManagerViewModel(
             fileRepository = files,
-            remoteController = ServiceBackedRemoteController(appContext, RemoteServerControllerFactory.create(files, useEmbeddedPrototype = true)),
+            remoteController = ServiceBackedRemoteController(appContext),
             safeOperations = SafeFileOperations(files),
             mediaController = WearMediaController.create(AndroidMediaStoreRepository(appContext)),
             playbackController = AndroidWearMedia3PlaybackController(appContext),

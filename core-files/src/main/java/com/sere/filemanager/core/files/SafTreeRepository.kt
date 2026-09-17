@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
+import java.time.Instant
 
 class SafTreeRepository(private val context: Context) {
     fun list(uri: Uri): List<FileItem> {
@@ -15,7 +16,7 @@ class SafTreeRepository(private val context: Context) {
                 path = doc.uri.toString(),
                 type = if (doc.isDirectory) FileItemType.Directory else classify(doc.type),
                 sizeBytes = if (doc.isFile) doc.length() else null,
-                modifiedAtMillis = doc.lastModified().takeIf { it > 0L },
+                modifiedAt = doc.lastModified().takeIf { it > 0L }?.let(Instant::ofEpochMilli),
             )
         }.sortedWith(compareBy<FileItem> { it.type != FileItemType.Directory }.thenBy { it.name.lowercase() })
     }

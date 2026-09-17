@@ -7,13 +7,10 @@ data class RemoteValidationResult(
     val message: String? = null,
 )
 
-class RemoteRequestValidator(
-    private val config: RemoteConfig,
-    private val pathSafety: PathSafety = PathSafety(),
-) {
+class RemoteRequestValidator(private val config: RemoteConfig) {
     fun validateRead(path: String, pin: String?): RemoteValidationResult {
         if (!validatePin(pin)) return RemoteValidationResult(false, RemoteWebMessages.invalidPin)
-        if (!pathSafety.isSafe(path)) return RemoteValidationResult(false, RemoteWebMessages.invalidPath)
+        if (PathSafety.explainIfBlocked(path) != null) return RemoteValidationResult(false, RemoteWebMessages.invalidPath)
         return RemoteValidationResult(true)
     }
 

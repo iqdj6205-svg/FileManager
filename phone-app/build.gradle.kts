@@ -40,4 +40,5 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.4.1")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("com.google.android.gms:play-services-wearable:18.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 }

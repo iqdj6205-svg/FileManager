@@ -1,7 +1,7 @@
 package com.sere.filemanager.core.remote
 
 object RemoteStatusJson {
-    fun render(session: RemoteServerSession, audit: RemoteAuditSummary? = null, health: RemoteServerHealth? = null): String = buildString {
+    fun render(session: com.sere.filemanager.core.model.RemoteSession, audit: RemoteAuditSummary? = null, health: RemoteServerHealth? = null): String = buildString {
         append('{')
         append("\"state\":\"").append(session.state.name).append("\",")
         append("\"url\":").append(session.url?.let { "\"${escape(it)}\"" } ?: "null").append(',')

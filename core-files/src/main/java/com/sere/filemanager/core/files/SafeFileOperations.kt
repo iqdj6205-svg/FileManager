@@ -6,7 +6,7 @@ class SafeFileOperations(
 ) {
     suspend fun execute(operation: FileOperation): FileOperationResult {
         val validationError = validator.validate(operation)
-        if (validationError != null) return FileOperationResult(operation, success = false, message = validationError)
+        if (validationError != null) return FileOperationResult(success = false, message = validationError, operation = operation)
         return when (operation) {
             is FileOperation.Copy -> repository.copy(operation.sourcePath, operation.targetPath)
                 .toOperationResult(operation, "Copied")
@@ -22,7 +22,7 @@ class SafeFileOperations(
     }
 
     private fun Result<Unit>.toOperationResult(operation: FileOperation, successMessage: String): FileOperationResult = fold(
-        onSuccess = { FileOperationResult(operation, success = true, message = successMessage) },
-        onFailure = { FileOperationResult(operation, success = false, message = it.message ?: "Operation failed") },
+        onSuccess = { FileOperationResult(success = true, message = successMessage, operation = operation) },
+        onFailure = { FileOperationResult(success = false, message = it.message ?: "Operation failed", operation = operation) },
     )
 }

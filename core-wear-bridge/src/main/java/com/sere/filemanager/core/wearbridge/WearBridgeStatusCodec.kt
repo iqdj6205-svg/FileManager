@@ -14,9 +14,9 @@ object WearBridgeStatusCodec {
 
     fun remoteStatusFromDataMap(map: DataMap): WearBridgeRemoteStatus = WearBridgeRemoteStatus(
         running = map.getBoolean(WearBridgeDataKeys.RUNNING),
-        url = map.getString(WearBridgeDataKeys.URL).takeIf { it.isNotBlank() },
-        pin = map.getString(WearBridgeDataKeys.PIN).takeIf { it.isNotBlank() },
-        networkLabel = map.getString(WearBridgeDataKeys.NETWORK).takeIf { it.isNotBlank() },
+        url = map.getString(WearBridgeDataKeys.URL)?.takeIf { it.isNotBlank() },
+        pin = map.getString(WearBridgeDataKeys.PIN)?.takeIf { it.isNotBlank() },
+        networkLabel = map.getString(WearBridgeDataKeys.NETWORK)?.takeIf { it.isNotBlank() },
         batteryPercent = if (map.containsKey(WearBridgeDataKeys.BATTERY)) map.getInt(WearBridgeDataKeys.BATTERY) else null,
     )
 

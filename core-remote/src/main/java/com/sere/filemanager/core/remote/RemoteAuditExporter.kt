@@ -17,5 +17,16 @@ class RemoteAuditExporter {
         append("]")
     }
 
+    fun toText(entries: List<RemoteAuditEntry>): String = buildString {
+        entries.forEach { e ->
+            append(e.atMillis).append('\t')
+            append(e.action.name).append('\t')
+            append(e.path).append('\t')
+            append(if (e.success) "success" else "failed").append('\t')
+            append(e.message.orEmpty())
+            append('\n')
+        }
+    }
+
     private fun escape(value: String): String = value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
 }

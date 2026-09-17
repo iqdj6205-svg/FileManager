@@ -1,7 +1,7 @@
 package com.sere.filemanager.core.remote
 
 object WebManagerPage {
-    fun render(status: RemoteServerSession, currentPath: String = "/sdcard", message: String? = null): String {
+    fun render(status: com.sere.filemanager.core.model.RemoteSession, currentPath: String = "/sdcard", message: String? = null): String {
         val pin = status.pin.orEmpty()
         return """
             <!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>FileManager Remote</title>

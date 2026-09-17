@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
+import java.time.Instant
 
 class SafFileOperations(
     private val context: Context,
@@ -83,7 +84,7 @@ class SafFileOperations(
         true
     } ?: false
 
-    private fun DocumentFile.toFileItem(): FileItem = FileItem(name = name ?: "Unnamed", path = uri.toString(), type = if (isDirectory) FileItemType.Directory else classify(type), sizeBytes = if (isFile) length() else null, modifiedAtMillis = lastModified().takeIf { it > 0L })
+    private fun DocumentFile.toFileItem(): FileItem = FileItem(name = name ?: "Unnamed", path = uri.toString(), type = if (isDirectory) FileItemType.Directory else classify(type), sizeBytes = if (isFile) length() else null, modifiedAt = lastModified().takeIf { it > 0L }?.let(Instant::ofEpochMilli))
     private fun classify(mime: String?): FileItemType = when { mime == null -> FileItemType.Other; mime.startsWith("image/") -> FileItemType.Image; mime.startsWith("video/") -> FileItemType.Video; mime.startsWith("audio/") -> FileItemType.Audio; mime.contains("zip") || mime.contains("rar") || mime.contains("tar") -> FileItemType.Archive; mime.contains("pdf") || mime.startsWith("text/") -> FileItemType.Document; else -> FileItemType.Other }
 }
 

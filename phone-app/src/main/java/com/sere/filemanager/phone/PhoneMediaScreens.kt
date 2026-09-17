@@ -32,7 +32,7 @@ fun PhoneMediaLibraryScreen(state: PhoneMediaState, onRefresh: () -> Unit, onOpe
     }
 }
 
-@Composable private fun PhoneMediaRow(item: MediaItem, onOpen: (MediaItem) -> Unit) { Card(modifier = Modifier.fillMaxWidth().clickable { onOpen(item) }) { Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) { Text(if (item.mimeType.startsWith("image")) "🖼" else if (item.mimeType.startsWith("video")) "🎬" else "🎵"); Column(modifier = Modifier.weight(1f)) { Text(item.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis); Text("${item.mimeType} · ${UiFormatters.compactBytes(item.sizeBytes)}") } } } }
+@Composable private fun PhoneMediaRow(item: MediaItem, onOpen: (MediaItem) -> Unit) { Card(modifier = Modifier.fillMaxWidth().clickable { onOpen(item) }) { Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) { Text(if (item.mimeType?.startsWith("image") == true) "🖼" else if (item.mimeType?.startsWith("video") == true) "🎬" else "🎵"); Column(modifier = Modifier.weight(1f)) { Text(item.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis); Text("${item.mimeType} · ${UiFormatters.compactBytes(item.sizeBytes)}") } } } }
 
 @Composable
 fun PhoneMediaPreviewScreen(item: MediaItem, onPlay: () -> Unit, onBack: () -> Unit) {

@@ -18,14 +18,14 @@ object WearTransferProgressCodec {
     }
 
     fun fromDataMap(map: DataMap): WearFileTransferProgress? {
-        val id = map.getString(ID).takeIf { it.isNotBlank() } ?: return null
-        val state = runCatching { WearTransferState.valueOf(map.getString(STATE)) }.getOrNull() ?: return null
+        val id = map.getString(ID)?.takeIf { it.isNotBlank() } ?: return null
+        val state = map.getString(STATE)?.let { runCatching { WearTransferState.valueOf(it) }.getOrNull() } ?: return null
         return WearFileTransferProgress(
             requestId = id,
             state = state,
             transferredBytes = map.getLong(TRANSFERRED, 0L),
             totalBytes = if (map.containsKey(TOTAL)) map.getLong(TOTAL) else null,
-            message = map.getString(MESSAGE).takeIf { it.isNotBlank() },
+            message = map.getString(MESSAGE)?.takeIf { it.isNotBlank() },
         )
     }
 }
