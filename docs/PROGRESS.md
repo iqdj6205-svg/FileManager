@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 74%.
+Approximate implementation progress: 75%.
 
 ## Completed
 
@@ -11,6 +11,7 @@ Approximate implementation progress: 74%.
 - Wear clipboard/copy-move UX foundations wired into browser UI.
 - Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
 - SAF stream copy/move matrix foundation wired for phone operations.
+- File operation progress sink and stream-copy progress foundations.
 - Phone image preview state and navigation wired for image media.
 - Remote route executor, audit routes, policies, rate limiting and upload persistence foundations.
 - Wear Data Layer command/status/settings foundations.
@@ -18,8 +19,8 @@ Approximate implementation progress: 74%.
 
 ## Current focus
 
-- Add operation progress and conflict handling.
-- Improve transfer/reactive status UX.
+- Surface operation progress in phone UI.
+- Add conflict handling.
 - Prepare build validation pass.
 
 ## Remaining major areas
