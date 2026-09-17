@@ -22,10 +22,10 @@ import com.sere.filemanager.core.media.MediaItem
 import com.sere.filemanager.core.ui.UiFormatters
 
 @Composable
-fun PhoneMediaLibraryScreen(state: PhoneMediaState, onRefresh: () -> Unit, onOpen: (MediaItem) -> Unit, onBack: () -> Unit) {
+fun PhoneMediaLibraryScreen(state: PhoneMediaState, onRefresh: () -> Unit, onRequestAccess: () -> Unit, onOpen: (MediaItem) -> Unit, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Phone media", style = MaterialTheme.typography.headlineSmall)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onRefresh) { Text(if (state.isLoading) "Loading…" else "Refresh") }; Button(onClick = onBack) { Text("Home") } }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onRefresh) { Text(if (state.isLoading) "Loading…" else "Refresh") }; Button(onClick = onRequestAccess) { Text("Grant access") }; Button(onClick = onBack) { Text("Home") } }
         state.message?.let { Text(it) }
         Text("${state.items.size} media files")
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { items(state.items) { item -> PhoneMediaRow(item, onOpen) } }

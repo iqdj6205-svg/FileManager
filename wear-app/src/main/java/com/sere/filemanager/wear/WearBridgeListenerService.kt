@@ -20,7 +20,7 @@ class WearBridgeListenerService : WearableListenerService() {
     }
 
     private fun handle(command: WearBridgeCommand): WearBridgeCommandResult = when (command.type) {
-        WearBridgeCommandType.StartWatchServer -> { RemoteServiceController(this).start(); WearBridgeCommandResult(command.id, true, "Watch server start requested") }
+        WearBridgeCommandType.StartWatchServer -> { val started = RemoteServiceController(this).start(); WearBridgeCommandResult(command.id, started, if (started) "Watch server start requested" else "Cannot start server from background. Open FileManager on the watch") }
         WearBridgeCommandType.StopWatchServer -> { RemoteServiceController(this).stop(); WearBridgeCommandResult(command.id, true, "Watch server stop requested") }
         WearBridgeCommandType.GetWatchServerStatus -> { val session = com.sere.filemanager.core.remote.RemoteServerStatusStore.current(); WearBridgeCommandResult(command.id, true, "Watch server status", "${session.state}|${session.url.orEmpty()}|${session.pin.orEmpty()}") }
         WearBridgeCommandType.SyncSettings -> {

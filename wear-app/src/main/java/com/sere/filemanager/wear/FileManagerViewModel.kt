@@ -1,5 +1,6 @@
 package com.sere.filemanager.wear
 
+import android.Manifest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sere.filemanager.core.files.FileClipboardMode
@@ -15,8 +16,10 @@ import com.sere.filemanager.core.media.MediaPlaybackCommandType
 import com.sere.filemanager.core.media.MediaPlaybackController
 import com.sere.filemanager.core.media.MediaSessionStateMapper
 import com.sere.filemanager.core.media.PlaybackState
+import com.sere.filemanager.core.model.AppPermissionState
 import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
+import com.sere.filemanager.core.model.PermissionStatus
 import com.sere.filemanager.core.remote.InMemoryRemoteServerController
 import com.sere.filemanager.core.remote.RemoteServerController
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -85,7 +88,8 @@ class FileManagerViewModel(
     fun deleteSelected() { val item = selectedItem() ?: return; execute(BrowserController.deleteOperation(item.path)) }
     fun renameSelected(newName: String) { val item = selectedItem() ?: return; execute(BrowserController.renameOperation(item.path, newName)) }
     fun createQuickFolder(name: String = "New folder") { execute(BrowserController.createFolderOperation(_state.value.browser.currentPath, name)) }
-    fun onPermissionsResult(results: Map<String, Boolean>) { val granted = results.values.count { it }; val total = results.size; _state.update { it.copy(operation = it.operation.copy(message = if (total == 0) "No permission needed" else "Permissions: $granted/$total granted")) } }
+    fun onPermissionsResult(results: Map<String, Boolean>) { val granted = results.values.count { it }; val total = results.size; val message = if (total == 0) "No permission needed" else "Permissions: $granted/$total granted"; val status = PermissionStatus(mediaImages = stateFor(results, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_EXTERNAL_STORAGE), mediaVideo = stateFor(results, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_EXTERNAL_STORAGE), mediaAudio = stateFor(results, Manifest.permission.READ_MEDIA_AUDIO, Manifest.permission.READ_EXTERNAL_STORAGE), notifications = stateFor(results, Manifest.permission.POST_NOTIFICATIONS)); _state.update { it.copy(permissions = it.permissions.copy(status = status, lastRequestMessage = message), operation = it.operation.copy(message = message)) } }
+    private fun stateFor(results: Map<String, Boolean>, permission: String, legacy: String? = null): AppPermissionState = when (results[permission] ?: (if (legacy != null) results[legacy] else null)) { true -> AppPermissionState.Granted; false -> AppPermissionState.Denied; null -> AppPermissionState.Unknown }
     private fun execute(operation: com.sere.filemanager.core.files.FileOperation) { viewModelScope.launch { _state.update { it.copy(operation = it.operation.copy(inProgress = true, message = null)) }; val result = safeOperations.execute(operation); _state.update { it.copy(operation = it.operation.copy(inProgress = false, message = ActionMessages.from(result)), browser = it.browser.copy(selectedPath = null)) }; openPath(_state.value.browser.currentPath) } }
     fun clearMessage() { _state.update { it.copy(operation = it.operation.copy(message = null)) } }
     fun startRemoteServer() { viewModelScope.launch { val session = remoteController.start(); _state.update { it.copy(remoteSession = session) } } }
