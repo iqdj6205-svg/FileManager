@@ -16,6 +16,7 @@ data class PhoneAppState(
     val analyzer: PhoneAnalyzerState = PhoneAnalyzerState(),
     val media: PhoneMediaState = PhoneMediaState(),
     val playback: MediaPlaybackSession = MediaPlaybackSession(),
+    val mediaSession: PhoneMediaSessionState = PhoneMediaSessionState(),
     val imagePreview: ImagePreviewState = ImagePreviewState(),
     val appSettings: AppSettings = AppSettings(),
     val remoteSettings: PhoneRemoteSettingsState = PhoneRemoteSettingsState(),

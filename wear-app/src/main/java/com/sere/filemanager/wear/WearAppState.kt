@@ -13,6 +13,7 @@ data class WearAppState(
     val wearOperations: WearOperationState = WearOperationState(),
     val media: WearMediaState = WearMediaState(),
     val playback: MediaPlaybackSession = MediaPlaybackSession(),
+    val mediaSession: WearMediaSessionState = WearMediaSessionState(),
     val imagePreview: ImagePreviewState = ImagePreviewState(),
     val remoteSession: RemoteServerSession = RemoteServerSession.stopped(),
     val advancedModeEnabled: Boolean = false,

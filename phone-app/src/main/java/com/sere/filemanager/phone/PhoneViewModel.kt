@@ -33,6 +33,7 @@ class PhoneViewModel(
     private val rootResolver = StorageRootResolver()
     private val clipboard = FileClipboard()
     private val imagePreviewController = ImagePreviewController()
+    private val sessionMapper = MediaSessionStateMapper()
     private val _state = MutableStateFlow(PhoneAppState())
     val state: StateFlow<PhoneAppState> = _state.asStateFlow()
 
@@ -40,7 +41,7 @@ class PhoneViewModel(
         openPhonePath(_state.value.browser.currentPath)
         viewModelScope.launch { storageAccessManager.roots.collect { roots -> _state.update { it.copy(storageRoots = roots) } } }
         viewModelScope.launch { settingsUseCase.settings.collect { settings -> _state.update { it.copy(appSettings = settings, remoteSettings = PhoneRemoteSettingsState.from(settings.remoteServer, settings.advancedMode, settings.showHiddenFiles)) } } }
-        playbackController?.let { controller -> viewModelScope.launch { controller.session.collect { session -> _state.update { it.copy(playback = session) } } } }
+        playbackController?.let { controller -> viewModelScope.launch { controller.session.collect { session -> _state.update { it.copy(playback = session, mediaSession = PhoneMediaSessionState(metadata = session.item?.let(sessionMapper::metadata), notification = sessionMapper.notification(session))) } } } }
         safController?.let { controller -> viewModelScope.launch { controller.progressSink.progress.collect { progress -> _state.update { it.copy(operationProgress = PhoneOperationProgressState(progress)) } } } }
         viewModelScope.launch { PhoneTransferProgressStore.progress.collect { progress -> if (progress != null) _state.update { it.copy(transfer = it.transfer.copy(latestProgress = progress, message = progress.message), statusMessage = progress.message ?: progress.state.name) } } }
         viewModelScope.launch { PhoneRemoteStatusStore.status.collect { status -> if (status != null) _state.update { it.copy(remoteUrl = status.url ?: it.remoteUrl, statusMessage = if (status.running) "Watch server: ${status.url} PIN ${status.pin} ${status.networkLabel.orEmpty()} ${status.batteryPercent ?: ""}%" else "Watch server stopped") } } }
@@ -79,6 +80,7 @@ class PhoneViewModel(
     fun playbackSeekBack() { playbackController?.handle(MediaPlaybackCommand(MediaPlaybackCommandType.SeekBack)) }
     fun playbackSeekForward() { playbackController?.handle(MediaPlaybackCommand(MediaPlaybackCommandType.SeekForward)) }
     fun playbackStop() { playbackController?.handle(MediaPlaybackCommand(MediaPlaybackCommandType.Stop)) }
+    override fun onCleared() { playbackController?.release(); super.onCleared() }
     fun setRemoteUrl(url: String) { _state.update { it.copy(remoteUrl = url, statusMessage = if (url.isBlank()) "Remote URL empty" else "Ready to connect") } }
     fun toggleSettingsHidden() { viewModelScope.launch { settingsUseCase.setShowHidden(!_state.value.appSettings.showHiddenFiles) } }
     fun toggleSettingsAdvanced() { viewModelScope.launch { settingsUseCase.setAdvancedMode(!_state.value.appSettings.advancedMode) } }
