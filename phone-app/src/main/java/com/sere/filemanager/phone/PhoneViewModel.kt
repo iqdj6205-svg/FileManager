@@ -3,7 +3,9 @@ package com.sere.filemanager.phone
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sere.filemanager.core.files.AppSettingsUseCase
 import com.sere.filemanager.core.files.FileRepository
+import com.sere.filemanager.core.files.InMemoryAppSettingsRepository
 import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.files.StorageAnalyzer
 import com.sere.filemanager.core.files.StorageInsights
@@ -33,6 +35,7 @@ class PhoneViewModel(
     private val fileOperationsController: PhoneFileOperationsController? = null,
     private val mediaController: PhoneMediaController? = null,
     private val playbackController: MediaPlaybackController? = null,
+    private val settingsUseCase: AppSettingsUseCase = AppSettingsUseCase(InMemoryAppSettingsRepository()),
 ) : ViewModel() {
     private val analyzer = StorageAnalyzer(fileRepository)
     private val insights = StorageInsights()
@@ -41,6 +44,7 @@ class PhoneViewModel(
 
     init {
         openPhonePath(_state.value.browser.currentPath)
+        viewModelScope.launch { settingsUseCase.settings.collect { settings -> _state.update { it.copy(appSettings = settings, remoteSettings = PhoneRemoteSettingsState.from(settings.remoteServer, settings.advancedMode, settings.showHiddenFiles)) } } }
         playbackController?.let { controller -> viewModelScope.launch { controller.session.collect { session -> _state.update { it.copy(playback = session) } } } }
     }
 
@@ -61,11 +65,14 @@ class PhoneViewModel(
     fun renameSelectedPhoneFileAsCopy() = executePhoneFileAction("Renaming…") { controller, item -> controller.renameCopy(item) }
     private fun executePhoneFileAction(pending: String, action: suspend (PhoneFileOperationsController, FileItem) -> com.sere.filemanager.core.files.FileOperationResult) { val controller = fileOperationsController ?: run { _state.update { it.copy(statusMessage = "File operations unavailable") }; return }; val item = _state.value.fileActions.selected ?: run { _state.update { it.copy(statusMessage = "No file selected") }; return }; viewModelScope.launch { _state.update { it.copy(statusMessage = pending) }; val result = action(controller, item); _state.update { it.copy(fileActions = it.fileActions.copy(message = result.message), statusMessage = result.message ?: if (result.success) "Done" else "Failed") }; openPhonePath(_state.value.browser.currentPath) } }
     fun setRemoteUrl(url: String) { _state.update { it.copy(remoteUrl = url, statusMessage = if (url.isBlank()) "Remote URL empty" else "Ready to connect") } }
-    fun updateRemoteSettings(transform: (PhoneRemoteSettingsState) -> PhoneRemoteSettingsState) { _state.update { it.copy(remoteSettings = transform(it.remoteSettings)) } }
-    fun toggleUploads() = updateRemoteSettings { it.copy(allowUploads = !it.allowUploads) }
-    fun toggleDelete() = updateRemoteSettings { it.copy(allowDelete = !it.allowDelete) }
-    fun toggleAdvancedMode() = updateRemoteSettings { it.copy(advancedMode = !it.advancedMode) }
-    fun toggleShowHidden() = updateRemoteSettings { it.copy(showHiddenFiles = !it.showHiddenFiles) }
+    fun toggleSettingsHidden() { viewModelScope.launch { settingsUseCase.setShowHidden(!_state.value.appSettings.showHiddenFiles) } }
+    fun toggleSettingsAdvanced() { viewModelScope.launch { settingsUseCase.setAdvancedMode(!_state.value.appSettings.advancedMode) } }
+    fun toggleSettingsBattery() { viewModelScope.launch { settingsUseCase.setBatterySaver(!_state.value.appSettings.batterySaver) } }
+    fun toggleSettingsHaptics() { viewModelScope.launch { settingsUseCase.setHaptics(!_state.value.appSettings.hapticsEnabled) } }
+    fun toggleUploads() { viewModelScope.launch { settingsUseCase.updateRemoteSettings { it.copy(allowUploads = !it.allowUploads) } } }
+    fun toggleDelete() { viewModelScope.launch { settingsUseCase.updateRemoteSettings { it.copy(allowDelete = !it.allowDelete) } } }
+    fun toggleAdvancedMode() = toggleSettingsAdvanced()
+    fun toggleShowHidden() = toggleSettingsHidden()
     fun syncSettingsToWatch() { val s = _state.value.remoteSettings; val payload = WearBridgeSettingsPayload(remote = com.sere.filemanager.core.model.RemoteServerSettings(s.port, s.requirePin, s.allowUploads, s.allowDelete, s.autoStopMinutes, s.localNetworkOnly), advancedMode = s.advancedMode, showHiddenFiles = s.showHiddenFiles); sendWearCommand(WearBridgeCommandType.SyncSettings, "Syncing settings…", WearBridgeSettingsStringCodec.encode(payload)) }
     fun startPairing() { val bridge = wearBridgeClient ?: run { _state.update { it.copy(statusMessage = "Bridge unavailable") }; return }; viewModelScope.launch { bridge.connectedWatchNames().onSuccess { names -> _state.update { it.copy(statusMessage = if (names.isEmpty()) "No connected Wear OS watch" else "Connected: ${names.joinToString()}") } }.onFailure { error -> _state.update { it.copy(statusMessage = error.message ?: "Pairing check failed") } } } }
     fun startRemoteServer() = sendWearCommand(WearBridgeCommandType.StartWatchServer, "Starting watch server…")
