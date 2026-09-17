@@ -18,7 +18,7 @@ data class PhoneAppState(
     val remoteSettings: PhoneRemoteSettingsState = PhoneRemoteSettingsState(),
     val transfer: PhoneTransferState = PhoneTransferState(),
     val fileActions: PhoneFileActionState = PhoneFileActionState(),
-    val createFolder: PhoneCreateFolderState = PhoneCreateFolderState(),
+    val edit: PhoneFileEditState = PhoneFileEditState(),
     val remoteUrl: String = "",
     val statusMessage: String = "Phone file manager ready",
 )

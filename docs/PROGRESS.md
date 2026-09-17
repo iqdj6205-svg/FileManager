@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 47%.
+Approximate implementation progress: 48%.
 
 ## Completed
 
@@ -15,7 +15,8 @@ Approximate implementation progress: 47%.
 - Phone document-tree picker connected to root state.
 - SAF access and DocumentFile operation foundations.
 - SAF roots now open through phone browser listing.
-- SAF-aware phone rename/delete action foundations.
+- SAF-aware phone rename/delete/create-folder action foundations.
+- Phone rename/create-folder input screen foundations.
 - Shared media playback controller and phone/watch playback UI foundations.
 - Shared app settings model/repository/use-case foundations.
 - DataStore app settings implementation.

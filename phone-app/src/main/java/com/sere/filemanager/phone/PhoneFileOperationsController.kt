@@ -15,6 +15,14 @@ class PhoneFileOperationsController(
         else -> operations.execute(BrowserControllerCompat.copyOperation(item.path))
     }
 
+    suspend fun createFolder(parentPath: String, name: String): FileOperationResult = when {
+        parentPath.startsWith("content://") -> {
+            val ok = safController?.createFolder(android.net.Uri.parse(parentPath), name) == true
+            FileOperationResult(ok, if (ok) "Created $name" else "Cannot create folder")
+        }
+        else -> operations.execute(BrowserControllerCompat.createFolderOperation(parentPath, name))
+    }
+
     suspend fun delete(item: FileItem): FileOperationResult = when {
         item.path.startsWith("content://") -> {
             val ok = safController?.delete(android.net.Uri.parse(item.path)) == true
