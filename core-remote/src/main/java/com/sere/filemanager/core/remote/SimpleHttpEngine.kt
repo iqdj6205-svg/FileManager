@@ -2,14 +2,17 @@ package com.sere.filemanager.core.remote
 
 import com.sere.filemanager.core.files.FileRepository
 import com.sere.filemanager.core.files.SafeFileOperations
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.File
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketException
 
 class SimpleHttpEngine(
     private val fileRepository: FileRepository,
@@ -28,15 +31,35 @@ class SimpleHttpEngine(
         if (job?.isActive == true) return
         pin = sessionPin
         job = scope.launch {
-            serverSocket = ServerSocket(config.port)
-            while (job?.isActive == true) {
-                val socket = serverSocket?.accept() ?: break
-                launch { handle(socket) }
+            try {
+                serverSocket = ServerSocket(config.port)
+                while (isActive) {
+                    val socket = try {
+                        serverSocket?.accept() ?: break
+                    } catch (_: SocketException) {
+                        // Expected when the service closes the socket during stop().
+                        break
+                    }
+                    launch { handle(socket) }
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                auditLog.record(RemoteAuditEvent(RemoteAuditEventType.Error, error.message ?: "HTTP server failed"))
+            } finally {
+                runCatching { serverSocket?.close() }
+                serverSocket = null
             }
         }
     }
 
-    fun stop() { runCatching { serverSocket?.close() }; serverSocket = null; job?.cancel(); job = null }
+    fun stop() {
+        val socket = serverSocket
+        serverSocket = null
+        runCatching { socket?.close() }
+        job?.cancel()
+        job = null
+    }
 
     private suspend fun handle(socket: Socket) {
         socket.use { client ->
@@ -47,7 +70,10 @@ class SimpleHttpEngine(
             val parts = requestLine.split(" ")
             val method = parts.getOrNull(0).orEmpty()
             val path = parts.getOrNull(1).orEmpty()
-            val response = runCatching { route(method, path) }.getOrElse { auditLog.record(RemoteAuditEvent(RemoteAuditEventType.Error, it.message ?: "Server error")); HttpResponseFactory.serverError(it.message ?: "Server error") }
+            val response = runCatching { route(method, path) }.getOrElse {
+                auditLog.record(RemoteAuditEvent(RemoteAuditEventType.Error, it.message ?: "Server error"))
+                HttpResponseFactory.serverError(it.message ?: "Server error")
+            }
             HttpResponseWriter.write(output, response)
             output.flush()
         }
