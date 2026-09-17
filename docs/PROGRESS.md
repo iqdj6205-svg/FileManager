@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 40%.
+Approximate implementation progress: 41%.
 
 ## Completed
 
@@ -10,6 +10,7 @@ Approximate implementation progress: 40%.
 - Wear permission hub and concrete ADB advanced guidance foundation.
 - Wear remote dashboard/settings foundations wired into navigation.
 - Wear media library/preview foundations.
+- Shared storage access/root selector foundations.
 - Shared media playback controller and phone/watch playback UI foundations.
 - Shared app settings model/repository/use-case foundations.
 - DataStore app settings implementation.
@@ -24,11 +25,11 @@ Approximate implementation progress: 40%.
 
 ## Current focus
 
+- Wire storage roots and SAF access.
 - Harden remote server routes.
 - Improve standalone watch experience and reduce duplicated permission prompts.
 - Turn phone app into a full file manager, not only a watch companion.
 - Wire media browsing and playback.
-- Expand file operations and settings persistence.
 
 ## Remaining major areas
 
