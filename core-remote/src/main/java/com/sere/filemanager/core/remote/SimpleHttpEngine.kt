@@ -24,6 +24,7 @@ class SimpleHttpEngine(
     private val auth = RemoteAuth()
     private val downloadPlanner = DownloadPlanner()
     private val executor = RemoteRouteExecutor(fileRepository, config = config)
+    private val uploadWriter = RemoteUploadWriter()
     private var pin: String? = null
     private var session: RemoteServerSession = RemoteServerSession.stopped()
 
@@ -38,36 +39,21 @@ class SimpleHttpEngine(
                     val socket = try { serverSocket?.accept() ?: break } catch (_: SocketException) { break }
                     launch { handle(socket) }
                 }
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Throwable) {
-                auditLog.record(RemoteAuditEvent(RemoteAuditEventType.Error, error.message ?: "HTTP server failed"))
-            } finally {
-                runCatching { serverSocket?.close() }
-                serverSocket = null
-            }
+            } catch (error: CancellationException) { throw error }
+            catch (error: Throwable) { auditLog.record(RemoteAuditEvent(RemoteAuditEventType.Error, error.message ?: "HTTP server failed")) }
+            finally { runCatching { serverSocket?.close() }; serverSocket = null }
         }
     }
 
-    fun stop() {
-        val socket = serverSocket
-        serverSocket = null
-        runCatching { socket?.close() }
-        job?.cancel()
-        job = null
-        session = RemoteServerSession.stopped()
-    }
+    fun stop() { val socket = serverSocket; serverSocket = null; runCatching { socket?.close() }; job?.cancel(); job = null; session = RemoteServerSession.stopped() }
 
     private suspend fun handle(socket: Socket) {
         socket.use { client ->
-            val input = client.getInputStream().bufferedReader()
             val output = client.getOutputStream()
-            val requestLine = input.readLine().orEmpty()
-            while (input.readLine().orEmpty().isNotEmpty()) Unit
-            val parts = requestLine.split(" ")
-            val method = parts.getOrNull(0).orEmpty()
-            val path = parts.getOrNull(1).orEmpty()
-            val response = runCatching { route(method, path) }.getOrElse {
+            val request = runCatching { HttpRawRequestParser.parse(client.getInputStream()) }.getOrElse {
+                HttpResponseWriter.write(output, HttpResponseFactory.badRequest(it.message ?: "Bad request")); output.flush(); return
+            }
+            val response = runCatching { route(request) }.getOrElse {
                 auditLog.record(RemoteAuditEvent(RemoteAuditEventType.Error, it.message ?: "Server error"))
                 HttpResponseFactory.serverError(it.message ?: "Server error")
             }
@@ -76,18 +62,18 @@ class SimpleHttpEngine(
         }
     }
 
-    private suspend fun route(method: String, path: String): HttpResponse {
-        val route = HttpRequestTools.routePath(path)
-        val query = RemoteRouteQuery(path)
+    private suspend fun route(request: HttpRawRequest): HttpResponse {
+        val route = HttpRequestTools.routePath(request.path)
+        val query = RemoteRouteQuery(request.path)
         return when (route) {
-            RemoteRoutes.INDEX -> if (method == "GET") HttpResponseFactory.html(WebManagerPage.render(currentSessionForStatus())) else HttpResponseFactory.badRequest("Unsupported method")
-            RemoteRoutes.API_STATUS -> if (method == "GET") HttpResponseFactory.json(executor.status(currentSessionForStatus())) else HttpResponseFactory.badRequest("Unsupported method")
-            RemoteRoutes.API_LIST -> if (method == "GET") executor.list(query.path(), query.pin()).toHttpJson() else HttpResponseFactory.badRequest("Unsupported method")
-            RemoteRoutes.API_DOWNLOAD -> if (method == "GET") downloadResponse(path) else HttpResponseFactory.badRequest("Unsupported method")
-            RemoteRoutes.API_RENAME -> if (method == "POST") executor.rename(query.path(), query.name() ?: return HttpResponseFactory.badRequest("Missing name"), query.pin()).toHttpText() else HttpResponseFactory.badRequest("Use POST")
-            RemoteRoutes.API_DELETE -> if (method == "POST") executor.delete(query.path(), query.pin()).toHttpText() else HttpResponseFactory.badRequest("Use POST")
-            RemoteRoutes.API_MKDIR -> if (method == "POST") executor.mkdir(query.path(), query.name() ?: return HttpResponseFactory.badRequest("Missing name"), query.pin()).toHttpText() else HttpResponseFactory.badRequest("Use POST")
-            RemoteRoutes.API_UPLOAD -> if (method == "POST") executor.validateUpload(query.path(), query.name() ?: "upload.bin", null, query.pin()).toHttpText() else HttpResponseFactory.badRequest("Use POST")
+            RemoteRoutes.INDEX -> if (request.method == "GET") HttpResponseFactory.html(WebManagerPage.render(currentSessionForStatus())) else HttpResponseFactory.badRequest("Unsupported method")
+            RemoteRoutes.API_STATUS -> if (request.method == "GET") HttpResponseFactory.json(executor.status(currentSessionForStatus())) else HttpResponseFactory.badRequest("Unsupported method")
+            RemoteRoutes.API_LIST -> if (request.method == "GET") executor.list(query.path(), query.pin()).toHttpJson() else HttpResponseFactory.badRequest("Unsupported method")
+            RemoteRoutes.API_DOWNLOAD -> if (request.method == "GET") downloadResponse(request.path) else HttpResponseFactory.badRequest("Unsupported method")
+            RemoteRoutes.API_RENAME -> if (request.method == "POST") executor.rename(query.path(), query.name() ?: return HttpResponseFactory.badRequest("Missing name"), query.pin()).toHttpText() else HttpResponseFactory.badRequest("Use POST")
+            RemoteRoutes.API_DELETE -> if (request.method == "POST") executor.delete(query.path(), query.pin()).toHttpText() else HttpResponseFactory.badRequest("Use POST")
+            RemoteRoutes.API_MKDIR -> if (request.method == "POST") executor.mkdir(query.path(), query.name() ?: return HttpResponseFactory.badRequest("Missing name"), query.pin()).toHttpText() else HttpResponseFactory.badRequest("Use POST")
+            RemoteRoutes.API_UPLOAD -> if (request.method == "POST") uploadResponse(request, query) else HttpResponseFactory.badRequest("Use POST")
             else -> HttpResponseFactory.notFound()
         }
     }
@@ -102,8 +88,15 @@ class SimpleHttpEngine(
         return HttpResponse.FileStream(file = File(plan.path), contentType = plan.mimeType, downloadName = plan.fileName)
     }
 
-    private fun currentSessionForStatus(): RemoteServerSession = RemoteServerStatusStore.current().let { if (it.state.name == "Stopped") session else it }
+    private fun uploadResponse(request: HttpRawRequest, query: RemoteRouteQuery): HttpResponse {
+        val directory = query.path()
+        val name = query.name() ?: "upload.bin"
+        val validation = executor.validateUpload(directory, name, request.contentLength(), query.pin())
+        if (!validation.success) return validation.toHttpText()
+        return uploadWriter.writeRawRequest(directory, name, request).toHttpText()
+    }
 
+    private fun currentSessionForStatus(): RemoteServerSession = RemoteServerStatusStore.current().let { if (it.state.name == "Stopped") session else it }
     private fun RemoteExecutionResult.toHttpJson(): HttpResponse = if (success) HttpResponseFactory.json(body) else HttpResponse.Text(statusCode, body, "text/plain; charset=utf-8")
     private fun RemoteExecutionResult.toHttpText(): HttpResponse = HttpResponse.Text(statusCode, body, "text/plain; charset=utf-8")
 }

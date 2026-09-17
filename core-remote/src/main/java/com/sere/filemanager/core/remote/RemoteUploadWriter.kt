@@ -33,4 +33,10 @@ class RemoteUploadWriter(
         }
         return RemoteExecutionResult.ok("Uploaded ${target.name} ($written bytes)")
     }
+
+    fun writeRawRequest(directoryPath: String, fileName: String, request: HttpRawRequest): RemoteExecutionResult {
+        val declared = request.contentLength()
+        val body = if (declared != null) LimitedInputStream(request.body, declared) else request.body
+        return write(directoryPath, fileName, declared, body)
+    }
 }
