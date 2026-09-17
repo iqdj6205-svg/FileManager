@@ -7,6 +7,8 @@ import com.sere.filemanager.core.files.FileRepository
 import com.sere.filemanager.core.files.InMemoryFavoritesRepository
 import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.files.SafeFileOperations
+import com.sere.filemanager.core.media.ImagePreviewAction
+import com.sere.filemanager.core.media.ImagePreviewController
 import com.sere.filemanager.core.media.MediaItem
 import com.sere.filemanager.core.media.MediaPlaybackCommand
 import com.sere.filemanager.core.media.MediaPlaybackCommandType
@@ -31,6 +33,7 @@ class FileManagerViewModel(
     private val playbackController: MediaPlaybackController? = null,
 ) : ViewModel() {
     private val wearActions = WearFileManagerActions(safeOperations)
+    private val imagePreviewController = ImagePreviewController()
     private val _state = MutableStateFlow(WearAppState())
     val state: StateFlow<WearAppState> = _state.asStateFlow()
 
@@ -39,24 +42,17 @@ class FileManagerViewModel(
         playbackController?.let { controller -> viewModelScope.launch { controller.session.collect { session -> _state.update { it.copy(playback = session) } } } }
     }
 
-    fun loadWearMedia() {
-        val controller = mediaController ?: run { _state.update { it.copy(media = it.media.copy(message = "Media unavailable")) }; return }
-        viewModelScope.launch {
-            _state.update { it.copy(media = it.media.copy(isLoading = true, message = "Loading media…")) }
-            runCatching { controller.load() }
-                .onSuccess { library ->
-                    _state.update { it.copy(media = it.media.copy(images = library.items.filter { item -> item.mimeType.startsWith("image/") }, audio = library.items.filter { item -> item.mimeType.startsWith("audio/") }, video = library.items.filter { item -> item.mimeType.startsWith("video/") }, isLoading = false, message = "Loaded ${library.items.size}")) }
-                }
-                .onFailure { error -> _state.update { it.copy(media = it.media.copy(isLoading = false, message = error.message ?: "Media load failed")) } }
-        }
-    }
+    fun openImagePreview(item: MediaItem) { _state.update { it.copy(media = it.media.copy(selected = item), imagePreview = imagePreviewController.open(item)) } }
+    fun imageZoomToggle() { _state.update { it.copy(imagePreview = imagePreviewController.reduce(it.imagePreview, ImagePreviewAction.ZoomToggle)) } }
+    fun imageRotateLeft() { _state.update { it.copy(imagePreview = imagePreviewController.reduce(it.imagePreview, ImagePreviewAction.RotateLeft)) } }
+    fun imageRotateRight() { _state.update { it.copy(imagePreview = imagePreviewController.reduce(it.imagePreview, ImagePreviewAction.RotateRight)) } }
 
+    fun loadWearMedia() { val controller = mediaController ?: run { _state.update { it.copy(media = it.media.copy(message = "Media unavailable")) }; return }; viewModelScope.launch { _state.update { it.copy(media = it.media.copy(isLoading = true, message = "Loading media…")) }; runCatching { controller.load() }.onSuccess { library -> _state.update { it.copy(media = it.media.copy(images = library.items.filter { item -> item.mimeType.startsWith("image/") }, audio = library.items.filter { item -> item.mimeType.startsWith("audio/") }, video = library.items.filter { item -> item.mimeType.startsWith("video/") }, isLoading = false, message = "Loaded ${library.items.size}")) } }.onFailure { error -> _state.update { it.copy(media = it.media.copy(isLoading = false, message = error.message ?: "Media load failed")) } } } }
     fun selectWearMedia(item: MediaItem) { _state.update { it.copy(media = it.media.copy(selected = item)) }; playbackController?.prepare(item) }
     fun playbackPlayPause() { playbackController?.handle(MediaPlaybackCommand(if (_state.value.playback.state == PlaybackState.Playing) MediaPlaybackCommandType.Pause else MediaPlaybackCommandType.Play)) }
     fun playbackSeekBack() { playbackController?.handle(MediaPlaybackCommand(MediaPlaybackCommandType.SeekBack)) }
     fun playbackSeekForward() { playbackController?.handle(MediaPlaybackCommand(MediaPlaybackCommandType.SeekForward)) }
     fun playbackStop() { playbackController?.handle(MediaPlaybackCommand(MediaPlaybackCommandType.Stop)) }
-
     fun openPath(path: String) { viewModelScope.launch { _state.update { it.copy(browser = it.browser.copy(currentPath = path, isLoading = true, error = null)) }; runCatching { fileRepository.list(path) }.onSuccess { items -> _state.update { it.copy(browser = it.browser.copy(items = items, isLoading = false)) } }.onFailure { error -> _state.update { it.copy(browser = it.browser.copy(isLoading = false, error = error.message ?: "Cannot open path")) } } } }
     fun openItem(path: String, type: FileItemType) { if (type == FileItemType.Directory) openPath(path) else selectItem(path) }
     fun goUp() { val current = _state.value.browser.currentPath.trimEnd('/'); openPath(current.substringBeforeLast('/', missingDelimiterValue = "/").ifBlank { "/" }) }
