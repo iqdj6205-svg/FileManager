@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -42,7 +43,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun PhoneFileManagerApp(viewModel: PhoneViewModel = viewModel()) {
+fun PhoneFileManagerApp() {
+    val context = LocalContext.current
+    val viewModel: PhoneViewModel = viewModel(factory = PhoneViewModelFactory(context))
     val screen = remember { mutableStateOf(PhoneScreen.Home) }
     val state by viewModel.state.collectAsState()
 
@@ -50,115 +53,22 @@ fun PhoneFileManagerApp(viewModel: PhoneViewModel = viewModel()) {
 
     FileManagerTheme {
         when (screen.value) {
-            PhoneScreen.Home -> PhoneHomeScreen(
-                status = state.statusMessage,
-                onFiles = { screen.value = PhoneScreen.PhoneFiles },
-                onMedia = { screen.value = PhoneScreen.PhoneMedia },
-                onAnalyzer = { screen.value = PhoneScreen.StorageAnalyzer },
-                onWatch = { screen.value = PhoneScreen.WatchCompanion },
-                onRemote = { screen.value = PhoneScreen.RemoteManager },
-                onSettings = { screen.value = PhoneScreen.Settings },
-            )
+            PhoneScreen.Home -> PhoneHomeScreen(state.statusMessage, { screen.value = PhoneScreen.PhoneFiles }, { screen.value = PhoneScreen.PhoneMedia }, { screen.value = PhoneScreen.StorageAnalyzer }, { screen.value = PhoneScreen.WatchCompanion }, { screen.value = PhoneScreen.RemoteManager }, { screen.value = PhoneScreen.Settings })
             PhoneScreen.PhoneFiles -> PhoneFilesScreen(state.browser, viewModel::openPhoneItem, viewModel::phoneGoUp) { screen.value = PhoneScreen.Home }
             PhoneScreen.PhoneMedia -> PhoneMediaScreen(state.browser.items) { screen.value = PhoneScreen.Home }
             PhoneScreen.StorageAnalyzer -> PlaceholderScreen("Storage Analyzer", "Largest files, categories, duplicates and cleanup suggestions will appear here.") { screen.value = PhoneScreen.Home }
-            PhoneScreen.WatchCompanion -> WatchCompanionScreen(state.remoteUrl, state.statusMessage, viewModel::setRemoteUrl, viewModel::startPairing, viewModel::startRemoteServer, viewModel::stopRemoteServer, viewModel::sendFiles) { screen.value = PhoneScreen.Home }
+            PhoneScreen.WatchCompanion -> WatchCompanionScreen(state.remoteUrl, state.statusMessage, viewModel::setRemoteUrl, viewModel::startPairing, viewModel::startRemoteServer, viewModel::stopRemoteServer, viewModel::requestWatchStatus, viewModel::sendFiles) { screen.value = PhoneScreen.Home }
             PhoneScreen.RemoteManager -> RemoteManagerScreen(state.remoteUrl, state.statusMessage, viewModel::setRemoteUrl, viewModel::openRemoteManager) { screen.value = PhoneScreen.Home }
             PhoneScreen.Settings -> PlaceholderScreen("Settings", "Phone file manager and watch companion settings will be configured here.") { screen.value = PhoneScreen.Home }
         }
     }
 }
 
-@Composable
-private fun PhoneHomeScreen(status: String, onFiles: () -> Unit, onMedia: () -> Unit, onAnalyzer: () -> Unit, onWatch: () -> Unit, onRemote: () -> Unit, onSettings: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("FileManager", style = MaterialTheme.typography.headlineMedium)
-        Text(status)
-        HomeButton(DefaultHomeActions.files.emoji, "Phone files", DefaultHomeActions.files.description, onFiles)
-        HomeButton(DefaultHomeActions.media.emoji, "Phone media", DefaultHomeActions.media.description, onMedia)
-        HomeButton(DefaultHomeActions.analyzer.emoji, "Storage analyzer", DefaultHomeActions.analyzer.description, onAnalyzer)
-        HomeButton("⌚", "Watch companion", "Optional Wear OS helper", onWatch)
-        HomeButton(DefaultHomeActions.remote.emoji, "Remote manager", "Open watch/phone server tools", onRemote)
-        HomeButton(DefaultHomeActions.settings.emoji, "Settings", DefaultHomeActions.settings.description, onSettings)
-    }
-}
-
-@Composable
-private fun HomeButton(icon: String, title: String, subtitle: String, onClick: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(icon, style = MaterialTheme.typography.headlineSmall)
-            Column { Text(title, style = MaterialTheme.typography.titleMedium); Text(subtitle, style = MaterialTheme.typography.bodyMedium) }
-        }
-    }
-}
-
-@Composable
-private fun PhoneFilesScreen(browser: PhoneFileBrowserState, onOpen: (String, FileItemType) -> Unit, onUp: () -> Unit, onBack: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Phone files", style = MaterialTheme.typography.headlineSmall)
-        Text(browser.currentPath, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onUp) { Text("Up") }; Button(onClick = onBack) { Text("Home") } }
-        browser.error?.let { Text(it) }
-        if (browser.isLoading) Text("Loading…")
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            items(browser.items) { item -> PhoneFileRow(item, onOpen) }
-        }
-    }
-}
-
-@Composable
-private fun PhoneFileRow(item: FileItem, onOpen: (String, FileItemType) -> Unit) {
-    val icon = when (item.type) { FileItemType.Directory -> "📁"; FileItemType.Image -> "🖼"; FileItemType.Video -> "🎬"; FileItemType.Audio -> "🎵"; FileItemType.Archive -> "🗜"; FileItemType.Document -> "📄"; FileItemType.Other -> "•" }
-    Card(modifier = Modifier.fillMaxWidth().clickable { onOpen(item.path, item.type) }) {
-        Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(icon)
-            Column(modifier = Modifier.weight(1f)) { Text(item.name, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(UiFormatters.compactBytes(item.sizeBytes)) }
-        }
-    }
-}
-
-@Composable
-private fun PhoneMediaScreen(items: List<FileItem>, onBack: () -> Unit) {
-    val media = items.filter { it.type == FileItemType.Image || it.type == FileItemType.Audio || it.type == FileItemType.Video }
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Phone media", style = MaterialTheme.typography.headlineSmall)
-        Button(onClick = onBack) { Text("Home") }
-        Text("${media.size} media items in current folder")
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) { items(media) { PhoneFileRow(it) { _, _ -> } } }
-    }
-}
-
-@Composable
-private fun WatchCompanionScreen(remoteUrl: String, status: String, onUrl: (String) -> Unit, onPair: () -> Unit, onStart: () -> Unit, onStop: () -> Unit, onSend: () -> Unit, onBack: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Watch companion", style = MaterialTheme.typography.headlineSmall)
-        Text(status)
-        OutlinedTextField(value = remoteUrl, onValueChange = onUrl, label = { Text("Watch HTTP URL") }, modifier = Modifier.fillMaxWidth())
-        Button(onClick = onPair, modifier = Modifier.fillMaxWidth()) { Text("Pair watch") }
-        Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) { Text("Start watch server") }
-        Button(onClick = onStop, modifier = Modifier.fillMaxWidth()) { Text("Stop watch server") }
-        Button(onClick = onSend, modifier = Modifier.fillMaxWidth()) { Text("Send files") }
-        Button(onClick = onBack) { Text("Home") }
-    }
-}
-
-@Composable
-private fun RemoteManagerScreen(remoteUrl: String, status: String, onUrl: (String) -> Unit, onOpen: () -> Unit, onBack: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("Remote manager", style = MaterialTheme.typography.headlineSmall)
-        Text(status)
-        OutlinedTextField(value = remoteUrl, onValueChange = onUrl, label = { Text("Server URL") }, modifier = Modifier.fillMaxWidth())
-        Button(onClick = onOpen, modifier = Modifier.fillMaxWidth()) { Text("Open") }
-        Button(onClick = onBack) { Text("Home") }
-    }
-}
-
-@Composable
-private fun PlaceholderScreen(title: String, body: String, onBack: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text(title, style = MaterialTheme.typography.headlineSmall)
-        Text(body)
-        Button(onClick = onBack) { Text("Home") }
-    }
-}
+@Composable private fun PhoneHomeScreen(status: String, onFiles: () -> Unit, onMedia: () -> Unit, onAnalyzer: () -> Unit, onWatch: () -> Unit, onRemote: () -> Unit, onSettings: () -> Unit) { Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) { Text("FileManager", style = MaterialTheme.typography.headlineMedium); Text(status); HomeButton(DefaultHomeActions.files.emoji, "Phone files", DefaultHomeActions.files.description, onFiles); HomeButton(DefaultHomeActions.media.emoji, "Phone media", DefaultHomeActions.media.description, onMedia); HomeButton(DefaultHomeActions.analyzer.emoji, "Storage analyzer", DefaultHomeActions.analyzer.description, onAnalyzer); HomeButton("⌚", "Watch companion", "Optional Wear OS helper", onWatch); HomeButton(DefaultHomeActions.remote.emoji, "Remote manager", "Open watch/phone server tools", onRemote); HomeButton(DefaultHomeActions.settings.emoji, "Settings", DefaultHomeActions.settings.description, onSettings) } }
+@Composable private fun HomeButton(icon: String, title: String, subtitle: String, onClick: () -> Unit) { Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) { Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) { Text(icon, style = MaterialTheme.typography.headlineSmall); Column { Text(title, style = MaterialTheme.typography.titleMedium); Text(subtitle, style = MaterialTheme.typography.bodyMedium) } } } }
+@Composable private fun PhoneFilesScreen(browser: PhoneFileBrowserState, onOpen: (String, FileItemType) -> Unit, onUp: () -> Unit, onBack: () -> Unit) { Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) { Text("Phone files", style = MaterialTheme.typography.headlineSmall); Text(browser.currentPath, maxLines = 1, overflow = TextOverflow.Ellipsis); Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onUp) { Text("Up") }; Button(onClick = onBack) { Text("Home") } }; browser.error?.let { Text(it) }; if (browser.isLoading) Text("Loading…"); LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) { items(browser.items) { item -> PhoneFileRow(item, onOpen) } } } }
+@Composable private fun PhoneFileRow(item: FileItem, onOpen: (String, FileItemType) -> Unit) { val icon = when (item.type) { FileItemType.Directory -> "📁"; FileItemType.Image -> "🖼"; FileItemType.Video -> "🎬"; FileItemType.Audio -> "🎵"; FileItemType.Archive -> "🗜"; FileItemType.Document -> "📄"; FileItemType.Other -> "•" }; Card(modifier = Modifier.fillMaxWidth().clickable { onOpen(item.path, item.type) }) { Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) { Text(icon); Column(modifier = Modifier.weight(1f)) { Text(item.name, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(UiFormatters.compactBytes(item.sizeBytes)) } } } }
+@Composable private fun PhoneMediaScreen(items: List<FileItem>, onBack: () -> Unit) { val media = items.filter { it.type == FileItemType.Image || it.type == FileItemType.Audio || it.type == FileItemType.Video }; Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) { Text("Phone media", style = MaterialTheme.typography.headlineSmall); Button(onClick = onBack) { Text("Home") }; Text("${media.size} media items in current folder"); LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) { items(media) { PhoneFileRow(it) { _, _ -> } } } } }
+@Composable private fun WatchCompanionScreen(remoteUrl: String, status: String, onUrl: (String) -> Unit, onPair: () -> Unit, onStart: () -> Unit, onStop: () -> Unit, onStatus: () -> Unit, onSend: () -> Unit, onBack: () -> Unit) { Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) { Text("Watch companion", style = MaterialTheme.typography.headlineSmall); Text(status); OutlinedTextField(value = remoteUrl, onValueChange = onUrl, label = { Text("Watch HTTP URL") }, modifier = Modifier.fillMaxWidth()); Button(onClick = onPair, modifier = Modifier.fillMaxWidth()) { Text("Pair watch") }; Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) { Text("Start watch server") }; Button(onClick = onStop, modifier = Modifier.fillMaxWidth()) { Text("Stop watch server") }; Button(onClick = onStatus, modifier = Modifier.fillMaxWidth()) { Text("Get watch status") }; Button(onClick = onSend, modifier = Modifier.fillMaxWidth()) { Text("Send files") }; Button(onClick = onBack) { Text("Home") } } }
+@Composable private fun RemoteManagerScreen(remoteUrl: String, status: String, onUrl: (String) -> Unit, onOpen: () -> Unit, onBack: () -> Unit) { Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) { Text("Remote manager", style = MaterialTheme.typography.headlineSmall); Text(status); OutlinedTextField(value = remoteUrl, onValueChange = onUrl, label = { Text("Server URL") }, modifier = Modifier.fillMaxWidth()); Button(onClick = onOpen, modifier = Modifier.fillMaxWidth()) { Text("Open") }; Button(onClick = onBack) { Text("Home") } } }
+@Composable private fun PlaceholderScreen(title: String, body: String, onBack: () -> Unit) { Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) { Text(title, style = MaterialTheme.typography.headlineSmall); Text(body); Button(onClick = onBack) { Text("Home") } } }

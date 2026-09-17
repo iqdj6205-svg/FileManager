@@ -6,6 +6,7 @@ import com.sere.filemanager.core.files.FileRepository
 import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.model.CompanionCommand
 import com.sere.filemanager.core.model.FileItemType
+import com.sere.filemanager.core.wearbridge.WearBridgeCommandType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 class PhoneViewModel(
     private val protocolClient: CompanionProtocolClient = CompanionProtocolClient(),
     private val fileRepository: FileRepository = LocalFileRepository(),
+    private val wearBridgeClient: WearBridgePhoneClient? = null,
 ) : ViewModel() {
     private val _state = MutableStateFlow(PhoneAppState())
     val state: StateFlow<PhoneAppState> = _state.asStateFlow()
@@ -45,16 +47,34 @@ class PhoneViewModel(
         _state.update { it.copy(remoteUrl = url, statusMessage = if (url.isBlank()) "Remote URL empty" else "Ready to connect") }
     }
 
-    fun startPairing() { _state.update { it.copy(statusMessage = "Pairing flow prepared. Wear Data Layer transport will be wired next.") } }
-    fun startRemoteServer() = issue(protocolClient.startRemoteServer(), "Start server command prepared")
-    fun stopRemoteServer() = issue(protocolClient.stopRemoteServer(), "Stop server command prepared")
+    fun startPairing() {
+        _state.update { it.copy(statusMessage = "Pairing uses Android Wear companion connection. Keep watch nearby and Bluetooth/Wi‑Fi enabled.") }
+    }
+
+    fun startRemoteServer() = sendWearCommand(WearBridgeCommandType.StartWatchServer, "Starting watch server…")
+    fun stopRemoteServer() = sendWearCommand(WearBridgeCommandType.StopWatchServer, "Stopping watch server…")
+    fun requestWatchStatus() = sendWearCommand(WearBridgeCommandType.GetWatchServerStatus, "Requesting watch status…")
 
     fun openRemoteManager() {
         val url = _state.value.remoteUrl
         _state.update { it.copy(statusMessage = if (url.isBlank()) "Enter watch HTTP URL first" else "Open in browser: $url") }
     }
 
-    fun sendFiles() { _state.update { it.copy(statusMessage = "File picker and transfer queue are prepared for implementation") } }
+    fun sendFiles() { _state.update { it.copy(statusMessage = "File transfer will use Wear ChannelClient after picker wiring") } }
+
+    private fun sendWearCommand(type: WearBridgeCommandType, pendingMessage: String) {
+        val bridge = wearBridgeClient
+        if (bridge == null) {
+            issue(protocolClient.startRemoteServer(), "$pendingMessage Bridge unavailable in preview")
+            return
+        }
+        viewModelScope.launch {
+            _state.update { it.copy(statusMessage = pendingMessage) }
+            bridge.sendToFirstWatch(type)
+                .onSuccess { message -> _state.update { it.copy(statusMessage = message) } }
+                .onFailure { error -> _state.update { it.copy(statusMessage = error.message ?: "Wear command failed") } }
+        }
+    }
 
     private fun issue(command: CompanionCommand, message: String) {
         _state.update { it.copy(statusMessage = "$message (${command.id})") }
