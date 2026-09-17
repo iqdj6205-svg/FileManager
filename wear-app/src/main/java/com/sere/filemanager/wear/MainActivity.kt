@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -47,10 +48,15 @@ class MainActivity : ComponentActivity() {
 private enum class WearScreen { Home, Files, FileActions, FileDetails, ConfirmDelete, Media, Gallery, Audio, Video, Remote, Settings, Advanced, Permissions, StorageAccess }
 
 @Composable
-fun WearFileManagerApp(viewModel: FileManagerViewModel = viewModel()) {
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
-        viewModel.onPermissionsResult(results)
-    }
+fun WearFileManagerApp() {
+    val context = LocalContext.current
+    val viewModel: FileManagerViewModel = viewModel(factory = FileManagerViewModelFactory(context))
+    WearFileManagerContent(viewModel)
+}
+
+@Composable
+private fun WearFileManagerContent(viewModel: FileManagerViewModel) {
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results -> viewModel.onPermissionsResult(results) }
     val permissionActions = remember(permissionLauncher) { RuntimePermissionActions(permissionLauncher) }
     val screen = remember { mutableStateOf(WearScreen.Home) }
     val state by viewModel.state.collectAsState()
@@ -58,40 +64,14 @@ fun WearFileManagerApp(viewModel: FileManagerViewModel = viewModel()) {
 
     MaterialTheme {
         Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
-            state.operation.message?.let { message ->
-                OperationMessageScreen(message = message, onDismiss = viewModel::clearMessage)
-                return@Box
-            }
+            state.operation.message?.let { message -> OperationMessageScreen(message = message, onDismiss = viewModel::clearMessage); return@Box }
             when (screen.value) {
                 WearScreen.Home -> HomeScreen(onOpen = { screen.value = it })
-                WearScreen.Files -> FileBrowserScreen(
-                    state = state.browser,
-                    onOpen = { path, type ->
-                        if (type == FileItemType.Directory) viewModel.openItem(path, type) else {
-                            viewModel.selectItem(path)
-                            screen.value = WearScreen.FileActions
-                        }
-                    },
-                    onLongAction = { item -> viewModel.selectItem(item.path); screen.value = WearScreen.FileActions },
-                    onUp = viewModel::goUp,
-                    onCreateFolder = { viewModel.createQuickFolder() },
-                    onHome = { screen.value = WearScreen.Home },
-                )
-                WearScreen.FileActions -> selected?.let { item ->
-                    FileActionSheet(
-                        item = item,
-                        onDetails = { screen.value = WearScreen.FileDetails },
-                        onRename = { viewModel.renameSelected(QuickTextInputPresets.copyName(item.name)); screen.value = WearScreen.Files },
-                        onCopy = { viewModel.copySelected(); screen.value = WearScreen.Files },
-                        onMove = { viewModel.copySelected(); screen.value = WearScreen.Files },
-                        onDelete = { screen.value = WearScreen.ConfirmDelete },
-                        onFavorite = { viewModel.toggleFavoriteSelected(); screen.value = WearScreen.Files },
-                        onBack = { screen.value = WearScreen.Files },
-                    )
-                } ?: run { screen.value = WearScreen.Files }
+                WearScreen.Files -> FileBrowserScreen(state.browser, { path, type -> if (type == FileItemType.Directory) viewModel.openItem(path, type) else { viewModel.selectItem(path); screen.value = WearScreen.FileActions } }, { item -> viewModel.selectItem(item.path); screen.value = WearScreen.FileActions }, viewModel::goUp, { viewModel.createQuickFolder() }, { screen.value = WearScreen.Home })
+                WearScreen.FileActions -> selected?.let { item -> FileActionSheet(item, { screen.value = WearScreen.FileDetails }, { viewModel.renameSelected(QuickTextInputPresets.copyName(item.name)); screen.value = WearScreen.Files }, { viewModel.copySelected(); screen.value = WearScreen.Files }, { viewModel.copySelected(); screen.value = WearScreen.Files }, { screen.value = WearScreen.ConfirmDelete }, { viewModel.toggleFavoriteSelected(); screen.value = WearScreen.Files }, { screen.value = WearScreen.Files }) } ?: run { screen.value = WearScreen.Files }
                 WearScreen.FileDetails -> selected?.let { item -> FileDetailsScreen(item, StorageFormatter.bytes(item.sizeBytes)) { screen.value = WearScreen.FileActions } } ?: run { screen.value = WearScreen.Files }
                 WearScreen.ConfirmDelete -> selected?.let { item -> ConfirmDeleteScreen(fileName = item.name, onConfirm = { viewModel.deleteSelected(); screen.value = WearScreen.Files }, onCancel = { screen.value = WearScreen.FileActions }) } ?: run { screen.value = WearScreen.Files }
-                WearScreen.Media -> MediaHomeScreen(onGallery = { screen.value = WearScreen.Gallery }, onAudio = { screen.value = WearScreen.Audio }, onVideo = { screen.value = WearScreen.Video }, onBack = { screen.value = WearScreen.Home })
+                WearScreen.Media -> MediaHomeScreen({ screen.value = WearScreen.Gallery }, { screen.value = WearScreen.Audio }, { screen.value = WearScreen.Video }, { screen.value = WearScreen.Home })
                 WearScreen.Gallery -> MediaListScreen("Gallery", state.browser.items.filter { it.type == FileItemType.Image }) { screen.value = WearScreen.Media }
                 WearScreen.Audio -> MediaListScreen("Audio", state.browser.items.filter { it.type == FileItemType.Audio }) { screen.value = WearScreen.Media }
                 WearScreen.Video -> MediaListScreen("Video", state.browser.items.filter { it.type == FileItemType.Video }) { screen.value = WearScreen.Media }
@@ -107,7 +87,6 @@ fun WearFileManagerApp(viewModel: FileManagerViewModel = viewModel()) {
 
 @Composable private fun HomeScreen(onOpen: (WearScreen) -> Unit) { ScalingLazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 18.dp, vertical = 28.dp), horizontalAlignment = Alignment.CenterHorizontally) { item { Text("FileManager", textAlign = TextAlign.Center) }; item { HomeChip("Files") { onOpen(WearScreen.Files) } }; item { HomeChip("Media") { onOpen(WearScreen.Media) } }; item { HomeChip("Remote") { onOpen(WearScreen.Remote) } }; item { HomeChip("Settings") { onOpen(WearScreen.Settings) } }; item { HomeChip("Advanced") { onOpen(WearScreen.Advanced) } } } }
 @Composable private fun HomeChip(label: String, onClick: () -> Unit) { Chip(label = { Text(label) }, onClick = onClick, modifier = Modifier.fillMaxWidth()) }
-
 @Composable private fun FileBrowserScreen(state: BrowserState, onOpen: (String, FileItemType) -> Unit, onLongAction: (FileItem) -> Unit, onUp: () -> Unit, onCreateFolder: () -> Unit, onHome: () -> Unit) { ScalingLazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(horizontal = 14.dp, vertical = 22.dp), horizontalAlignment = Alignment.CenterHorizontally) { item { Text("Files", textAlign = TextAlign.Center) }; item { Text(state.currentPath, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center) }; item { Chip(label = { Text("Up") }, onClick = onUp, modifier = Modifier.fillMaxWidth()) }; item { Chip(label = { Text("New folder") }, onClick = onCreateFolder, modifier = Modifier.fillMaxWidth()) }; if (state.isLoading) item { Text("Loading…") }; state.error?.let { item { Text(it, color = Color.Red, textAlign = TextAlign.Center) } }; items(state.items.size) { index -> FileRow(state.items[index], onOpen, onLongAction) }; item { Button(onClick = onHome) { Text("Home") } } } }
 @Composable private fun FileRow(item: FileItem, onOpen: (String, FileItemType) -> Unit, onLongAction: (FileItem) -> Unit) { val icon = when (item.type) { FileItemType.Directory -> "📁"; FileItemType.Image -> "🖼"; FileItemType.Video -> "🎬"; FileItemType.Audio -> "🎵"; FileItemType.Archive -> "🗜"; FileItemType.Document -> "📄"; FileItemType.Other -> "•" }; Row(modifier = Modifier.fillMaxWidth().clickable { onOpen(item.path, item.type) }.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) { Text(icon, modifier = Modifier.clickable { onLongAction(item) }); Text(item.name, maxLines = 1, overflow = TextOverflow.Ellipsis) } }
 @Composable private fun OperationMessageScreen(message: String, onDismiss: () -> Unit) { ScalingLazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(18.dp), horizontalAlignment = Alignment.CenterHorizontally) { item { Text(message, textAlign = TextAlign.Center) }; item { Button(onClick = onDismiss) { Text("OK") } } } }
