@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 69%.
+Approximate implementation progress: 70%.
 
 ## Completed
 
@@ -14,11 +14,10 @@ Approximate implementation progress: 69%.
 - Image preview model and phone/watch Coil UI foundations.
 - Phone image preview state and navigation wired for image media.
 - Wear image preview state and navigation wired for gallery media.
+- Media3 playback listener state updates and lifecycle cleanup helper.
 - Wear clipboard/copy-move UX foundations wired into browser UI.
 - Wear file operation action controller wired into ViewModel.
 - Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
-- Phone Media3 playback controller wired through factory.
-- Remote server prototype, web manager, route policies, validation/audit/rate-limit foundations.
 - Remote route executor wired into SimpleHttpEngine.
 - Binary-safe raw HTTP request parser and upload persistence foundation.
 - Wear Data Layer command/status/settings foundations.
@@ -26,14 +25,14 @@ Approximate implementation progress: 69%.
 
 ## Current focus
 
-- Add lifecycle cleanup for Media3 and final polish before build validation.
+- Add foreground/media session polish.
 - Harden downloads/uploads and audit consistency.
 - Improve standalone watch experience.
 
 ## Remaining major areas
 
 - Full copy/move flows across path and SAF roots.
-- Image preview polish and Media3 lifecycle cleanup.
+- Media session controls and notification polish.
 - Multipart upload compatibility.
 - Persistent DataStore settings wiring in both apps.
 - UI/UX polish for round Wear screens.

@@ -1,6 +1,7 @@
 package com.sere.filemanager.phone
 
 import android.content.Context
+import androidx.media3.common.Player
 import androidx.media3.common.MediaItem as ExoMediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import com.sere.filemanager.core.media.MediaItem
@@ -17,6 +18,24 @@ class AndroidMedia3PlaybackController(context: Context) : MediaPlaybackControlle
     private val player = ExoPlayer.Builder(context.applicationContext).build()
     private val _session = MutableStateFlow(MediaPlaybackSession())
     override val session: StateFlow<MediaPlaybackSession> = _session
+
+    init {
+        player.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                val mapped = when (playbackState) {
+                    Player.STATE_BUFFERING -> PlaybackState.Preparing
+                    Player.STATE_ENDED -> PlaybackState.Ended
+                    Player.STATE_READY -> if (player.isPlaying) PlaybackState.Playing else PlaybackState.Paused
+                    else -> _session.value.state
+                }
+                updateState(mapped)
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                updateState(if (isPlaying) PlaybackState.Playing else PlaybackState.Paused)
+            }
+        })
+    }
 
     override fun prepare(item: MediaItem) {
         _session.value = MediaPlaybackSession(item = item, state = PlaybackState.Preparing)

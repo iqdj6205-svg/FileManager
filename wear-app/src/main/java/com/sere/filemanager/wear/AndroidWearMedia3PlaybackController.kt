@@ -1,6 +1,7 @@
 package com.sere.filemanager.wear
 
 import android.content.Context
+import androidx.media3.common.Player
 import androidx.media3.common.MediaItem as ExoMediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import com.sere.filemanager.core.media.MediaItem
@@ -18,15 +19,31 @@ class AndroidWearMedia3PlaybackController(context: Context) : MediaPlaybackContr
     private val _session = MutableStateFlow(MediaPlaybackSession())
     override val session: StateFlow<MediaPlaybackSession> = _session
 
+    init {
+        player.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                val mapped = when (playbackState) {
+                    Player.STATE_BUFFERING -> PlaybackState.Preparing
+                    Player.STATE_ENDED -> PlaybackState.Ended
+                    Player.STATE_READY -> if (player.isPlaying) PlaybackState.Playing else PlaybackState.Paused
+                    else -> _session.value.state
+                }
+                updateState(mapped)
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                updateState(if (isPlaying) PlaybackState.Playing else PlaybackState.Paused)
+            }
+        })
+    }
+
     override fun prepare(item: MediaItem) {
         _session.value = MediaPlaybackSession(item = item, state = PlaybackState.Preparing)
         runCatching {
             player.setMediaItem(ExoMediaItem.fromUri(item.uri))
             player.prepare()
             _session.value = MediaPlaybackSession(item = item, state = PlaybackState.Paused, durationMillis = player.duration.takeIf { it > 0 })
-        }.onFailure { error ->
-            _session.value = MediaPlaybackSession(item = item, state = PlaybackState.Error, errorMessage = error.message)
-        }
+        }.onFailure { error -> _session.value = MediaPlaybackSession(item = item, state = PlaybackState.Error, errorMessage = error.message) }
     }
 
     override fun handle(command: MediaPlaybackCommand) {
