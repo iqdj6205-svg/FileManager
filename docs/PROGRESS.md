@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 49%.
+Approximate implementation progress: 50%.
 
 ## Completed
 
@@ -17,6 +17,7 @@ Approximate implementation progress: 49%.
 - SAF roots now open through phone browser listing.
 - SAF-aware phone rename/delete/create-folder action foundations.
 - Phone rename/create-folder input flows wired into UI.
+- Shared file clipboard and copy/move operation foundations.
 - Shared media playback controller and phone/watch playback UI foundations.
 - Shared app settings model/repository/use-case foundations.
 - DataStore app settings implementation.
@@ -28,7 +29,7 @@ Approximate implementation progress: 49%.
 
 ## Current focus
 
-- Complete file operation UX.
+- Complete copy/move UX.
 - Wire storage roots and SAF access.
 - Harden remote server routes.
 - Improve standalone watch experience and reduce duplicated permission prompts.

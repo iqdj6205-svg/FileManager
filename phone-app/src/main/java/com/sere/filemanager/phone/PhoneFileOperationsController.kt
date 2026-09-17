@@ -3,6 +3,7 @@ package com.sere.filemanager.phone
 import com.sere.filemanager.core.files.BrowserControllerCompat
 import com.sere.filemanager.core.files.FileOperation
 import com.sere.filemanager.core.files.FileOperationResult
+import com.sere.filemanager.core.files.PathTools
 import com.sere.filemanager.core.files.SafeFileOperations
 import com.sere.filemanager.core.model.FileItem
 
@@ -10,9 +11,16 @@ class PhoneFileOperationsController(
     private val operations: SafeFileOperations,
     private val safController: PhoneSafController? = null,
 ) {
-    suspend fun copyHere(item: FileItem): FileOperationResult = when {
-        item.path.startsWith("content://") -> FileOperationResult(false, "Copy for SAF files will use stream copy")
-        else -> operations.execute(BrowserControllerCompat.copyOperation(item.path))
+    suspend fun copyHere(item: FileItem): FileOperationResult = copyTo(item, PathTools.parent(item.path))
+
+    suspend fun copyTo(item: FileItem, targetDirectory: String): FileOperationResult = when {
+        item.path.startsWith("content://") || targetDirectory.startsWith("content://") -> FileOperationResult(false, "SAF stream copy is queued for next implementation block")
+        else -> operations.execute(FileOperation.Copy(item.path, PathTools.child(targetDirectory, item.name)))
+    }
+
+    suspend fun moveTo(item: FileItem, targetDirectory: String): FileOperationResult = when {
+        item.path.startsWith("content://") || targetDirectory.startsWith("content://") -> FileOperationResult(false, "SAF stream move is queued for next implementation block")
+        else -> operations.execute(FileOperation.Move(item.path, PathTools.child(targetDirectory, item.name)))
     }
 
     suspend fun createFolder(parentPath: String, name: String): FileOperationResult = when {
