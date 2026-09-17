@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 30%.
+Approximate implementation progress: 31%.
 
 ## Completed
 
@@ -9,6 +9,7 @@ Approximate implementation progress: 30%.
 - Wear app launches and basic navigation works.
 - Wear permission hub and concrete ADB advanced guidance foundation.
 - Wear remote dashboard/settings foundations wired into navigation.
+- Wear media library/preview foundations.
 - Phone app shell and file browser foundation.
 - Phone file action/details/delete UI foundations.
 - Phone storage analyzer foundation.
