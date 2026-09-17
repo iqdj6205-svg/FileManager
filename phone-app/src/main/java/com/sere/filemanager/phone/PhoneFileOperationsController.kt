@@ -1,5 +1,6 @@
 package com.sere.filemanager.phone
 
+import android.net.Uri
 import com.sere.filemanager.core.files.BrowserControllerCompat
 import com.sere.filemanager.core.files.FileOperation
 import com.sere.filemanager.core.files.FileOperationResult
@@ -15,12 +16,16 @@ class PhoneFileOperationsController(
     suspend fun copyHere(item: FileItem): FileOperationResult = copyTo(item, PathTools.parent(item.path), OperationNamePolicy.duplicateName(item.name))
 
     suspend fun copyTo(item: FileItem, targetDirectory: String, targetName: String = item.name): FileOperationResult = when {
-        item.path.startsWith("content://") || targetDirectory.startsWith("content://") -> FileOperationResult(false, "SAF stream copy is queued for next implementation block")
+        item.path.startsWith("content://") && targetDirectory.startsWith("content://") -> safResult(safController?.copySafToSaf(Uri.parse(item.path), Uri.parse(targetDirectory), targetName) == true, "Copied $targetName")
+        item.path.startsWith("content://") -> safResult(safController?.copySafToPath(Uri.parse(item.path), PathTools.child(targetDirectory, targetName)) == true, "Copied $targetName")
+        targetDirectory.startsWith("content://") -> safResult(safController?.copyPathToSaf(item.path, Uri.parse(targetDirectory), targetName) == true, "Copied $targetName")
         else -> operations.execute(FileOperation.Copy(item.path, PathTools.child(targetDirectory, targetName)))
     }
 
     suspend fun moveTo(item: FileItem, targetDirectory: String): FileOperationResult = when {
-        item.path.startsWith("content://") || targetDirectory.startsWith("content://") -> FileOperationResult(false, "SAF stream move is queued for next implementation block")
+        item.path.startsWith("content://") && targetDirectory.startsWith("content://") -> safResult(safController?.moveSafToSaf(Uri.parse(item.path), Uri.parse(targetDirectory), item.name) == true, "Moved ${item.name}")
+        item.path.startsWith("content://") -> safResult(safController?.moveSafToPath(Uri.parse(item.path), PathTools.child(targetDirectory, item.name)) == true, "Moved ${item.name}")
+        targetDirectory.startsWith("content://") -> safResult(safController?.movePathToSaf(item.path, Uri.parse(targetDirectory), item.name) == true, "Moved ${item.name}")
         else -> operations.execute(FileOperation.Move(item.path, PathTools.child(targetDirectory, item.name)))
     }
 
@@ -28,19 +33,13 @@ class PhoneFileOperationsController(
         val safe = OperationNamePolicy.sanitizeInputName(name)
         if (!OperationNamePolicy.isValidFileName(safe)) return FileOperationResult(false, "Invalid folder name")
         return when {
-            parentPath.startsWith("content://") -> {
-                val ok = safController?.createFolder(android.net.Uri.parse(parentPath), safe) == true
-                FileOperationResult(ok, if (ok) "Created $safe" else "Cannot create folder")
-            }
+            parentPath.startsWith("content://") -> safResult(safController?.createFolder(Uri.parse(parentPath), safe) == true, "Created $safe")
             else -> operations.execute(BrowserControllerCompat.createFolderOperation(parentPath, safe))
         }
     }
 
     suspend fun delete(item: FileItem): FileOperationResult = when {
-        item.path.startsWith("content://") -> {
-            val ok = safController?.delete(android.net.Uri.parse(item.path)) == true
-            FileOperationResult(ok, if (ok) "Deleted ${item.name}" else "Cannot delete ${item.name}")
-        }
+        item.path.startsWith("content://") -> safResult(safController?.delete(Uri.parse(item.path)) == true, "Deleted ${item.name}")
         else -> operations.execute(FileOperation.Delete(item.path))
     }
 
@@ -50,11 +49,10 @@ class PhoneFileOperationsController(
         val safe = OperationNamePolicy.sanitizeInputName(newName)
         if (!OperationNamePolicy.isValidFileName(safe)) return FileOperationResult(false, "Invalid file name")
         return when {
-            item.path.startsWith("content://") -> {
-                val ok = safController?.rename(android.net.Uri.parse(item.path), safe) == true
-                FileOperationResult(ok, if (ok) "Renamed to $safe" else "Cannot rename ${item.name}")
-            }
+            item.path.startsWith("content://") -> safResult(safController?.rename(Uri.parse(item.path), safe) == true, "Renamed to $safe")
             else -> operations.execute(FileOperation.Rename(item.path, safe))
         }
     }
+
+    private fun safResult(ok: Boolean, successMessage: String): FileOperationResult = FileOperationResult(ok, if (ok) successMessage else "SAF operation failed")
 }

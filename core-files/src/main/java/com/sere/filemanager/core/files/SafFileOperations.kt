@@ -28,6 +28,52 @@ class SafFileOperations(private val context: Context) {
         return doc.delete()
     }
 
+    fun copyToTree(sourceUri: Uri, targetTreeUri: Uri, targetName: String, mimeType: String = "application/octet-stream"): Boolean {
+        val parent = DocumentFile.fromTreeUri(context, targetTreeUri) ?: return false
+        val target = parent.createFile(mimeType, OperationNamePolicy.sanitizeInputName(targetName)) ?: return false
+        return copyStreams(sourceUri, target.uri)
+    }
+
+    fun copyTreeDocumentToPath(sourceUri: Uri, targetFilePath: String): Boolean {
+        val target = java.io.File(targetFilePath)
+        target.parentFile?.mkdirs()
+        return context.contentResolver.openInputStream(sourceUri)?.use { input ->
+            target.outputStream().use { output -> input.copyTo(output) }
+            true
+        } ?: false
+    }
+
+    fun copyPathToTree(sourcePath: String, targetTreeUri: Uri, targetName: String? = null): Boolean {
+        val source = java.io.File(sourcePath)
+        if (!source.exists() || !source.isFile) return false
+        val parent = DocumentFile.fromTreeUri(context, targetTreeUri) ?: return false
+        val target = parent.createFile(MimeTypeMap.guess(source.name), OperationNamePolicy.sanitizeInputName(targetName ?: source.name)) ?: return false
+        return context.contentResolver.openOutputStream(target.uri)?.use { output ->
+            source.inputStream().use { input -> input.copyTo(output) }
+            true
+        } ?: false
+    }
+
+    fun moveToTree(sourceUri: Uri, targetTreeUri: Uri, targetName: String, mimeType: String = "application/octet-stream"): Boolean {
+        val copied = copyToTree(sourceUri, targetTreeUri, targetName, mimeType)
+        return copied && delete(sourceUri)
+    }
+
+    fun moveTreeDocumentToPath(sourceUri: Uri, targetFilePath: String): Boolean {
+        val copied = copyTreeDocumentToPath(sourceUri, targetFilePath)
+        return copied && delete(sourceUri)
+    }
+
+    fun movePathToTree(sourcePath: String, targetTreeUri: Uri, targetName: String? = null): Boolean {
+        val copied = copyPathToTree(sourcePath, targetTreeUri, targetName)
+        return copied && java.io.File(sourcePath).delete()
+    }
+
+    private fun copyStreams(source: Uri, target: Uri): Boolean = context.contentResolver.openInputStream(source)?.use { input ->
+        context.contentResolver.openOutputStream(target)?.use { output -> input.copyTo(output) }
+        true
+    } ?: false
+
     private fun DocumentFile.toFileItem(): FileItem = FileItem(
         name = name ?: "Unnamed",
         path = uri.toString(),
@@ -44,5 +90,21 @@ class SafFileOperations(private val context: Context) {
         mime.contains("zip") || mime.contains("rar") || mime.contains("tar") -> FileItemType.Archive
         mime.contains("pdf") || mime.startsWith("text/") -> FileItemType.Document
         else -> FileItemType.Other
+    }
+}
+
+object MimeTypeMap {
+    fun guess(name: String): String = when (name.substringAfterLast('.', "").lowercase()) {
+        "jpg", "jpeg" -> "image/jpeg"
+        "png" -> "image/png"
+        "webp" -> "image/webp"
+        "gif" -> "image/gif"
+        "mp3" -> "audio/mpeg"
+        "m4a" -> "audio/mp4"
+        "mp4" -> "video/mp4"
+        "pdf" -> "application/pdf"
+        "txt", "log", "md" -> "text/plain"
+        "zip" -> "application/zip"
+        else -> "application/octet-stream"
     }
 }
