@@ -23,7 +23,9 @@ class SimpleHttpEngine(
     private var job: Job? = null
     private val auth = RemoteAuth()
     private val downloadPlanner = DownloadPlanner()
-    private val executor = RemoteRouteExecutor(fileRepository, config = config)
+    private val auditSink = InMemoryRemoteAuditSink()
+    private val auditRoutes = RemoteAuditRouteController(auditSink)
+    private val executor = RemoteRouteExecutor(fileRepository, config = config, audit = auditSink)
     private val uploadWriter = RemoteUploadWriter()
     private var pin: String? = null
     private var session: RemoteServerSession = RemoteServerSession.stopped()
@@ -55,6 +57,7 @@ class SimpleHttpEngine(
             }
             val response = runCatching { route(request) }.getOrElse {
                 auditLog.record(RemoteAuditEvent(RemoteAuditEventType.Error, it.message ?: "Server error"))
+                auditSink.record(RemoteAuditEntry(action = RemoteAuditAction.Denied, path = request.path, success = false, message = it.message ?: "Server error"))
                 HttpResponseFactory.serverError(it.message ?: "Server error")
             }
             HttpResponseWriter.write(output, response)
@@ -68,6 +71,8 @@ class SimpleHttpEngine(
         return when (route) {
             RemoteRoutes.INDEX -> if (request.method == "GET") HttpResponseFactory.html(WebManagerPage.render(currentSessionForStatus())) else HttpResponseFactory.badRequest("Unsupported method")
             RemoteRoutes.API_STATUS -> if (request.method == "GET") HttpResponseFactory.json(executor.status(currentSessionForStatus())) else HttpResponseFactory.badRequest("Unsupported method")
+            RemoteRoutes.API_AUDIT -> if (request.method == "GET") guardedAuditJson(query.pin()) else HttpResponseFactory.badRequest("Unsupported method")
+            RemoteRoutes.API_AUDIT_EXPORT -> if (request.method == "GET") guardedAuditExport(query.pin()) else HttpResponseFactory.badRequest("Unsupported method")
             RemoteRoutes.API_LIST -> if (request.method == "GET") executor.list(query.path(), query.pin()).toHttpJson() else HttpResponseFactory.badRequest("Unsupported method")
             RemoteRoutes.API_DOWNLOAD -> if (request.method == "GET") downloadResponse(request.path) else HttpResponseFactory.badRequest("Unsupported method")
             RemoteRoutes.API_RENAME -> if (request.method == "POST") executor.rename(query.path(), query.name() ?: return HttpResponseFactory.badRequest("Missing name"), query.pin()).toHttpText() else HttpResponseFactory.badRequest("Use POST")
@@ -78,6 +83,8 @@ class SimpleHttpEngine(
         }
     }
 
+    private fun guardedAuditJson(pinParam: String?): HttpResponse = if (!config.requirePin || auth.isPinValid(pin, pinParam)) HttpResponseFactory.json(auditRoutes.latestJson()) else HttpResponseFactory.unauthorized()
+    private fun guardedAuditExport(pinParam: String?): HttpResponse = if (!config.requirePin || auth.isPinValid(pin, pinParam)) HttpResponse.Text(200, auditRoutes.exportText(), "text/plain; charset=utf-8") else HttpResponseFactory.unauthorized()
     private fun authorized(path: String): Boolean = !config.requirePin || auth.isPinValid(pin, HttpRequestTools.queryParam(path, "pin"))
 
     private fun downloadResponse(path: String): HttpResponse {
@@ -85,6 +92,7 @@ class SimpleHttpEngine(
         if (!authorized(path)) return HttpResponseFactory.unauthorized()
         val plan = downloadPlanner.plan(requestedPath).getOrElse { return HttpResponseFactory.badRequest(it.message ?: "Cannot download") }
         auditLog.record(RemoteAuditEvent(RemoteAuditEventType.DownloadRequested, "Download requested", plan.path))
+        auditSink.record(RemoteAuditEntry(action = RemoteAuditAction.Download, path = plan.path, success = true, message = "Download requested"))
         return HttpResponse.FileStream(file = File(plan.path), contentType = plan.mimeType, downloadName = plan.fileName)
     }
 
@@ -93,7 +101,9 @@ class SimpleHttpEngine(
         val name = query.name() ?: "upload.bin"
         val validation = executor.validateUpload(directory, name, request.contentLength(), query.pin())
         if (!validation.success) return validation.toHttpText()
-        return uploadWriter.writeRawRequest(directory, name, request).toHttpText()
+        val result = uploadWriter.writeRawRequest(directory, name, request)
+        auditSink.record(RemoteAuditEntry(action = RemoteAuditAction.Upload, path = directory, success = result.success, message = result.body))
+        return result.toHttpText()
     }
 
     private fun currentSessionForStatus(): RemoteServerSession = RemoteServerStatusStore.current().let { if (it.state.name == "Stopped") session else it }

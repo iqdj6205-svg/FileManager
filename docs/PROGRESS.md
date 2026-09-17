@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 71%.
+Approximate implementation progress: 72%.
 
 ## Completed
 
@@ -17,15 +17,15 @@ Approximate implementation progress: 71%.
 - Phone image preview state and navigation wired for image media.
 - Remote route executor wired into SimpleHttpEngine.
 - Binary-safe raw HTTP request parser and upload persistence foundation.
-- Remote audit route foundations.
+- Remote audit routes wired into HTTP engine and web UI.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.
 
 ## Current focus
 
-- Wire audit routes into HTTP engine and web manager.
-- Harden downloads/uploads and audit consistency.
+- Harden uploads and route policy consistency.
 - Improve standalone watch experience.
+- Prepare build validation pass.
 
 ## Remaining major areas
 
