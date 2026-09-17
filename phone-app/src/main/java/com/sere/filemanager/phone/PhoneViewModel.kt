@@ -1,12 +1,12 @@
 package com.sere.filemanager.phone
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sere.filemanager.core.files.FileRepository
 import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.model.CompanionCommand
 import com.sere.filemanager.core.model.FileItemType
-import com.sere.filemanager.core.model.RemoteServerSettings
 import com.sere.filemanager.core.wearbridge.WearBridgeCommandType
 import com.sere.filemanager.core.wearbridge.WearBridgeSettingsPayload
 import com.sere.filemanager.core.wearbridge.WearBridgeSettingsStringCodec
@@ -21,6 +21,7 @@ class PhoneViewModel(
     private val protocolClient: CompanionProtocolClient = CompanionProtocolClient(),
     private val fileRepository: FileRepository = LocalFileRepository(),
     private val wearBridgeClient: WearBridgePhoneClient? = null,
+    private val transferController: PhoneTransferController? = null,
 ) : ViewModel() {
     private val _state = MutableStateFlow(PhoneAppState())
     val state: StateFlow<PhoneAppState> = _state.asStateFlow()
@@ -41,7 +42,7 @@ class PhoneViewModel(
     fun syncSettingsToWatch() {
         val s = _state.value.remoteSettings
         val payload = WearBridgeSettingsPayload(
-            remote = RemoteServerSettings(s.port, s.requirePin, s.allowUploads, s.allowDelete, s.autoStopMinutes, s.localNetworkOnly),
+            remote = com.sere.filemanager.core.model.RemoteServerSettings(s.port, s.requirePin, s.allowUploads, s.allowDelete, s.autoStopMinutes, s.localNetworkOnly),
             advancedMode = s.advancedMode,
             showHiddenFiles = s.showHiddenFiles,
         )
@@ -53,9 +54,21 @@ class PhoneViewModel(
     fun stopRemoteServer() = sendWearCommand(WearBridgeCommandType.StopWatchServer, "Stopping watch server…")
     fun requestWatchStatus() = sendWearCommand(WearBridgeCommandType.GetWatchServerStatus, "Requesting watch status…")
 
+    fun onPickedFile(uri: Uri) {
+        val controller = transferController ?: run { _state.update { it.copy(statusMessage = "Transfer unavailable") }; return }
+        val picked = controller.describe(uri)
+        _state.update { it.copy(transfer = it.transfer.copy(selectedFileName = picked.displayName, message = "Selected ${picked.displayName}"), statusMessage = "Selected ${picked.displayName}") }
+        viewModelScope.launch {
+            _state.update { it.copy(statusMessage = "Sending ${picked.displayName} to watch…") }
+            controller.sendToWatch(picked, _state.value.transfer.targetPath)
+                .onSuccess { progress -> _state.update { it.copy(transfer = it.transfer.copy(latestProgress = progress, message = progress.message), statusMessage = progress.message ?: "Transfer completed") } }
+                .onFailure { error -> _state.update { it.copy(transfer = it.transfer.copy(message = error.message), statusMessage = error.message ?: "Transfer failed") } }
+        }
+    }
+
     fun refreshRemoteSnapshot() { val status = PhoneRemoteStatusStore.latest(); if (status == null) _state.update { it.copy(statusMessage = "No watch status snapshot yet") } else _state.update { it.copy(remoteUrl = status.url ?: it.remoteUrl, statusMessage = if (status.running) "Watch server: ${status.url} PIN ${status.pin} ${status.networkLabel.orEmpty()} ${status.batteryPercent ?: ""}%" else "Watch server stopped") } }
     fun openRemoteManager() { val url = _state.value.remoteUrl; _state.update { it.copy(statusMessage = if (url.isBlank()) "Enter watch HTTP URL first" else "Open in browser: $url") } }
-    fun sendFiles() { _state.update { it.copy(statusMessage = "File transfer will use Wear ChannelClient after picker wiring") } }
+    fun sendFiles() { _state.update { it.copy(statusMessage = "Choose a file to send to watch") } }
 
     private fun sendWearCommand(type: WearBridgeCommandType, pendingMessage: String, payload: String? = null) { val bridge = wearBridgeClient; if (bridge == null) { issue(protocolClient.startRemoteServer(), "$pendingMessage Bridge unavailable in preview"); return }; viewModelScope.launch { _state.update { it.copy(statusMessage = pendingMessage) }; bridge.sendToFirstWatch(type, payload).onSuccess { message -> _state.update { it.copy(statusMessage = message) }; delay(900); bridge.latestResultText()?.let { result -> _state.update { it.copy(statusMessage = result) } }; refreshRemoteSnapshot() }.onFailure { error -> _state.update { it.copy(statusMessage = error.message ?: "Wear command failed") } } } }
     private fun issue(command: CompanionCommand, message: String) { _state.update { it.copy(statusMessage = "$message (${command.id})") } }
