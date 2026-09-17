@@ -56,7 +56,7 @@ fun PhoneFileManagerApp() {
             PhoneScreen.PhoneFileDetails -> selected?.let { PhoneFileDetailsScreen(it) { screen.value = PhoneScreen.PhoneFileActions } } ?: run { screen.value = PhoneScreen.PhoneFiles }
             PhoneScreen.PhoneConfirmDelete -> selected?.let { PhoneConfirmDeleteScreen(it.name, { viewModel.deleteSelectedPhoneFile(); screen.value = PhoneScreen.PhoneFiles }, { screen.value = PhoneScreen.PhoneFileActions }) } ?: run { screen.value = PhoneScreen.PhoneFiles }
             PhoneScreen.PhoneMedia -> PhoneMediaScreen(state.browser.items) { screen.value = PhoneScreen.Home }
-            PhoneScreen.StorageAnalyzer -> PlaceholderScreen("Storage Analyzer", "Largest files, categories, duplicates and cleanup suggestions will appear here.") { screen.value = PhoneScreen.Home }
+            PhoneScreen.StorageAnalyzer -> PhoneStorageAnalyzerScreen(state.analyzer, viewModel::analyzeCurrentPhoneFolder) { screen.value = PhoneScreen.Home }
             PhoneScreen.WatchCompanion -> WatchCompanionScreen(state.remoteUrl, state.statusMessage, viewModel::setRemoteUrl, viewModel::startPairing, viewModel::startRemoteServer, viewModel::stopRemoteServer, viewModel::requestWatchStatus, viewModel::refreshRemoteSnapshot, { filePicker.launch(arrayOf("*/*")) }) { screen.value = PhoneScreen.Home }
             PhoneScreen.RemoteManager -> RemoteManagerScreen(state.remoteUrl, state.statusMessage, viewModel::setRemoteUrl, viewModel::openRemoteManager) { screen.value = PhoneScreen.Home }
             PhoneScreen.RemoteSettings -> RemoteSettingsScreen(state.remoteSettings, viewModel::toggleUploads, viewModel::toggleDelete, viewModel::toggleAdvancedMode, viewModel::toggleShowHidden, viewModel::syncSettingsToWatch) { screen.value = PhoneScreen.Home }
