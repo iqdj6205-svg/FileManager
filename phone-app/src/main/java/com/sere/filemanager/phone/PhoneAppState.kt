@@ -8,6 +8,7 @@ data class PhoneAppState(
     val companion: CompanionState = CompanionState(),
     val browser: PhoneFileBrowserState = PhoneFileBrowserState(),
     val remoteSettings: PhoneRemoteSettingsState = PhoneRemoteSettingsState(),
+    val transfer: PhoneTransferState = PhoneTransferState(),
     val remoteUrl: String = "",
     val statusMessage: String = "Phone file manager ready",
 )
