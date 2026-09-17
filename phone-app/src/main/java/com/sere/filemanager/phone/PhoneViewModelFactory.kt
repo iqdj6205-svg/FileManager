@@ -26,6 +26,7 @@ class PhoneViewModelFactory(private val context: Context) : ViewModelProvider.Fa
             playbackController = InMemoryMediaPlaybackController(),
             settingsUseCase = AppSettingsUseCase(DataStoreAppSettingsRepository(appContext)),
             storageAccessManager = StorageAccessManager(),
+            safController = PhoneSafController(appContext),
         ) as T
     }
 }

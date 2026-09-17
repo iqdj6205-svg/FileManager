@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 44%.
+Approximate implementation progress: 45%.
 
 ## Completed
 
@@ -13,6 +13,7 @@ Approximate implementation progress: 44%.
 - Shared storage access/root selector foundations.
 - Phone storage roots screen wired into navigation and ViewModel.
 - Phone document-tree picker connected to root state.
+- SAF access and DocumentFile operation foundations.
 - Shared media playback controller and phone/watch playback UI foundations.
 - Shared app settings model/repository/use-case foundations.
 - DataStore app settings implementation.
@@ -36,7 +37,7 @@ Approximate implementation progress: 44%.
 ## Remaining major areas
 
 - Full file operation flows.
-- Proper SAF file operations.
+- Proper SAF file operations in UI paths.
 - Real Media3 playback and image rendering.
 - Full remote web manager route hardening.
 - Upload hardening.
