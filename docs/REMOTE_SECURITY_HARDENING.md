@@ -3,9 +3,13 @@
 ## Added
 
 - Request validator foundation.
+- Route policy resolver.
 - Read/upload/destructive operation validation split.
+- Upload policy with default size and extension blocks.
 - Audit entry model and in-memory audit sink.
+- Audit summary model.
 - JSON audit exporter.
+- Status JSON renderer with optional audit and health sections.
 - Basic per-client rate limiter.
 
 ## Security direction

@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 39%.
+Approximate implementation progress: 40%.
 
 ## Completed
 
@@ -18,7 +18,7 @@ Approximate implementation progress: 39%.
 - Phone file action/details/delete UI foundations.
 - Phone storage analyzer foundation.
 - Phone media library/gallery foundation wired to ViewModel/UI.
-- Remote server prototype, web manager, validation/audit/rate-limit foundations.
+- Remote server prototype, web manager, route policies, validation/audit/rate-limit foundations.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.
 
