@@ -15,10 +15,16 @@
         android:allowBackup="true"
         android:label="FileManager"
         android:theme="@style/AppTheme">
+
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true" />
+
         <service
             android:name=".RemoteServerService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
