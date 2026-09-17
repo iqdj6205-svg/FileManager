@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 81%.
+Approximate implementation progress: 82%.
 
 ## Completed
 
@@ -12,13 +12,13 @@ Approximate implementation progress: 81%.
 - File operation progress surfaced in phone browser.
 - Conflict resolution policy foundation for local and SAF copy/move targets.
 - Reactive phone observation for watch remote status and file transfer progress.
-- Media3 playback controllers, lifecycle release, and shared media session/notification state wired into phone state.
+- Media3 playback controllers, lifecycle release, and shared media session/notification state wired into phone and Wear state.
 - Remote route executor, audit routes, policies, rate limiting and upload persistence foundations.
 - Wear Data Layer command/status/settings and ChannelClient transfer foundations.
 
 ## Current focus
 
-- Wire media session state into Wear ViewModel.
+- Add media notification service polish.
 - Prepare build validation pass.
 - Improve round-screen UX polish.
 

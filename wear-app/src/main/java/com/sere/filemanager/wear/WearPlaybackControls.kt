@@ -15,6 +15,7 @@ import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.Text
 import com.sere.filemanager.core.media.MediaPlaybackSession
+import com.sere.filemanager.core.media.MediaNotificationState
 import com.sere.filemanager.core.media.PlaybackState
 
 @Composable
@@ -25,11 +26,12 @@ fun WearPlaybackControls(
     onSeekForward: () -> Unit,
     onStop: () -> Unit,
     onBack: () -> Unit,
+    notification: MediaNotificationState = MediaNotificationState(),
 ) {
     ScalingLazyColumn(modifier = Modifier.fillMaxSize().padding(10.dp), contentPadding = PaddingValues(vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         item { Text("Player", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }
-        item { Text(session.item?.displayName ?: "No media", maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center) }
-        item { Text(session.state.name, textAlign = TextAlign.Center) }
+        item { Text(notification.title.takeIf { notification.visible } ?: session.item?.displayName ?: "No media", maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center) }
+        item { Text(notification.subtitle ?: session.state.name, textAlign = TextAlign.Center) }
         item { Chip(label = { Text(if (session.state == PlaybackState.Playing) "Pause" else "Play") }, onClick = onPlayPause, modifier = Modifier.fillMaxWidth()) }
         item { Chip(label = { Text("-10s") }, onClick = onSeekBack, modifier = Modifier.fillMaxWidth()) }
         item { Chip(label = { Text("+10s") }, onClick = onSeekForward, modifier = Modifier.fillMaxWidth()) }

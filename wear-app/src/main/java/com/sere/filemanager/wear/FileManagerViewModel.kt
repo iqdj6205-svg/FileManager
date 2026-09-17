@@ -13,6 +13,7 @@ import com.sere.filemanager.core.media.MediaItem
 import com.sere.filemanager.core.media.MediaPlaybackCommand
 import com.sere.filemanager.core.media.MediaPlaybackCommandType
 import com.sere.filemanager.core.media.MediaPlaybackController
+import com.sere.filemanager.core.media.MediaSessionStateMapper
 import com.sere.filemanager.core.media.PlaybackState
 import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
@@ -34,12 +35,27 @@ class FileManagerViewModel(
 ) : ViewModel() {
     private val wearActions = WearFileManagerActions(safeOperations)
     private val imagePreviewController = ImagePreviewController()
+    private val sessionMapper = MediaSessionStateMapper()
     private val _state = MutableStateFlow(WearAppState())
     val state: StateFlow<WearAppState> = _state.asStateFlow()
 
     init {
         openPath(_state.value.browser.currentPath)
-        playbackController?.let { controller -> viewModelScope.launch { controller.session.collect { session -> _state.update { it.copy(playback = session) } } } }
+        playbackController?.let { controller ->
+            viewModelScope.launch {
+                controller.session.collect { session ->
+                    _state.update {
+                        it.copy(
+                            playback = session,
+                            mediaSession = WearMediaSessionState(
+                                metadata = session.item?.let(sessionMapper::metadata),
+                                notification = sessionMapper.notification(session),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
     }
 
     fun openImagePreview(item: MediaItem) { _state.update { it.copy(media = it.media.copy(selected = item), imagePreview = imagePreviewController.open(item)) } }
@@ -76,4 +92,5 @@ class FileManagerViewModel(
     fun stopRemoteServer() { viewModelScope.launch { val session = remoteController.stop(); _state.update { it.copy(remoteSession = session) } } }
     fun setAdvancedMode(enabled: Boolean) { _state.update { it.copy(advancedModeEnabled = enabled) } }
     fun setBatterySaver(enabled: Boolean) { _state.update { it.copy(batterySaverEnabled = enabled) } }
+    override fun onCleared() { playbackController?.release(); super.onCleared() }
 }
