@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 70%.
+Approximate implementation progress: 71%.
 
 ## Completed
 
@@ -10,22 +10,20 @@ Approximate implementation progress: 70%.
 - Wear permission hub and concrete ADB advanced guidance foundation.
 - Wear remote dashboard/settings foundations wired into navigation.
 - Wear MediaStore-backed gallery/audio/video lists wired into navigation.
-- Wear media preview and Media3 playback screen wiring.
-- Image preview model and phone/watch Coil UI foundations.
-- Phone image preview state and navigation wired for image media.
 - Wear image preview state and navigation wired for gallery media.
 - Media3 playback listener state updates and lifecycle cleanup helper.
 - Wear clipboard/copy-move UX foundations wired into browser UI.
-- Wear file operation action controller wired into ViewModel.
 - Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
+- Phone image preview state and navigation wired for image media.
 - Remote route executor wired into SimpleHttpEngine.
 - Binary-safe raw HTTP request parser and upload persistence foundation.
+- Remote audit route foundations.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.
 
 ## Current focus
 
-- Add foreground/media session polish.
+- Wire audit routes into HTTP engine and web manager.
 - Harden downloads/uploads and audit consistency.
 - Improve standalone watch experience.
 
