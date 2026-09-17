@@ -7,5 +7,6 @@ enum class PhoneScreen {
     StorageAnalyzer,
     WatchCompanion,
     RemoteManager,
+    RemoteSettings,
     Settings,
 }
