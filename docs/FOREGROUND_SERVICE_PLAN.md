@@ -1,22 +1,21 @@
 # Foreground Service Plan
 
-Remote access should eventually run in a foreground service, not directly in UI state.
+Remote access should run with a visible foreground-service notification.
 
-## Why
+## Added
 
-- Android may stop background networking.
-- Users need a persistent visible indicator while remote access is active.
-- Server lifetime should survive short UI navigation but stop safely.
+- `RemoteServerService`
+- notification channel
+- ongoing notification
+- stop action
+- start/stop intents
+- `RemoteServiceController`
+- manifest `foregroundServiceType="dataSync"`
 
-## Required before beta
+## Remaining before beta
 
-- Notification channel
-- Persistent notification with stop action
-- Start/stop intents
-- Low battery auto-stop
-- Timeout auto-stop
-- Audit log entry when server starts/stops
-
-## Current state
-
-`RemoteServerService` exists as a placeholder. The prototype server lifecycle is still driven from the ViewModel.
+- Move actual `EmbeddedHttpFileServer` lifecycle from ViewModel into the service.
+- Add low-battery auto-stop.
+- Add timeout auto-stop.
+- Add audit events when service starts/stops.
+- Add notification permission explanation on Android 13+.
