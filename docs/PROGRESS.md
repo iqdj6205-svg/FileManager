@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 57%.
+Approximate implementation progress: 58%.
 
 ## Completed
 
@@ -11,33 +11,19 @@ Approximate implementation progress: 57%.
 - Wear remote dashboard/settings foundations wired into navigation.
 - Wear media library/preview foundations.
 - Wear clipboard/copy-move UX foundations.
-- Wear file operation action controller foundation.
+- Wear file operation action controller wired into ViewModel.
 - Shared storage access/root selector foundations.
-- Phone storage roots screen wired into navigation and ViewModel.
-- Phone document-tree picker connected to root state.
-- SAF access and DocumentFile operation foundations.
-- SAF roots now open through phone browser listing.
-- SAF-aware phone rename/delete/create-folder action foundations.
-- Phone rename/create-folder input flows wired into UI.
-- Shared file clipboard and copy/move operation foundations.
-- Phone clipboard copy/move actions wired in ViewModel and browser UI.
-- Transfer progress DataLayer codec/store, watch publishing and phone companion UI card.
-- Shared media playback controller and phone/watch playback UI foundations.
-- Shared app settings model/repository/use-case foundations.
-- DataStore app settings implementation.
-- Phone playback state is wired into ViewModel and media preview/player navigation.
-- Phone storage analyzer and media library wired to ViewModel/UI.
+- Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
 - Remote server prototype, web manager, route policies, validation/audit/rate-limit foundations.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.
 
 ## Current focus
 
-- Complete Wear copy/move UX.
+- Expose Wear clipboard paste controls in browser/action UI.
 - Complete transfer progress UX.
-- Complete copy/move UX.
-- Wire storage roots and SAF access.
 - Harden remote server routes.
+- Improve standalone watch experience.
 
 ## Remaining major areas
 
