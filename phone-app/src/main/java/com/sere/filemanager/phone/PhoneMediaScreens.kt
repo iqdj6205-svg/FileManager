@@ -25,40 +25,24 @@ import com.sere.filemanager.core.ui.UiFormatters
 fun PhoneMediaLibraryScreen(state: PhoneMediaState, onRefresh: () -> Unit, onOpen: (MediaItem) -> Unit, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Phone media", style = MaterialTheme.typography.headlineSmall)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = onRefresh) { Text(if (state.isLoading) "Loading…" else "Refresh") }
-            Button(onClick = onBack) { Text("Home") }
-        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onRefresh) { Text(if (state.isLoading) "Loading…" else "Refresh") }; Button(onClick = onBack) { Text("Home") } }
         state.message?.let { Text(it) }
         Text("${state.items.size} media files")
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(state.items) { item -> PhoneMediaRow(item, onOpen) }
-        }
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { items(state.items) { item -> PhoneMediaRow(item, onOpen) } }
     }
 }
 
-@Composable
-private fun PhoneMediaRow(item: MediaItem, onOpen: (MediaItem) -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth().clickable { onOpen(item) }) {
-        Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(if (item.mimeType.startsWith("image")) "🖼" else if (item.mimeType.startsWith("video")) "🎬" else "🎵")
-            Column(modifier = Modifier.weight(1f)) {
-                Text(item.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("${item.mimeType} · ${UiFormatters.compactBytes(item.sizeBytes)}")
-            }
-        }
-    }
-}
+@Composable private fun PhoneMediaRow(item: MediaItem, onOpen: (MediaItem) -> Unit) { Card(modifier = Modifier.fillMaxWidth().clickable { onOpen(item) }) { Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) { Text(if (item.mimeType.startsWith("image")) "🖼" else if (item.mimeType.startsWith("video")) "🎬" else "🎵"); Column(modifier = Modifier.weight(1f)) { Text(item.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis); Text("${item.mimeType} · ${UiFormatters.compactBytes(item.sizeBytes)}") } } } }
 
 @Composable
-fun PhoneMediaPreviewScreen(item: MediaItem, onBack: () -> Unit) {
+fun PhoneMediaPreviewScreen(item: MediaItem, onPlay: () -> Unit, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Media preview", style = MaterialTheme.typography.headlineSmall)
         Text(item.displayName, maxLines = 2, overflow = TextOverflow.Ellipsis)
         Text("MIME: ${item.mimeType}")
         Text("Size: ${UiFormatters.compactBytes(item.sizeBytes)}")
         Text("URI: ${item.uri}", maxLines = 4, overflow = TextOverflow.Ellipsis)
-        Text("Image viewer and Media3 playback controls will be wired here next.")
+        Button(onClick = onPlay, modifier = Modifier.fillMaxWidth()) { Text("Open player") }
         Button(onClick = onBack) { Text("Back") }
     }
 }

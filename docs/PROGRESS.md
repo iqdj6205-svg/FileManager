@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 33%.
+Approximate implementation progress: 34%.
 
 ## Completed
 
@@ -11,7 +11,7 @@ Approximate implementation progress: 33%.
 - Wear remote dashboard/settings foundations wired into navigation.
 - Wear media library/preview foundations.
 - Shared media playback controller and phone/watch playback UI foundations.
-- Phone playback state is wired into ViewModel.
+- Phone playback state is wired into ViewModel and media preview/player navigation.
 - Phone app shell and file browser foundation.
 - Phone file action/details/delete UI foundations.
 - Phone storage analyzer foundation.
