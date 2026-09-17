@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 55%.
+Approximate implementation progress: 56%.
 
 ## Completed
 
@@ -10,6 +10,7 @@ Approximate implementation progress: 55%.
 - Wear permission hub and concrete ADB advanced guidance foundation.
 - Wear remote dashboard/settings foundations wired into navigation.
 - Wear media library/preview foundations.
+- Wear clipboard/copy-move UX foundations.
 - Shared storage access/root selector foundations.
 - Phone storage roots screen wired into navigation and ViewModel.
 - Phone document-tree picker connected to root state.
