@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 53%.
+Approximate implementation progress: 54%.
 
 ## Completed
 
@@ -19,7 +19,7 @@ Approximate implementation progress: 53%.
 - Phone rename/create-folder input flows wired into UI.
 - Shared file clipboard and copy/move operation foundations.
 - Phone clipboard copy/move actions wired in ViewModel and browser UI.
-- Transfer progress DataLayer codec/store and watch receive progress publishing.
+- Transfer progress DataLayer codec/store, watch publishing and phone refresh handling.
 - Shared media playback controller and phone/watch playback UI foundations.
 - Shared app settings model/repository/use-case foundations.
 - DataStore app settings implementation.
