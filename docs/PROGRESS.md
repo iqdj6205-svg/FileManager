@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 78%.
+Approximate implementation progress: 79%.
 
 ## Completed
 
@@ -11,14 +11,15 @@ Approximate implementation progress: 78%.
 - SAF stream copy/move matrix foundation wired for phone operations.
 - File operation progress surfaced in phone browser.
 - Conflict resolution policy foundation for local and SAF copy/move targets.
+- Reactive phone observation for watch remote status and file transfer progress.
 - Remote route executor, audit routes, policies, rate limiting and upload persistence foundations.
 - Wear Data Layer command/status/settings and ChannelClient transfer foundations.
 
 ## Current focus
 
-- Improve transfer/reactive status UX.
 - Add media session controls and polish.
 - Prepare build validation pass.
+- Improve round-screen UX polish.
 
 ## Remaining major areas
 
