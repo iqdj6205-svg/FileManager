@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.files.SafeFileOperations
 import com.sere.filemanager.core.media.AndroidMediaStoreRepository
+import com.sere.filemanager.core.media.InMemoryMediaPlaybackController
 
 class PhoneViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
@@ -19,6 +20,7 @@ class PhoneViewModelFactory(private val context: Context) : ViewModelProvider.Fa
             transferController = PhoneTransferController(appContext, bridge),
             fileOperationsController = PhoneFileOperationsController(SafeFileOperations(files)),
             mediaController = PhoneMediaController.create(AndroidMediaStoreRepository(appContext)),
+            playbackController = InMemoryMediaPlaybackController(),
         ) as T
     }
 }

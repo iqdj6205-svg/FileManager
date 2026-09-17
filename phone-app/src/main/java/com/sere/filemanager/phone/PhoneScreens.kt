@@ -8,6 +8,7 @@ enum class PhoneScreen {
     PhoneConfirmDelete,
     PhoneMedia,
     PhoneMediaPreview,
+    PhoneMediaPlayer,
     StorageAnalyzer,
     WatchCompanion,
     RemoteManager,
