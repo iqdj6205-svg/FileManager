@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 26%.
+Approximate implementation progress: 27%.
 
 ## Completed
 
@@ -10,7 +10,7 @@ Approximate implementation progress: 26%.
 - Phone app shell and file browser foundation.
 - Phone file action/details/delete UI foundations.
 - Phone storage analyzer foundation.
-- Phone media library/gallery foundation.
+- Phone media library/gallery foundation wired to ViewModel/UI.
 - Remote server prototype and foreground service path.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.

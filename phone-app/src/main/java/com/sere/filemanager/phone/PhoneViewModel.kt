@@ -7,6 +7,7 @@ import com.sere.filemanager.core.files.FileRepository
 import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.files.StorageAnalyzer
 import com.sere.filemanager.core.files.StorageInsights
+import com.sere.filemanager.core.media.MediaItem
 import com.sere.filemanager.core.model.CompanionCommand
 import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
@@ -26,6 +27,7 @@ class PhoneViewModel(
     private val wearBridgeClient: WearBridgePhoneClient? = null,
     private val transferController: PhoneTransferController? = null,
     private val fileOperationsController: PhoneFileOperationsController? = null,
+    private val mediaController: PhoneMediaController? = null,
 ) : ViewModel() {
     private val analyzer = StorageAnalyzer(fileRepository)
     private val insights = StorageInsights()
@@ -36,6 +38,8 @@ class PhoneViewModel(
 
     fun openPhonePath(path: String) { viewModelScope.launch { _state.update { it.copy(browser = it.browser.copy(currentPath = path, isLoading = true, error = null)) }; runCatching { fileRepository.list(path) }.onSuccess { items -> _state.update { it.copy(browser = it.browser.copy(items = items, isLoading = false)) } }.onFailure { error -> _state.update { it.copy(browser = it.browser.copy(isLoading = false, error = error.message ?: "Cannot open folder")) } } } }
     fun analyzeCurrentPhoneFolder() { viewModelScope.launch { val path = _state.value.browser.currentPath; _state.update { it.copy(analyzer = it.analyzer.copy(isLoading = true, message = "Analyzing $path")) }; runCatching { analyzer.analyze(path) }.onSuccess { analysis -> _state.update { it.copy(analyzer = it.analyzer.copy(analysis = analysis, insights = insights.fromAnalysis(analysis), isLoading = false, message = "Analysis complete"), statusMessage = "Analysis complete") } }.onFailure { error -> _state.update { it.copy(analyzer = it.analyzer.copy(isLoading = false, message = error.message ?: "Analysis failed"), statusMessage = error.message ?: "Analysis failed") } } } }
+    fun loadPhoneMedia() { val controller = mediaController ?: run { _state.update { it.copy(statusMessage = "Media unavailable") }; return }; viewModelScope.launch { _state.update { it.copy(media = it.media.copy(isLoading = true, message = "Loading media…")) }; runCatching { controller.loadLibrary() }.onSuccess { library -> _state.update { it.copy(media = it.media.copy(buckets = library.buckets, items = library.items, isLoading = false, message = "Loaded ${library.items.size} media files"), statusMessage = "Loaded media") } }.onFailure { error -> _state.update { it.copy(media = it.media.copy(isLoading = false, message = error.message ?: "Media load failed"), statusMessage = error.message ?: "Media load failed") } } } }
+    fun selectMedia(item: MediaItem) { _state.update { it.copy(media = it.media.copy(selected = item), statusMessage = item.displayName) } }
     fun openPhoneItem(path: String, type: FileItemType) { if (type == FileItemType.Directory) openPhonePath(path) else selectPhoneFile(path) }
     fun phoneGoUp() { val current = _state.value.browser.currentPath.trimEnd('/'); openPhonePath(current.substringBeforeLast('/', missingDelimiterValue = "/").ifBlank { "/" }) }
     fun selectPhoneFile(path: String) { val item = _state.value.browser.items.firstOrNull { it.path == path }; _state.update { it.copy(fileActions = it.fileActions.copy(selected = item), statusMessage = item?.name ?: "No file selected") } }
