@@ -26,6 +26,7 @@ class RemoteServerService : Service() {
 
     private val timeoutCheck = object : Runnable {
         override fun run() {
+            WearStatusPublisher(this@RemoteServerService).publishRemoteStatus()
             if (lifecyclePolicy.shouldStopForTimeout(startedAtMillis, System.currentTimeMillis(), config)) {
                 stopServerAndSelf()
             } else handler.postDelayed(this, 30_000L)
@@ -44,6 +45,7 @@ class RemoteServerService : Service() {
         handler.removeCallbacks(timeoutCheck)
         controller?.let { runCatching { kotlinx.coroutines.runBlocking { it.stop() } } }
         RemoteServerStatusStore.clear()
+        WearStatusPublisher(this).publishRemoteStatus()
         controller = null
         super.onDestroy()
     }
@@ -55,6 +57,7 @@ class RemoteServerService : Service() {
         controller = server
         val session = kotlinx.coroutines.runBlocking { server.start() }
         RemoteServerStatusStore.update(session)
+        WearStatusPublisher(this).publishRemoteStatus()
         startedAtMillis = session.startedAtMillis
         startForeground(NOTIFICATION_ID, notification("Remote: ${session.url} PIN ${session.pin}"))
         handler.postDelayed(timeoutCheck, 30_000L)
@@ -64,6 +67,7 @@ class RemoteServerService : Service() {
         handler.removeCallbacks(timeoutCheck)
         controller?.let { runCatching { kotlinx.coroutines.runBlocking { it.stop() } } }
         RemoteServerStatusStore.clear()
+        WearStatusPublisher(this).publishRemoteStatus()
         controller = null
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
