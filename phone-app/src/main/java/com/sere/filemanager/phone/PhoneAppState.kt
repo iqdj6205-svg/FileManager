@@ -7,6 +7,7 @@ import com.sere.filemanager.core.model.CompanionState
 data class PhoneAppState(
     val companion: CompanionState = CompanionState(),
     val browser: PhoneFileBrowserState = PhoneFileBrowserState(),
+    val analyzer: PhoneAnalyzerState = PhoneAnalyzerState(),
     val remoteSettings: PhoneRemoteSettingsState = PhoneRemoteSettingsState(),
     val transfer: PhoneTransferState = PhoneTransferState(),
     val fileActions: PhoneFileActionState = PhoneFileActionState(),
