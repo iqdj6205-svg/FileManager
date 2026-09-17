@@ -1,6 +1,6 @@
 # Project Progress
 
-Approximate implementation progress: 63%.
+Approximate implementation progress: 64%.
 
 ## Completed
 
@@ -13,14 +13,16 @@ Approximate implementation progress: 63%.
 - Wear clipboard/copy-move UX foundations wired into browser UI.
 - Wear file operation action controller wired into ViewModel.
 - Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
+- Phone Media3 playback controller wired through factory.
 - Remote server prototype, web manager, route policies, validation/audit/rate-limit foundations.
-- Remote route executor wired into SimpleHttpEngine for status/list/mkdir/rename/delete/upload validation.
+- Remote route executor wired into SimpleHttpEngine.
 - Binary-safe raw HTTP request parser and upload persistence foundation.
 - Wear Data Layer command/status/settings foundations.
 - ChannelClient transfer foundations.
 
 ## Current focus
 
+- Wire Wear media and playback.
 - Harden downloads/uploads and audit consistency.
 - Complete transfer progress UX.
 - Improve standalone watch experience.
@@ -28,7 +30,7 @@ Approximate implementation progress: 63%.
 ## Remaining major areas
 
 - Full copy/move flows across path and SAF roots.
-- Real Media3 playback and image rendering.
+- Image rendering and polished Media3 playback.
 - Multipart upload compatibility.
 - Persistent DataStore settings wiring in both apps.
 - UI/UX polish for round Wear screens.

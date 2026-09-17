@@ -9,7 +9,6 @@ import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.files.SafeFileOperations
 import com.sere.filemanager.core.files.StorageAccessManager
 import com.sere.filemanager.core.media.AndroidMediaStoreRepository
-import com.sere.filemanager.core.media.InMemoryMediaPlaybackController
 
 class PhoneViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
@@ -24,7 +23,7 @@ class PhoneViewModelFactory(private val context: Context) : ViewModelProvider.Fa
             transferController = PhoneTransferController(appContext, bridge),
             fileOperationsController = PhoneFileOperationsController(SafeFileOperations(files), saf),
             mediaController = PhoneMediaController.create(AndroidMediaStoreRepository(appContext)),
-            playbackController = InMemoryMediaPlaybackController(),
+            playbackController = AndroidMedia3PlaybackController(appContext),
             settingsUseCase = AppSettingsUseCase(DataStoreAppSettingsRepository(appContext)),
             storageAccessManager = StorageAccessManager(),
             safController = saf,
