@@ -20,12 +20,13 @@ Status legend:
 - `[~]` Favorite action — UI exposed with honest pending-persistence message in `7bb93ef`; persistence still pending.
 - `[x]` Selectable media bucket filters in phone media UI — `851cc83`.
 - `[~]` Media preview visuals — `16b9a57` adds visual media-type preview cards and safer image empty state; real video thumbnail/playback preview still pending.
+- `[x]` Phone image preview migrated to shared UI scaffold/cards — `pending`.
 - `[x]` Phone media permission rationale copy — `d26aae7`.
 - `[x]` Theme selector wired to `AppSettingsUseCase.setTheme` — `d890764`.
 - `[x]` Human-readable storage root paths — `d890764`.
 - `[x]` Auto-open added SAF tree — `eba5b2f`.
 - `[x]` Phone settings migrated to shared UI scaffold/cards — `c8ac6a1`.
-- `[x]` Phone media screens migrated to shared UI scaffold/cards — `pending`.
+- `[x]` Phone media screens migrated to shared UI scaffold/cards — `6def875`.
 
 ### Wear
 
