@@ -1,8 +1,8 @@
 package com.sere.filemanager.phone
 
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,10 +13,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
@@ -27,13 +28,16 @@ fun PhoneImagePreviewScreen(state: ImagePreviewState, onZoom: () -> Unit, onRota
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(state.title ?: "Image", style = MaterialTheme.typography.headlineSmall)
         Card(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            val uri = state.uri?.toUri() ?: Uri.EMPTY
-            Image(
-                painter = rememberAsyncImagePainter(uri),
-                contentDescription = state.title,
-                contentScale = if (state.isZoomed) ContentScale.Crop else ContentScale.Fit,
-                modifier = Modifier.fillMaxSize().rotate(state.rotationDegrees),
-            )
+            if (state.uri.isNullOrBlank()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No image selected") }
+            } else {
+                Image(
+                    painter = rememberAsyncImagePainter(state.uri.toUri()),
+                    contentDescription = state.title,
+                    contentScale = if (state.isZoomed) ContentScale.Crop else ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize().clipToBounds().rotate(state.rotationDegrees),
+                )
+            }
         }
         state.message?.let { Text(it) }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

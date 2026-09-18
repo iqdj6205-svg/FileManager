@@ -18,8 +18,8 @@ Status legend:
 - `[x]` Close Wear channel in `finally` after transfer — `cea0b06`.
 - `[x]` Share action for phone files — `7bb93ef`.
 - `[~]` Favorite action — UI exposed with honest pending-persistence message in `7bb93ef`; persistence still pending.
-- `[x]` Selectable media bucket filters in phone media UI — `pending`.
-- `[~]` Media preview — metadata improved in `e2d2f47`; visual preview still pending.
+- `[x]` Selectable media bucket filters in phone media UI — `851cc83`.
+- `[~]` Media preview visuals — `pending` adds visual media-type preview cards and safer image empty state; real video thumbnail/playback preview still pending.
 - `[x]` Theme selector wired to `AppSettingsUseCase.setTheme` — `d890764`.
 - `[x]` Human-readable storage root paths — `d890764`.
 - `[x]` Auto-open added SAF tree — `eba5b2f`.
