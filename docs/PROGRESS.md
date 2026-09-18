@@ -35,6 +35,7 @@ The project is **pre-alpha**, but the latest work is now being wrapped into a pr
 - Remote download failures now return clearer HTTP responses and failed download attempts are written to the remote audit sink.
 - Wear bridge manifest now includes a `DATA_CHANGED` filter alongside message handling for Data Layer symmetry.
 - Smoke-test checklist has been expanded into a focused verification checklist for the next local test pass.
+- Build-risk review checkpoint has been documented for the latest UI/remote changes.
 
 ## Current focus
 
@@ -45,5 +46,5 @@ The project is **pre-alpha**, but the latest work is now being wrapped into a pr
 
 ## Next stabilization block
 
-- Build-risk review after recent UI/remote commits.
-- Only critical fixes after that until the user completes the near-term test pass.
+- Only critical fixes after local build/test feedback.
+- If there is no immediate build failure, wait for the user's checkpoint results or core audit.

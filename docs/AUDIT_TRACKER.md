@@ -43,7 +43,8 @@ Status legend:
 
 ## Test checkpoint
 
-- `[x]` Smoke-test checklist expanded for the upcoming user verification checkpoint — `pending`.
+- `[x]` Smoke-test checklist expanded for the upcoming user verification checkpoint — `d5558f9`.
+- `[x]` Build-risk review checkpoint documented after recent UI/remote changes — `pending`.
 - `[hold]` Deeper core cleanup remains on hold until the user's core audit arrives.
 
 ## Full audit history
