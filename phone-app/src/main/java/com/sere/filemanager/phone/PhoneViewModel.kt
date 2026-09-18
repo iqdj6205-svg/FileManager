@@ -48,6 +48,9 @@ class PhoneViewModel(
         viewModelScope.launch { PhoneRemoteStatusStore.status.collect { status -> if (status != null) _state.update { it.copy(remoteUrl = status.url ?: it.remoteUrl, statusMessage = if (status.running) "Watch server: ${status.url} PIN ${status.pin} ${status.networkLabel.orEmpty()} ${status.batteryPercent ?: ""}%" else "Watch server stopped") } } }
     }
 
+    fun markPhoneFileShared(name: String) { _state.update { it.copy(statusMessage = "Sharing $name") } }
+    fun markPhoneShareFailed(message: String) { _state.update { it.copy(statusMessage = message) } }
+    fun toggleFavoriteSelectedPhoneFile() { val item = _state.value.fileActions.selected ?: run { _state.update { it.copy(statusMessage = "No file selected") }; return }; _state.update { it.copy(statusMessage = "Favorite pending persistence: ${item.name}") } }
     fun refreshTransferProgress() { val progress = PhoneTransferProgressStore.latest(); if (progress == null) _state.update { it.copy(statusMessage = "No transfer progress yet") } else _state.update { it.copy(transfer = it.transfer.copy(latestProgress = progress, message = progress.message, isSending = progress.state == WearTransferState.InProgress), statusMessage = progress.message ?: progress.state.name) } }
     fun setTransferTargetPath(path: String) { val normalized = path.trim().ifBlank { "/sdcard/Download" }; _state.update { it.copy(transfer = it.transfer.copy(targetPath = normalized), statusMessage = "Transfer target: $normalized") } }
     fun openImagePreview(item: MediaItem) { _state.update { it.copy(media = it.media.copy(selected = item), imagePreview = imagePreviewController.open(item), statusMessage = item.displayName) } }

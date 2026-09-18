@@ -21,6 +21,8 @@ fun PhoneFileActionScreen(
     onCopy: () -> Unit,
     onMove: () -> Unit,
     onCopyHere: () -> Unit,
+    onShare: () -> Unit,
+    onFavorite: () -> Unit,
     onDelete: () -> Unit,
     onBack: () -> Unit,
 ) {
@@ -32,6 +34,8 @@ fun PhoneFileActionScreen(
         Button(onClick = onCopy, modifier = Modifier.fillMaxWidth()) { Text("Copy to…") }
         Button(onClick = onMove, modifier = Modifier.fillMaxWidth()) { Text("Move to…") }
         Button(onClick = onCopyHere, modifier = Modifier.fillMaxWidth()) { Text("Duplicate here") }
+        Button(onClick = onShare, modifier = Modifier.fillMaxWidth()) { Text("Share") }
+        Button(onClick = onFavorite, modifier = Modifier.fillMaxWidth()) { Text("Favorite") }
         Button(onClick = onDelete, modifier = Modifier.fillMaxWidth()) { Text("Delete") }
         Button(onClick = onBack) { Text("Back") }
     }
