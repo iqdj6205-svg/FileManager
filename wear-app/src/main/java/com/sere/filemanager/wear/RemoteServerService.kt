@@ -19,15 +19,15 @@ import com.sere.filemanager.core.remote.RemoteServerStatusStore
 
 class RemoteServerService : Service() {
     private val handler = Handler(Looper.getMainLooper())
-    private val config = RemoteConfig()
     private val lifecyclePolicy = RemoteLifecyclePolicy()
     private var controller: RemoteServerController? = null
+    private var activeConfig: RemoteConfig = RemoteConfig()
     private var startedAtMillis: Long? = null
 
     private val timeoutCheck = object : Runnable {
         override fun run() {
             WearStatusPublisher(this@RemoteServerService).publishRemoteStatus()
-            if (lifecyclePolicy.shouldStopForTimeout(startedAtMillis, System.currentTimeMillis(), config)) {
+            if (lifecyclePolicy.shouldStopForTimeout(startedAtMillis, System.currentTimeMillis(), activeConfig)) {
                 stopServerAndSelf()
             } else handler.postDelayed(this, 30_000L)
         }
@@ -51,8 +51,15 @@ class RemoteServerService : Service() {
     }
 
     private fun startServer() {
+        val config = WearSettingsStore.current().remote.toRemoteConfig()
+        activeConfig = config
         val battery = BatteryMonitor(this).batteryPercent()
-        if (!lifecyclePolicy.shouldAllowStart(battery, config)) { stopSelf(); return }
+        if (!lifecyclePolicy.shouldAllowStart(battery, config)) {
+            RemoteServerStatusStore.clear()
+            WearStatusPublisher(this).publishRemoteStatus()
+            stopSelf()
+            return
+        }
         val server = RemoteServerControllerFactory.create(LocalFileRepository(), useEmbeddedPrototype = true)
         controller = server
         val session = kotlinx.coroutines.runBlocking { server.start() }
@@ -95,3 +102,12 @@ class RemoteServerService : Service() {
         fun stopIntent(context: Context): Intent = Intent(context, RemoteServerService::class.java).setAction(ACTION_STOP)
     }
 }
+
+private fun com.sere.filemanager.core.model.RemoteServerSettings.toRemoteConfig(): RemoteConfig = RemoteConfig(
+    port = port,
+    requirePin = requirePin,
+    allowUploads = allowUploads,
+    allowDelete = allowDelete,
+    autoStopMinutes = autoStopMinutes,
+    localNetworkOnly = localNetworkOnly,
+)

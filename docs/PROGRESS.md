@@ -23,6 +23,7 @@ The project is **pre-alpha**.
 - Phone settings now exposes a theme selector wired to persisted settings, and storage roots avoid showing raw `content://` URIs as user-facing paths.
 - Adding a SAF folder on phone now selects and opens that folder immediately.
 - Wear media library, image preview, and playback controls now use shared rotary UI helpers; playback shows timeline and metadata when available.
+- Wear `RemoteServerService` now reads synced/local Wear remote settings before start and uses them for lifecycle timeout/start policy.
 
 ## Current focus
 
@@ -34,7 +35,7 @@ The project is **pre-alpha**.
 
 ## Next stabilization block
 
+- Verify remote controller factory/config enforcement for port/PIN/upload/delete.
 - Real file rename text input flow on Wear.
-- Remote settings -> actual Wear service config.
 - Remote server status/list/download consistency.
 - Selectable media bucket filters and phone media preview visuals.

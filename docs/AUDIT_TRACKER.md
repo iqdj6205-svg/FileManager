@@ -26,12 +26,13 @@ Status legend:
 
 ### Wear
 
-- `[x]` Migrate Wear media library screens to shared `WearRotaryList` — `pending`.
-- `[x]` Migrate Wear playback controls to shared `WearRotaryList` — `pending`.
-- `[x]` Improve Wear playback metadata/timeline display — `pending`.
-- `[x]` Migrate Wear image preview to shared `WearRotaryList` and avoid empty URI rendering — `pending`.
+- `[x]` Migrate Wear media library screens to shared `WearRotaryList` — `6f8ad40`.
+- `[x]` Migrate Wear playback controls to shared `WearRotaryList` — `6f8ad40`.
+- `[x]` Improve Wear playback metadata/timeline display — `6f8ad40`.
+- `[x]` Migrate Wear image preview to shared `WearRotaryList` and avoid empty URI rendering — `6f8ad40`.
+- `[~]` Wear remote settings applied to `RemoteServerService` config — `pending`.
+  - Remaining: verify embedded server actually honors port/PIN/upload/delete config through controller factory/route policy.
 - `[ ]` Real Wear rename text input.
-- `[ ]` Wear remote settings applied to `RemoteServerService` config.
 - `[ ]` Remote server status/list/download consistency.
 - `[ ]` Permission rationale/permanently-denied UX.
 
