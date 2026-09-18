@@ -24,7 +24,8 @@ Status legend:
 - `[x]` Theme selector wired to `AppSettingsUseCase.setTheme` — `d890764`.
 - `[x]` Human-readable storage root paths — `d890764`.
 - `[x]` Auto-open added SAF tree — `eba5b2f`.
-- `[x]` Phone settings migrated to shared UI scaffold/cards — `pending`.
+- `[x]` Phone settings migrated to shared UI scaffold/cards — `c8ac6a1`.
+- `[x]` Phone media screens migrated to shared UI scaffold/cards — `pending`.
 
 ### Wear
 

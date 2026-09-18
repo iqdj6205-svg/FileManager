@@ -29,24 +29,32 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sere.filemanager.core.media.MediaItem
 import com.sere.filemanager.core.ui.UiFormatters
+import com.sere.filemanager.phone.ui.PhoneActionRow
+import com.sere.filemanager.phone.ui.PhoneEmptyState
+import com.sere.filemanager.phone.ui.PhoneScreenScaffold
+import com.sere.filemanager.phone.ui.PhoneSectionCard
 
 @Composable
 fun PhoneMediaLibraryScreen(state: PhoneMediaState, onRefresh: () -> Unit, onRequestAccess: () -> Unit, onOpen: (MediaItem) -> Unit, onBack: () -> Unit) {
     var selectedBucket by remember { mutableStateOf<String?>(null) }
     val visibleItems = remember(state.items, selectedBucket) { selectedBucket?.let { bucket -> state.items.filter { it.bucketName == bucket } } ?: state.items }
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Phone media", style = MaterialTheme.typography.headlineSmall)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onRefresh) { Text(if (state.isLoading) "Loading…" else "Refresh") }; Button(onClick = onRequestAccess) { Text("Grant access") }; Button(onClick = onBack) { Text("Home") } }
-        Text("Grant access lets FileManager read Android media collections. It does not grant protected/system folders.")
-        state.message?.let { Text(it) }
-        Text("${visibleItems.size} shown · ${state.items.size} total · ${state.buckets.size} buckets")
-        if (state.buckets.isNotEmpty()) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                item { FilterChip(selected = selectedBucket == null, onClick = { selectedBucket = null }, label = { Text("All ${state.items.size}") }) }
-                items(state.buckets) { bucket -> FilterChip(selected = selectedBucket == bucket.name, onClick = { selectedBucket = bucket.name }, label = { Text("${bucket.name} (${bucket.itemCount})", maxLines = 1, overflow = TextOverflow.Ellipsis) }) }
+    PhoneScreenScaffold(title = "Phone media", subtitle = "Android media collections available to FileManager.") {
+        PhoneActionRow(primary = if (state.isLoading) "Loading…" else "Refresh", onPrimary = onRefresh, secondary = "Grant access", onSecondary = onRequestAccess)
+        Button(onClick = onBack) { Text("Home") }
+        PhoneSectionCard("Access") {
+            Text("Grant access lets FileManager read Android media collections. It does not grant protected/system folders.")
+            state.message?.let { Text(it) }
+        }
+        PhoneSectionCard("Buckets") {
+            Text("${visibleItems.size} shown · ${state.items.size} total · ${state.buckets.size} buckets")
+            if (state.buckets.isNotEmpty()) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item { FilterChip(selected = selectedBucket == null, onClick = { selectedBucket = null }, label = { Text("All ${state.items.size}") }) }
+                    items(state.buckets) { bucket -> FilterChip(selected = selectedBucket == bucket.name, onClick = { selectedBucket = bucket.name }, label = { Text("${bucket.name} (${bucket.itemCount})", maxLines = 1, overflow = TextOverflow.Ellipsis) }) }
+                }
             }
         }
-        if (!state.isLoading && visibleItems.isEmpty()) Text(if (selectedBucket == null) "No media visible. Grant media access or refresh after adding files." else "No media in selected bucket.")
+        if (!state.isLoading && visibleItems.isEmpty()) PhoneEmptyState(if (selectedBucket == null) "No media visible. Grant media access or refresh after adding files." else "No media in selected bucket.")
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { items(visibleItems) { item -> PhoneMediaRow(item, onOpen) } }
     }
 }
@@ -71,19 +79,19 @@ private fun mediaMeta(item: MediaItem): String {
 
 @Composable
 fun PhoneMediaPreviewScreen(item: MediaItem, onPlay: () -> Unit, onBack: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Media preview", style = MaterialTheme.typography.headlineSmall)
+    PhoneScreenScaffold(title = "Media preview", subtitle = item.displayName) {
         Card(modifier = Modifier.fillMaxWidth().height(180.dp)) {
             Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
                 Text(mediaPreviewLabel(item), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
             }
         }
-        Text(item.displayName, maxLines = 2, overflow = TextOverflow.Ellipsis)
-        item.bucketName?.let { Text("Bucket: $it") }
-        Text("MIME: ${item.mimeType ?: "unknown"}")
-        Text("Size: ${UiFormatters.compactBytes(item.sizeBytes)}")
-        item.durationMillis?.let { Text("Duration: ${it / 1000}s") }
-        Text("URI: ${item.uri}", maxLines = 4, overflow = TextOverflow.Ellipsis)
+        PhoneSectionCard("Details") {
+            item.bucketName?.let { Text("Bucket: $it") }
+            Text("MIME: ${item.mimeType ?: "unknown"}")
+            Text("Size: ${UiFormatters.compactBytes(item.sizeBytes)}")
+            item.durationMillis?.let { Text("Duration: ${it / 1000}s") }
+            Text("URI: ${item.uri}", maxLines = 4, overflow = TextOverflow.Ellipsis)
+        }
         Button(onClick = onPlay, modifier = Modifier.fillMaxWidth(), enabled = item.mimeType?.startsWith("audio") == true || item.mimeType?.startsWith("video") == true) { Text(if (item.mimeType?.startsWith("audio") == true || item.mimeType?.startsWith("video") == true) "Open player" else "Player unavailable") }
         Button(onClick = onBack) { Text("Back") }
     }
