@@ -16,6 +16,10 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -25,19 +29,21 @@ import com.sere.filemanager.core.ui.UiFormatters
 
 @Composable
 fun PhoneMediaLibraryScreen(state: PhoneMediaState, onRefresh: () -> Unit, onRequestAccess: () -> Unit, onOpen: (MediaItem) -> Unit, onBack: () -> Unit) {
+    var selectedBucket by remember { mutableStateOf<String?>(null) }
+    val visibleItems = remember(state.items, selectedBucket) { selectedBucket?.let { bucket -> state.items.filter { it.bucketName == bucket } } ?: state.items }
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Phone media", style = MaterialTheme.typography.headlineSmall)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onRefresh) { Text(if (state.isLoading) "Loading…" else "Refresh") }; Button(onClick = onRequestAccess) { Text("Grant access") }; Button(onClick = onBack) { Text("Home") } }
         state.message?.let { Text(it) }
-        Text("${state.items.size} media files · ${state.buckets.size} buckets")
+        Text("${visibleItems.size} shown · ${state.items.size} total · ${state.buckets.size} buckets")
         if (state.buckets.isNotEmpty()) {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                item { FilterChip(selected = true, onClick = {}, label = { Text("All ${state.items.size}") }) }
-                items(state.buckets) { bucket -> FilterChip(selected = false, onClick = {}, label = { Text("${bucket.name} (${bucket.itemCount})", maxLines = 1, overflow = TextOverflow.Ellipsis) }) }
+                item { FilterChip(selected = selectedBucket == null, onClick = { selectedBucket = null }, label = { Text("All ${state.items.size}") }) }
+                items(state.buckets) { bucket -> FilterChip(selected = selectedBucket == bucket.name, onClick = { selectedBucket = bucket.name }, label = { Text("${bucket.name} (${bucket.itemCount})", maxLines = 1, overflow = TextOverflow.Ellipsis) }) }
             }
         }
-        if (!state.isLoading && state.items.isEmpty()) Text("No media visible. Grant media access or refresh after adding files.")
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { items(state.items) { item -> PhoneMediaRow(item, onOpen) } }
+        if (!state.isLoading && visibleItems.isEmpty()) Text(if (selectedBucket == null) "No media visible. Grant media access or refresh after adding files." else "No media in selected bucket.")
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { items(visibleItems) { item -> PhoneMediaRow(item, onOpen) } }
     }
 }
 

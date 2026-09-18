@@ -18,7 +18,7 @@ Status legend:
 - `[x]` Close Wear channel in `finally` after transfer — `cea0b06`.
 - `[x]` Share action for phone files — `7bb93ef`.
 - `[~]` Favorite action — UI exposed with honest pending-persistence message in `7bb93ef`; persistence still pending.
-- `[~]` Media buckets — summary chips and row bucket names in `e2d2f47`; selectable filters still pending.
+- `[x]` Selectable media bucket filters in phone media UI — `pending`.
 - `[~]` Media preview — metadata improved in `e2d2f47`; visual preview still pending.
 - `[x]` Theme selector wired to `AppSettingsUseCase.setTheme` — `d890764`.
 - `[x]` Human-readable storage root paths — `d890764`.
@@ -31,7 +31,7 @@ Status legend:
 - `[x]` Improve Wear playback metadata/timeline display — `6f8ad40`.
 - `[x]` Migrate Wear image preview to shared `WearRotaryList` and avoid empty URI rendering — `6f8ad40`.
 - `[x]` Wear remote settings passed into embedded server factory/config — `78c4ace`.
-- `[x]` Add Wear Data Layer `DATA_CHANGED` manifest filter symmetry — `pending`.
+- `[x]` Add Wear Data Layer `DATA_CHANGED` manifest filter symmetry — `de834c9`.
 - `[ ]` Real Wear rename text input.
 - `[ ]` Remote server status/list/download consistency.
 - `[ ]` Permission rationale/permanently-denied UX.

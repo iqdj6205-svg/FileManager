@@ -19,7 +19,7 @@ The project is **pre-alpha**.
 - Requirements audit has been preserved in `docs/AUDIT_TRACKER.md`.
 - Phone-to-watch transfer now has editable target path, UI sending state, local streaming progress, and channel close in `finally`.
 - Phone file actions now expose Share and Favorite actions; Share opens Android's share sheet, Favorite is marked as pending persistence instead of pretending to be complete.
-- Phone media library now displays media bucket summaries, bucket names on rows, cleaner text markers, and richer preview metadata.
+- Phone media library now displays selectable media bucket filters, bucket names on rows, cleaner text markers, and richer preview metadata.
 - Phone settings now exposes a theme selector wired to persisted settings, and storage roots avoid showing raw `content://` URIs as user-facing paths.
 - Adding a SAF folder on phone now selects and opens that folder immediately.
 - Wear media library, image preview, and playback controls now use shared rotary UI helpers; playback shows timeline and metadata when available.
@@ -36,6 +36,7 @@ The project is **pre-alpha**.
 
 ## Next stabilization block
 
-- Remote server status/list/download consistency.
+- Phone media preview visuals.
 - Real file rename text input flow on Wear.
-- Selectable media bucket filters and phone media preview visuals.
+- Remote server status/list/download consistency.
+- Permission rationale UX.
