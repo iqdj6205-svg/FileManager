@@ -60,7 +60,11 @@ class RemoteServerService : Service() {
             stopSelf()
             return
         }
-        val server = RemoteServerControllerFactory.create(LocalFileRepository(), useEmbeddedPrototype = true)
+        val server = RemoteServerControllerFactory.create(
+            fileRepository = LocalFileRepository(),
+            useEmbeddedPrototype = true,
+            config = config,
+        )
         controller = server
         val session = kotlinx.coroutines.runBlocking { server.start() }
         RemoteServerStatusStore.update(session)
