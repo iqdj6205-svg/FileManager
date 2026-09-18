@@ -41,11 +41,23 @@ Status legend:
 - `[x]` Wear permission rationale explains media vs protected storage and ADB risk — `d26aae7`.
 - `[~]` Remote server status/list/download consistency — `1ff1d86` publishes embedded start/stop session to shared status store; `b67ef45` exposes reachable local IP URL and blocks offline start; `2f3d5fb` enforces local-network start when local-only is enabled; `0e77b2e` shows active config in web manager; `948de3f` requires exact PIN for protected API routes; `2dad0a8` improves download errors/audit; endpoint/device verification still pending.
 
+## Core audit intake
+
+- `[x]` External/local core audit report added as `docs/CORE_AUDIT_REPORT.md` — `pending`.
+- `[hold]` All core-audit findings are treated as unverified hypotheses until checked against current `main` and build.
+- `[hold]` Do not delete claimed-dead core files blindly; verify references first.
+- `[ ]` Verify P0 remote PIN behavior against latest code after `948de3f`.
+- `[ ]` Verify/fix `AndroidMediaStoreRepository` URI/`MediaColumns.DATA` issue.
+- `[ ]` Verify/fix path safety for traversal, protected paths, and Wear bridge transfer targets.
+- `[ ]` Verify/fix remote upload multipart/raw-body behavior.
+- `[ ]` Verify recursive search/analyzer gaps.
+- `[ ]` Verify duplicate/dead files before removal.
+
 ## Test checkpoint
 
 - `[x]` Smoke-test checklist expanded for the upcoming user verification checkpoint — `d5558f9`.
-- `[x]` Build-risk review checkpoint documented after recent UI/remote changes — `pending`.
-- `[hold]` Deeper core cleanup remains on hold until the user's core audit arrives.
+- `[x]` Build-risk review checkpoint documented after recent UI/remote changes — `b8beb70`.
+- `[hold]` Deeper core cleanup remains on hold until core-audit findings are verified and the user completes the near-term checkpoint.
 
 ## Full audit history
 

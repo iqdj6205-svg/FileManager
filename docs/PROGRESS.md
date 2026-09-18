@@ -2,7 +2,7 @@
 
 ## Current honest status
 
-The project is **pre-alpha**, but the latest work is now being wrapped into a practical testing checkpoint instead of opening more unfinished areas.
+The project is **pre-alpha**, and the latest work is being wrapped into a practical testing checkpoint instead of opening more unfinished areas.
 
 ## Stabilization updates
 
@@ -36,15 +36,17 @@ The project is **pre-alpha**, but the latest work is now being wrapped into a pr
 - Wear bridge manifest now includes a `DATA_CHANGED` filter alongside message handling for Data Layer symmetry.
 - Smoke-test checklist has been expanded into a focused verification checklist for the next local test pass.
 - Build-risk review checkpoint has been documented for the latest UI/remote changes.
+- External/local core audit has been preserved as `docs/CORE_AUDIT_REPORT.md`; its findings are tracked as unverified until checked against latest `main`.
 
 ## Current focus
 
 1. Stop opening new unfinished surfaces before the user's near-term test pass.
 2. Finish/document the currently started stabilization areas.
-3. Keep deeper core cleanup paused until the core audit arrives.
-4. Use the smoke-test checklist to collect precise build/runtime failures.
+3. Treat the new core audit as an input queue, not as blindly trusted truth.
+4. Verify core-audit P0 items against current code before deleting or refactoring anything.
+5. Use the smoke-test checklist to collect precise build/runtime failures.
 
 ## Next stabilization block
 
+- Verify core-audit P0 items without large refactors.
 - Only critical fixes after local build/test feedback.
-- If there is no immediate build failure, wait for the user's checkpoint results or core audit.
