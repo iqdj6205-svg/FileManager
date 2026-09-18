@@ -24,6 +24,7 @@ The project is **pre-alpha**.
 - Adding a SAF folder on phone now selects and opens that folder immediately.
 - Wear media library, image preview, and playback controls now use shared rotary UI helpers; playback shows timeline and metadata when available.
 - Wear `RemoteServerService` now reads synced/local Wear remote settings before start and passes them into the embedded server factory, so port/PIN/upload/delete config reaches `SimpleHttpEngine`.
+- Wear bridge manifest now includes a `DATA_CHANGED` filter alongside message handling for Data Layer symmetry.
 
 ## Current focus
 

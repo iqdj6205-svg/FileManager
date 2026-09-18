@@ -30,7 +30,8 @@ Status legend:
 - `[x]` Migrate Wear playback controls to shared `WearRotaryList` — `6f8ad40`.
 - `[x]` Improve Wear playback metadata/timeline display — `6f8ad40`.
 - `[x]` Migrate Wear image preview to shared `WearRotaryList` and avoid empty URI rendering — `6f8ad40`.
-- `[x]` Wear remote settings passed into embedded server factory/config — `pending`.
+- `[x]` Wear remote settings passed into embedded server factory/config — `78c4ace`.
+- `[x]` Add Wear Data Layer `DATA_CHANGED` manifest filter symmetry — `pending`.
 - `[ ]` Real Wear rename text input.
 - `[ ]` Remote server status/list/download consistency.
 - `[ ]` Permission rationale/permanently-denied UX.

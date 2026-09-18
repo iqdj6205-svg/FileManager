@@ -15,7 +15,16 @@
         <meta-data android:name="com.google.android.gms.wearable.standalone" android:value="true" />
         <meta-data android:name="com.google.android.wearable.capabilities" android:resource="@array/android_wear_capabilities" />
         <service android:name=".RemoteServerService" android:exported="false" android:foregroundServiceType="dataSync" />
-        <service android:name=".WearBridgeListenerService" android:exported="true"><intent-filter><action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" /><data android:scheme="wear" android:host="*" android:pathPrefix="/filemanager" /></intent-filter></service>
+        <service android:name=".WearBridgeListenerService" android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/filemanager" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/filemanager" />
+            </intent-filter>
+        </service>
         <service android:name=".WearChannelListenerService" android:exported="true"><intent-filter><action android:name="com.google.android.gms.wearable.CHANNEL_EVENT" /><data android:scheme="wear" android:host="*" android:pathPrefix="/filemanager" /></intent-filter></service>
         <activity android:name=".MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter></activity>
     </application>
