@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,20 +29,45 @@ fun PhoneMediaLibraryScreen(state: PhoneMediaState, onRefresh: () -> Unit, onReq
         Text("Phone media", style = MaterialTheme.typography.headlineSmall)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onRefresh) { Text(if (state.isLoading) "Loading…" else "Refresh") }; Button(onClick = onRequestAccess) { Text("Grant access") }; Button(onClick = onBack) { Text("Home") } }
         state.message?.let { Text(it) }
-        Text("${state.items.size} media files")
+        Text("${state.items.size} media files · ${state.buckets.size} buckets")
+        if (state.buckets.isNotEmpty()) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item { FilterChip(selected = true, onClick = {}, label = { Text("All ${state.items.size}") }) }
+                items(state.buckets) { bucket -> FilterChip(selected = false, onClick = {}, label = { Text("${bucket.name} (${bucket.itemCount})", maxLines = 1, overflow = TextOverflow.Ellipsis) }) }
+            }
+        }
+        if (!state.isLoading && state.items.isEmpty()) Text("No media visible. Grant media access or refresh after adding files.")
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) { items(state.items) { item -> PhoneMediaRow(item, onOpen) } }
     }
 }
 
-@Composable private fun PhoneMediaRow(item: MediaItem, onOpen: (MediaItem) -> Unit) { Card(modifier = Modifier.fillMaxWidth().clickable { onOpen(item) }) { Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) { Text(if (item.mimeType?.startsWith("image") == true) "🖼" else if (item.mimeType?.startsWith("video") == true) "🎬" else "🎵"); Column(modifier = Modifier.weight(1f)) { Text(item.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis); Text("${item.mimeType} · ${UiFormatters.compactBytes(item.sizeBytes)}") } } } }
+@Composable private fun PhoneMediaRow(item: MediaItem, onOpen: (MediaItem) -> Unit) { Card(modifier = Modifier.fillMaxWidth().clickable { onOpen(item) }) { Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) { Text(mediaKind(item)); Column(modifier = Modifier.weight(1f)) { Text(item.displayName, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(mediaMeta(item), maxLines = 1, overflow = TextOverflow.Ellipsis); item.bucketName?.let { Text(it, maxLines = 1, overflow = TextOverflow.Ellipsis) } } } } }
+
+private fun mediaKind(item: MediaItem): String = when {
+    item.mimeType?.startsWith("image") == true -> "IMG"
+    item.mimeType?.startsWith("video") == true -> "VID"
+    item.mimeType?.startsWith("audio") == true -> "AUD"
+    else -> "MEDIA"
+}
+
+private fun mediaMeta(item: MediaItem): String {
+    val parts = buildList {
+        item.mimeType?.let { add(it) }
+        item.sizeBytes?.let { add(UiFormatters.compactBytes(it)) }
+        item.durationMillis?.let { add("${it / 1000}s") }
+    }
+    return if (parts.isEmpty()) "No metadata" else parts.joinToString(" · ")
+}
 
 @Composable
 fun PhoneMediaPreviewScreen(item: MediaItem, onPlay: () -> Unit, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Media preview", style = MaterialTheme.typography.headlineSmall)
         Text(item.displayName, maxLines = 2, overflow = TextOverflow.Ellipsis)
-        Text("MIME: ${item.mimeType}")
+        item.bucketName?.let { Text("Bucket: $it") }
+        Text("MIME: ${item.mimeType ?: "unknown"}")
         Text("Size: ${UiFormatters.compactBytes(item.sizeBytes)}")
+        item.durationMillis?.let { Text("Duration: ${it / 1000}s") }
         Text("URI: ${item.uri}", maxLines = 4, overflow = TextOverflow.Ellipsis)
         Button(onClick = onPlay, modifier = Modifier.fillMaxWidth()) { Text("Open player") }
         Button(onClick = onBack) { Text("Back") }

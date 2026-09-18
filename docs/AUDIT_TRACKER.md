@@ -9,9 +9,7 @@ Status legend:
 - `[x]` addressed in code
 - `[hold]` postponed intentionally
 
-## Phone app audit
-
-### P1 / functionality
+## Active independent phone fixes while core audit is pending
 
 - `[x]` Add editable target path for phone-to-watch file transfer.
   - Commit: `cea0b06`.
@@ -20,18 +18,22 @@ Status legend:
 - `[x]` Close Wear channel in `finally` after transfer.
   - Commit: `cea0b06`.
 - `[x]` Add Share action for phone files.
-  - Commit: `pending`.
+  - Commit: `7bb93ef`.
 - `[~]` Add real Favorite action or remove the placeholder.
-  - Commit: `pending` exposes the UI action with an honest pending-persistence message.
+  - Commit: `7bb93ef` exposes the UI action with an honest pending-persistence message.
   - Remaining: persistent FavoritesRepository/DataStore/Room integration.
-- `[ ]` Show media buckets / album filters in phone media UI.
-- `[ ]` Improve media preview with actual image/video preview.
+- `[~]` Show media buckets / album filters in phone media UI.
+  - Commit: `pending` shows bucket chips and row bucket names.
+  - Remaining: make chips selectable filters instead of read-only summary chips.
+- `[~]` Improve media preview with actual image/video preview.
+  - Commit: `pending` improves metadata details only.
+  - Remaining: visual image/video preview.
 - `[ ]` Add theme selector wired to `AppSettingsUseCase.setTheme`.
 - `[ ]` Make storage root display paths human-readable.
 - `[ ]` After adding SAF tree, select/open it automatically.
 - `[ ]` Unify SAF/local operation progress sink.
 - `[ ]` Improve permission rationale/permanently-denied UX.
 
-## Remaining tracker
+## Full audit history
 
-Full tracker was previously captured in `docs/AUDIT_TRACKER.md`. This compact section keeps the currently active independent phone block in sync while core audit is pending. Restore/expand from Git history if a full audit view is needed.
+The full requirements, Wear, and Phone audit tracker existed before commit `7bb93ef`. This compact active tracker is being updated for the current safe-fix stream while the core audit is pending.
