@@ -21,6 +21,7 @@ The project is **pre-alpha**.
 - Phone file actions now expose Share and Favorite actions; Share opens Android's share sheet, Favorite is marked as pending persistence instead of pretending to be complete.
 - Phone media library now displays media bucket summaries, bucket names on rows, cleaner text markers, and richer preview metadata.
 - Phone settings now exposes a theme selector wired to persisted settings, and storage roots avoid showing raw `content://` URIs as user-facing paths.
+- Adding a SAF folder on phone now selects and opens that folder immediately.
 
 ## Current focus
 
@@ -32,7 +33,6 @@ The project is **pre-alpha**.
 
 ## Next stabilization block
 
-- Repair/verify latest phone settings/storage commit locally if needed.
 - Real file rename text input flow on Wear.
 - Remote settings -> actual Wear service config.
 - Remote server status/list/download consistency.

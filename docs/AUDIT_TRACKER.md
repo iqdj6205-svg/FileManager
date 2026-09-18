@@ -29,10 +29,11 @@ Status legend:
   - Commit: `e2d2f47` improves metadata details only.
   - Remaining: visual image/video preview.
 - `[x]` Add theme selector wired to `AppSettingsUseCase.setTheme`.
-  - Commit: `pending`.
+  - Commit: `d890764`.
 - `[x]` Make storage root display paths human-readable.
+  - Commit: `d890764`.
+- `[x]` After adding SAF tree, select/open it automatically.
   - Commit: `pending`.
-- `[ ]` After adding SAF tree, select/open it automatically.
 - `[ ]` Unify SAF/local operation progress sink.
 - `[ ]` Improve permission rationale/permanently-denied UX.
 
