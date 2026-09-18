@@ -79,7 +79,7 @@ class SimpleHttpEngine(
         val policyFailure = validateRoutePolicy(route, query.pin(), clientKey)
         if (policyFailure != null) return policyFailure
         return when (route) {
-            RemoteRoutes.INDEX -> if (request.method == "GET") HttpResponseFactory.html(WebManagerPage.render(currentSessionForStatus())) else HttpResponseFactory.badRequest("Unsupported method")
+            RemoteRoutes.INDEX -> if (request.method == "GET") HttpResponseFactory.html(WebManagerPage.render(currentSessionForStatus(), config)) else HttpResponseFactory.badRequest("Unsupported method")
             RemoteRoutes.API_STATUS -> if (request.method == "GET") HttpResponseFactory.json(executor.status(currentSessionForStatus())) else HttpResponseFactory.badRequest("Unsupported method")
             RemoteRoutes.API_AUDIT -> if (request.method == "GET") guardedAuditJson(query.pin()) else HttpResponseFactory.badRequest("Unsupported method")
             RemoteRoutes.API_AUDIT_EXPORT -> if (request.method == "GET") guardedAuditExport(query.pin()) else HttpResponseFactory.badRequest("Unsupported method")
