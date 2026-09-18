@@ -21,6 +21,7 @@ See:
 - `docs/REAL_STATUS.md`
 - `docs/ALPHA_STABILIZATION_PLAN.md`
 - `docs/SMOKE_TEST_CHECKLIST.md`
+- `docs/UI_SYSTEM.md`
 
 ## Stabilization updates
 
@@ -28,16 +29,18 @@ See:
 - Wear permission state refreshes again on app resume.
 - Permission grant results re-read actual OS state instead of trusting only callback values.
 - File browser refreshes after media/storage permission grants.
+- Shared UI system foundations added for Wear and phone screens.
 
 ## Current focus
 
 1. Stabilize complete vertical flows.
 2. Avoid adding disconnected foundation-only code.
-3. Make Wear standalone file browsing and remote status/download actually reliable.
-4. Treat upload/delete/advanced/media extras as experimental until proven stable.
+3. Use shared UI components instead of per-screen custom styling.
+4. Make Wear standalone file browsing and remote status/download actually reliable.
 
 ## Next stabilization block
 
+- Migrate Wear Remote/Permissions to shared UI components.
 - Practical storage root screen for Wear.
 - Real file details and rename input flow.
 - Remote server status/list/download consistency.
