@@ -1,6 +1,7 @@
 package com.sere.filemanager.wear
 
 import androidx.compose.runtime.Immutable
+import com.sere.filemanager.core.files.StorageRootState
 import com.sere.filemanager.core.media.ImagePreviewState
 import com.sere.filemanager.core.media.MediaPlaybackSession
 import com.sere.filemanager.core.model.RemoteSession
@@ -8,6 +9,7 @@ import com.sere.filemanager.core.model.RemoteSession
 @Immutable
 data class WearAppState(
     val browser: BrowserState = BrowserState(),
+    val storageRoots: StorageRootState = StorageRootState(),
     val permissions: PermissionRequestState = PermissionRequestState(),
     val operation: OperationUiState = OperationUiState(),
     val wearOperations: WearOperationState = WearOperationState(),

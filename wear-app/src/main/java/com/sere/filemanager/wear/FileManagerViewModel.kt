@@ -8,6 +8,9 @@ import com.sere.filemanager.core.files.FileRepository
 import com.sere.filemanager.core.files.InMemoryFavoritesRepository
 import com.sere.filemanager.core.files.LocalFileRepository
 import com.sere.filemanager.core.files.SafeFileOperations
+import com.sere.filemanager.core.files.StorageAccessManager
+import com.sere.filemanager.core.files.StorageRoot
+import com.sere.filemanager.core.files.StorageRootType
 import com.sere.filemanager.core.media.ImagePreviewAction
 import com.sere.filemanager.core.media.ImagePreviewController
 import com.sere.filemanager.core.media.MediaItem
@@ -36,6 +39,7 @@ class FileManagerViewModel(
     private val mediaController: WearMediaController? = null,
     private val playbackController: MediaPlaybackController? = null,
     private val permissionStateReader: PermissionStateReader? = null,
+    private val storageAccessManager: StorageAccessManager = StorageAccessManager(),
 ) : ViewModel() {
     private val wearActions = WearFileManagerActions(safeOperations)
     private val imagePreviewController = ImagePreviewController()
@@ -45,33 +49,25 @@ class FileManagerViewModel(
 
     init {
         refreshPermissionState(showMessage = false)
-        openPath(_state.value.browser.currentPath)
-        playbackController?.let { controller ->
-            viewModelScope.launch {
-                controller.session.collect { session ->
-                    _state.update { it.copy(playback = session, mediaSession = WearMediaSessionState(metadata = session.item?.let(sessionMapper::metadata), notification = sessionMapper.notification(session))) }
-                }
-            }
+        viewModelScope.launch { storageAccessManager.roots.collect { roots -> _state.update { it.copy(storageRoots = roots) } } }
+        openPath(storageAccessManager.selectedPathOrDefault())
+        playbackController?.let { controller -> viewModelScope.launch { controller.session.collect { session -> _state.update { it.copy(playback = session, mediaSession = WearMediaSessionState(metadata = session.item?.let(sessionMapper::metadata), notification = sessionMapper.notification(session))) } } } }
+    }
+
+    fun selectStorageRoot(root: StorageRoot) {
+        storageAccessManager.selectRoot(root.id)
+        when (root.type) {
+            StorageRootType.MediaStore -> loadWearMedia()
+            else -> root.path?.let { openPath(it) } ?: _state.update { it.copy(operation = it.operation.copy(message = "Storage root has no path yet")) }
         }
     }
 
-    fun refreshPermissionState(showMessage: Boolean = true) {
-        val status = permissionStateReader?.status() ?: return
-        val message = permissionSummary(status)
-        _state.update { current ->
-            current.copy(
-                permissions = current.permissions.copy(status = status, lastRequestMessage = message),
-                operation = if (showMessage) current.operation.copy(message = message) else current.operation,
-            )
-        }
-    }
-
+    fun refreshPermissionState(showMessage: Boolean = true) { val status = permissionStateReader?.status() ?: return; val message = permissionSummary(status); _state.update { current -> current.copy(permissions = current.permissions.copy(status = status, lastRequestMessage = message), operation = if (showMessage) current.operation.copy(message = message) else current.operation) } }
     fun openImagePreview(item: MediaItem) { _state.update { it.copy(media = it.media.copy(selected = item), imagePreview = imagePreviewController.open(item)) } }
     fun imageZoomToggle() { _state.update { it.copy(imagePreview = imagePreviewController.reduce(it.imagePreview, ImagePreviewAction.ZoomToggle)) } }
     fun imageRotateLeft() { _state.update { it.copy(imagePreview = imagePreviewController.reduce(it.imagePreview, ImagePreviewAction.RotateLeft)) } }
     fun imageRotateRight() { _state.update { it.copy(imagePreview = imagePreviewController.reduce(it.imagePreview, ImagePreviewAction.RotateRight)) } }
-
-    fun loadWearMedia() { val controller = mediaController ?: run { _state.update { it.copy(media = it.media.copy(message = "Media unavailable")) }; return }; viewModelScope.launch { _state.update { it.copy(media = it.media.copy(isLoading = true, message = "Loading media…")) }; runCatching { controller.load() }.onSuccess { library -> _state.update { it.copy(media = it.media.copy(images = library.items.filter { item -> item.mimeType?.startsWith("image/") == true }, audio = library.items.filter { item -> item.mimeType?.startsWith("audio/") == true }, video = library.items.filter { item -> item.mimeType?.startsWith("video/") == true }, isLoading = false, message = "Loaded ${library.items.size}")) } }.onFailure { error -> _state.update { it.copy(media = it.media.copy(isLoading = false, message = error.message ?: "Media load failed")) } } } }
+    fun loadWearMedia() { val controller = mediaController ?: run { _state.update { it.copy(media = it.media.copy(message = "Media unavailable")) }; return }; viewModelScope.launch { _state.update { it.copy(media = it.media.copy(isLoading = true, message = "Loading media…")) }; runCatching { controller.load() }.onSuccess { library -> _state.update { it.copy(media = it.media.copy(images = library.items.filter { item -> item.mimeType?.startsWith("image/") == true }, audio = library.items.filter { item -> item.mimeType?.startsWith("audio/") == true }, video = library.items.filter { item -> item.mimeType?.startsWith("video/") == true }, isLoading = false, message = "Loaded ${library.items.size}"), operation = it.operation.copy(message = "Loaded media library")) } }.onFailure { error -> _state.update { it.copy(media = it.media.copy(isLoading = false, message = error.message ?: "Media load failed")) } } } }
     fun selectWearMedia(item: MediaItem) { _state.update { it.copy(media = it.media.copy(selected = item)) }; playbackController?.prepare(item) }
     fun playbackPlayPause() { playbackController?.handle(MediaPlaybackCommand(if (_state.value.playback.state == PlaybackState.Playing) MediaPlaybackCommandType.Pause else MediaPlaybackCommandType.Play)) }
     fun playbackSeekBack() { playbackController?.handle(MediaPlaybackCommand(MediaPlaybackCommandType.SeekBack)) }
