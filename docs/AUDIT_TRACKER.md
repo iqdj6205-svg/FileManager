@@ -39,7 +39,7 @@ Status legend:
 - `[x]` Add Wear Data Layer `DATA_CHANGED` manifest filter symmetry — `de834c9`.
 - `[~]` Real Wear rename text input — `8d2fce8` adds editable `BasicTextField` plus explicit save/presets; needs device validation.
 - `[x]` Wear permission rationale explains media vs protected storage and ADB risk — `d26aae7`.
-- `[~]` Remote server status/list/download consistency — `pending` publishes embedded start/stop session to shared status store; endpoint verification still pending.
+- `[~]` Remote server status/list/download consistency — `1ff1d86` publishes embedded start/stop session to shared status store; `pending` exposes reachable local IP URL and blocks start while offline; endpoint verification still pending.
 
 ## Full audit history
 

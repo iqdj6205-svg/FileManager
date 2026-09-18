@@ -54,6 +54,13 @@ class RemoteServerService : Service() {
         val config = WearSettingsStore.current().remote.toRemoteConfig()
         activeConfig = config
         val battery = BatteryMonitor(this).batteryPercent()
+        val network = NetworkStatus(this)
+        if (!network.isConnected()) {
+            RemoteServerStatusStore.clear()
+            WearStatusPublisher(this).publishRemoteStatus()
+            stopSelf()
+            return
+        }
         if (!lifecyclePolicy.shouldAllowStart(battery, config)) {
             RemoteServerStatusStore.clear()
             WearStatusPublisher(this).publishRemoteStatus()
@@ -67,10 +74,12 @@ class RemoteServerService : Service() {
         )
         controller = server
         val session = kotlinx.coroutines.runBlocking { server.start() }
-        RemoteServerStatusStore.update(session)
+        val reachableUrl = network.remoteBaseUrl(config.port) ?: session.url
+        val visibleSession = session.copy(url = reachableUrl)
+        RemoteServerStatusStore.update(visibleSession)
         WearStatusPublisher(this).publishRemoteStatus()
         startedAtMillis = session.startedAtMillis
-        startForeground(NOTIFICATION_ID, notification("Remote: ${session.url} PIN ${session.pin}"))
+        startForeground(NOTIFICATION_ID, notification("Remote: ${visibleSession.url} PIN ${visibleSession.pin}"))
         handler.postDelayed(timeoutCheck, 30_000L)
     }
 
