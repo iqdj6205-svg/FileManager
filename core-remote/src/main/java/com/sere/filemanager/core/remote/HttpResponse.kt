@@ -22,8 +22,8 @@ object HttpResponseFactory {
     fun json(body: String): HttpResponse = HttpResponse.Text("200 OK", "application/json; charset=utf-8", body)
     fun text(body: String): HttpResponse = HttpResponse.Text("200 OK", "text/plain; charset=utf-8", body)
     fun badRequest(message: String): HttpResponse = HttpResponse.Text("400 Bad Request", "text/plain; charset=utf-8", message)
-    fun unauthorized(): HttpResponse = HttpResponse.Text("401 Unauthorized", "text/plain; charset=utf-8", "Unauthorized")
+    fun unauthorized(): HttpResponse = HttpResponse.Text("401 Unauthorized", "text/plain; charset=utf-8", "Invalid or missing PIN")
     fun forbidden(message: String = "Forbidden"): HttpResponse = HttpResponse.Text("403 Forbidden", "text/plain; charset=utf-8", message)
-    fun notFound(): HttpResponse = HttpResponse.Text("404 Not Found", "text/plain; charset=utf-8", "Not Found")
+    fun notFound(message: String = "Not Found"): HttpResponse = HttpResponse.Text("404 Not Found", "text/plain; charset=utf-8", message)
     fun serverError(message: String): HttpResponse = HttpResponse.Text("500 Internal Server Error", "text/plain; charset=utf-8", message)
 }

@@ -114,7 +114,16 @@ class SimpleHttpEngine(
     private fun downloadResponse(path: String, clientKey: String): HttpResponse {
         val requestedPath = HttpRequestTools.queryParam(path, "path") ?: return HttpResponseFactory.badRequest("Missing path")
         if (!authorized(path)) return HttpResponseFactory.unauthorized()
-        val plan = downloadPlanner.plan(requestedPath).getOrElse { return HttpResponseFactory.badRequest(it.message ?: "Cannot download") }
+        val plan = downloadPlanner.plan(requestedPath).getOrElse { error ->
+            val message = error.message ?: "Cannot download"
+            auditSink.record(RemoteAuditEntry(action = RemoteAuditAction.Download, path = requestedPath, success = false, message = message, client = clientKey))
+            return when {
+                message.contains("does not exist", ignoreCase = true) -> HttpResponseFactory.notFound(message)
+                message.contains("not a file", ignoreCase = true) -> HttpResponseFactory.badRequest(message)
+                message.contains("Invalid", ignoreCase = true) -> HttpResponseFactory.forbidden(message)
+                else -> HttpResponseFactory.badRequest(message)
+            }
+        }
         auditLog.record(RemoteAuditEvent(RemoteAuditEventType.DownloadRequested, "Download requested", plan.path))
         auditSink.record(RemoteAuditEntry(action = RemoteAuditAction.Download, path = plan.path, success = true, message = "Download requested", client = clientKey))
         return HttpResponse.FileStream(file = File(plan.path), contentType = plan.mimeType, downloadName = plan.fileName)

@@ -32,6 +32,7 @@ The project is **pre-alpha**.
 - Wear remote service now exposes a reachable local IPv4 URL instead of loopback-only `127.0.0.1` when possible, refuses startup while offline, and enforces Wi‑Fi/local address availability when local-only mode is enabled.
 - Remote web manager now displays active security/config state: PIN mode, upload mode, delete/rename mode, local-network mode, and auto-stop timeout.
 - Remote API routing now requires the exact active PIN for protected API routes instead of accepting any non-empty PIN-shaped value.
+- Remote download failures now return clearer HTTP responses and failed download attempts are written to the remote audit sink.
 - Wear bridge manifest now includes a `DATA_CHANGED` filter alongside message handling for Data Layer symmetry.
 
 ## Current focus
@@ -44,5 +45,5 @@ The project is **pre-alpha**.
 
 ## Next stabilization block
 
-- Continue remote server status/list/download consistency.
 - Build-risk review after recent UI/remote commits.
+- Continue remote server list/status consistency.
