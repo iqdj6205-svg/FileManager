@@ -37,6 +37,7 @@ fun PhoneMediaLibraryScreen(state: PhoneMediaState, onRefresh: () -> Unit, onReq
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Phone media", style = MaterialTheme.typography.headlineSmall)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onRefresh) { Text(if (state.isLoading) "Loading…" else "Refresh") }; Button(onClick = onRequestAccess) { Text("Grant access") }; Button(onClick = onBack) { Text("Home") } }
+        Text("Grant access lets FileManager read Android media collections. It does not grant protected/system folders.")
         state.message?.let { Text(it) }
         Text("${visibleItems.size} shown · ${state.items.size} total · ${state.buckets.size} buckets")
         if (state.buckets.isNotEmpty()) {

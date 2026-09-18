@@ -20,6 +20,7 @@ Status legend:
 - `[~]` Favorite action — UI exposed with honest pending-persistence message in `7bb93ef`; persistence still pending.
 - `[x]` Selectable media bucket filters in phone media UI — `851cc83`.
 - `[~]` Media preview visuals — `16b9a57` adds visual media-type preview cards and safer image empty state; real video thumbnail/playback preview still pending.
+- `[x]` Phone media permission rationale copy — `pending`.
 - `[x]` Theme selector wired to `AppSettingsUseCase.setTheme` — `d890764`.
 - `[x]` Human-readable storage root paths — `d890764`.
 - `[x]` Auto-open added SAF tree — `eba5b2f`.
@@ -32,9 +33,9 @@ Status legend:
 - `[x]` Migrate Wear image preview to shared `WearRotaryList` and avoid empty URI rendering — `6f8ad40`.
 - `[x]` Wear remote settings passed into embedded server factory/config — `78c4ace`.
 - `[x]` Add Wear Data Layer `DATA_CHANGED` manifest filter symmetry — `de834c9`.
-- `[~]` Real Wear rename text input — `pending` adds editable `BasicTextField` plus explicit save/presets; needs device validation.
+- `[~]` Real Wear rename text input — `8d2fce8` adds editable `BasicTextField` plus explicit save/presets; needs device validation.
+- `[x]` Wear permission rationale explains media vs protected storage and ADB risk — `pending`.
 - `[ ]` Remote server status/list/download consistency.
-- `[ ]` Permission rationale/permanently-denied UX.
 
 ## Full audit history
 
