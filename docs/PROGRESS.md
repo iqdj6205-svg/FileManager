@@ -14,7 +14,7 @@ The project is **pre-alpha**.
 - First Wear audit response committed: permission callbacks/readiness, RemoteSettings back target, and fake ServiceBackedRemoteController status were corrected.
 - Wear navigation now has a real back stack for current screens instead of hardcoded one-off returns.
 - Wear Home and Files migrated to shared rotary UI helpers.
-- Wear rename action now opens an explicit temporary rename screen instead of silently renaming to `copy-*`.
+- Wear rename action now opens an editable input screen instead of silently renaming to `copy-*`.
 - First Phone audit response committed: remote settings security fields, URL validation, transfer empty state, clearer bridge status refresh, clipboard guidance, and phone emoji cleanup.
 - Requirements audit has been preserved in `docs/AUDIT_TRACKER.md`.
 - Phone-to-watch transfer now has editable target path, UI sending state, local streaming progress, and channel close in `finally`.
@@ -37,6 +37,6 @@ The project is **pre-alpha**.
 
 ## Next stabilization block
 
-- Real file rename text input flow on Wear.
+- Validate latest Wear rename input on device/build.
 - Remote server status/list/download consistency.
 - Permission rationale UX.

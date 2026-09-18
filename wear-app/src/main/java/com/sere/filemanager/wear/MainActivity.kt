@@ -9,12 +9,14 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -43,23 +45,10 @@ private class WearNavigator(start: WearScreen = WearScreen.Home) {
     var current by mutableStateOf(start)
         private set
     private val backStack = mutableStateListOf<WearScreen>()
-
-    fun go(screen: WearScreen) {
-        if (screen == current) return
-        backStack.add(current)
-        current = screen
-    }
-
+    fun go(screen: WearScreen) { if (screen == current) return; backStack.add(current); current = screen }
     fun replace(screen: WearScreen) { current = screen }
-
-    fun back() {
-        current = backStack.removeLastOrNull() ?: WearScreen.Home
-    }
-
-    fun home() {
-        backStack.clear()
-        current = WearScreen.Home
-    }
+    fun back() { current = backStack.removeLastOrNull() ?: WearScreen.Home }
+    fun home() { backStack.clear(); current = WearScreen.Home }
 }
 
 @Composable fun WearFileManagerApp() { val context = LocalContext.current; val viewModel: FileManagerViewModel = viewModel(factory = FileManagerViewModelFactory(context)); WearFileManagerContent(viewModel) }
@@ -87,7 +76,7 @@ private class WearNavigator(start: WearScreen = WearScreen.Home) {
             WearScreen.Files -> FileBrowserScreen(state.browser, state.wearOperations.clipboard, permissionHubState.allBasicGranted, { path, type -> if (type == FileItemType.Directory) viewModel.openItem(path, type) else { viewModel.selectItem(path); nav.go(WearScreen.FileActions) } }, { item -> viewModel.selectItem(item.path); nav.go(WearScreen.FileActions) }, viewModel::goUp, viewModel::pasteClipboardHere, viewModel::clearClipboard, { viewModel.createQuickFolder() }, { nav.go(WearScreen.Permissions) }, nav::home)
             WearScreen.StorageRoots -> WearStorageRootsScreen(state.storageRoots, { root -> viewModel.selectStorageRoot(root); nav.go(WearScreen.Files) }, nav::back)
             WearScreen.FileActions -> selected?.let { item -> FileActionSheet(item, { nav.go(WearScreen.FileDetails) }, { nav.go(WearScreen.Rename) }, { viewModel.markSelectedForCopy(); nav.go(WearScreen.Files) }, { viewModel.markSelectedForMove(); nav.go(WearScreen.Files) }, { nav.go(WearScreen.ConfirmDelete) }, { viewModel.toggleFavoriteSelected(); nav.go(WearScreen.Files) }, nav::back) } ?: nav.replace(WearScreen.Files)
-            WearScreen.Rename -> selected?.let { item -> RenamePresetScreen(item, { newName -> viewModel.renameSelected(newName); nav.go(WearScreen.Files) }, nav::back) } ?: nav.replace(WearScreen.Files)
+            WearScreen.Rename -> selected?.let { item -> RenameInputScreen(item, { newName -> viewModel.renameSelected(newName); nav.go(WearScreen.Files) }, nav::back) } ?: nav.replace(WearScreen.Files)
             WearScreen.FileDetails -> selected?.let { FileDetailsScreen(it, StorageFormatter.bytes(it.sizeBytes), nav::back) } ?: nav.replace(WearScreen.Files)
             WearScreen.ConfirmDelete -> selected?.let { ConfirmDeleteScreen(it.name, { viewModel.deleteSelected(); nav.go(WearScreen.Files) }, nav::back) } ?: nav.replace(WearScreen.Files)
             WearScreen.Media -> { LaunchedEffect(Unit) { if (state.media.images.isEmpty() && state.media.audio.isEmpty() && state.media.video.isEmpty()) viewModel.loadWearMedia() }; MediaHomeScreen(permissionHubState.mediaGranted, state.media.message, viewModel::loadWearMedia, { nav.go(WearScreen.Gallery) }, { nav.go(WearScreen.Audio) }, { nav.go(WearScreen.Video) }, { nav.go(WearScreen.Permissions) }, nav::back) }
@@ -109,7 +98,7 @@ private class WearNavigator(start: WearScreen = WearScreen.Home) {
 @Composable private fun HomeScreen(onOpen: (WearScreen) -> Unit) { WearRotaryList { wearTitle("FileManager", "Standalone Wear file manager"); wearPrimaryAction("Files") { onOpen(WearScreen.Files) }; wearPrimaryAction("Storage") { onOpen(WearScreen.StorageRoots) }; wearPrimaryAction("Media") { onOpen(WearScreen.Media) }; wearPrimaryAction("Remote") { onOpen(WearScreen.Remote) }; wearSecondaryAction("Settings") { onOpen(WearScreen.Settings) }; wearSecondaryAction("Advanced") { onOpen(WearScreen.Advanced) } } }
 @Composable private fun FileBrowserScreen(state: BrowserState, clipboard: WearClipboardState, hasPermissions: Boolean, onOpen: (String, FileItemType) -> Unit, onLongAction: (FileItem) -> Unit, onUp: () -> Unit, onPaste: () -> Unit, onClearClipboard: () -> Unit, onCreateFolder: () -> Unit, onRequestPermissions: () -> Unit, onHome: () -> Unit) { WearRotaryList { wearTitle("Files", state.currentPath); if (clipboard.hasEntry) { wearInfo("${clipboard.mode}: ${clipboard.fileName}"); wearPrimaryAction("Paste here", onPaste); wearSecondaryAction("Clear clipboard", onClearClipboard) }; if (!hasPermissions) wearPrimaryAction("Grant access", onRequestPermissions); wearSecondaryAction("Up", onUp); wearSecondaryAction("New folder", onCreateFolder); wearLoading(state.isLoading); wearError(state.error); wearEmpty(!state.isLoading && state.items.isEmpty(), if (hasPermissions) "No visible files here." else "No visible files. Grant access or choose another folder."); items(state.items.size) { index -> FileRow(state.items[index], onOpen, onLongAction) }; wearBackAction(onHome, "Home") } }
 @Composable private fun FileRow(item: FileItem, onOpen: (String, FileItemType) -> Unit, onLongAction: (FileItem) -> Unit) { val icon = when (item.type) { FileItemType.Directory -> "[DIR]"; FileItemType.Image -> "[IMG]"; FileItemType.Video -> "[VID]"; FileItemType.Audio -> "[AUD]"; FileItemType.Archive -> "[ZIP]"; FileItemType.Document -> "[DOC]"; FileItemType.Other -> "[FILE]" }; Row(modifier = Modifier.fillMaxWidth().clickable { onOpen(item.path, item.type) }.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) { Text(icon, modifier = Modifier.clickable { onLongAction(item) }); Text(item.name, maxLines = 1, overflow = TextOverflow.Ellipsis) } }
-@Composable private fun RenamePresetScreen(item: FileItem, onRename: (String) -> Unit, onBack: () -> Unit) { WearRotaryList { wearTitle("Rename", item.name); wearInfo("Temporary presets until keyboard/voice input is wired."); wearPrimaryAction(QuickTextInputPresets.copyName(item.name)) { onRename(QuickTextInputPresets.copyName(item.name)) }; wearSecondaryAction("lowercase") { onRename(item.name.lowercase()) }; wearSecondaryAction("UPPERCASE") { onRename(item.name.uppercase()) }; wearBackAction(onBack) } }
+@Composable private fun RenameInputScreen(item: FileItem, onRename: (String) -> Unit, onBack: () -> Unit) { var value by remember(item.path) { mutableStateOf(item.name) }; WearRotaryList { wearTitle("Rename", item.name); item { BasicTextField(value = value, onValueChange = { value = it.take(120) }, textStyle = TextStyle(color = Color.White, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth().background(Color.DarkGray).padding(8.dp)) }; wearInfo("Tap field to edit with system input."); wearPrimaryAction("Save") { if (value.isNotBlank() && value != item.name) onRename(value.trim()) }; wearSecondaryAction(QuickTextInputPresets.copyName(item.name)) { value = QuickTextInputPresets.copyName(item.name) }; wearSecondaryAction("lowercase") { value = item.name.lowercase() }; wearSecondaryAction("UPPERCASE") { value = item.name.uppercase() }; wearBackAction(onBack) } }
 @Composable private fun OperationMessageScreen(message: String, inProgress: Boolean, onDismiss: () -> Unit) { WearRotaryList { wearTitle(if (inProgress) "Please wait" else "Message"); wearInfo(message); if (inProgress) item { CircularProgressIndicator() } else wearBackAction(onDismiss, "OK") } }
 @Composable private fun MediaHomeScreen(mediaGranted: Boolean, message: String?, onRefresh: () -> Unit, onGallery: () -> Unit, onAudio: () -> Unit, onVideo: () -> Unit, onRequestPermissions: () -> Unit, onBack: () -> Unit) { WearRotaryList { wearTitle("Media"); wearInfo(message); wearPrimaryAction("Refresh", onRefresh); if (!mediaGranted) wearSecondaryAction("Grant media", onRequestPermissions); wearPrimaryAction("Gallery", onGallery); wearPrimaryAction("Audio", onAudio); wearPrimaryAction("Video", onVideo); wearBackAction(onBack) } }
 @Composable private fun SettingsScreen(batterySaver: Boolean, onBatterySaver: (Boolean) -> Unit, onPermissions: () -> Unit, onStorage: () -> Unit, onRemoteSettings: () -> Unit, onBack: () -> Unit) { WearRotaryList { wearTitle("Settings"); item { ToggleRow("Battery safe", batterySaver, onBatterySaver) }; wearPrimaryAction("Permissions", onPermissions); wearPrimaryAction("Storage roots", onStorage); wearSecondaryAction("Remote settings", onRemoteSettings); wearInfo("Theme: dark"); wearInfo("Haptics: on"); wearBackAction(onBack) } }
