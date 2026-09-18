@@ -15,17 +15,20 @@ The project is **pre-alpha**.
 - Wear navigation now has a real back stack for current screens instead of hardcoded one-off returns.
 - Wear Home and Files migrated to shared rotary UI helpers.
 - Wear rename action now opens an explicit temporary rename screen instead of silently renaming to `copy-*`.
+- First Phone audit response committed: remote settings security fields, URL validation, transfer empty state, clearer bridge status refresh, clipboard guidance, and phone emoji cleanup.
 
 ## Current focus
 
-1. Process Wear audit findings by priority.
+1. Process Wear and Phone audit findings by priority.
 2. Stabilize complete vertical flows instead of adding foundation-only code.
 3. Use shared UI components instead of per-screen custom styling.
 4. Make Wear standalone file browsing and remote status/download actually reliable.
+5. Make phone companion remote/transfer flows useful instead of button-only shells.
 
 ## Next stabilization block
 
-- Real file rename text input flow.
-- Remote settings -> actual service config.
+- Real file rename text input flow on Wear.
+- Remote settings -> actual Wear service config.
 - Remote server status/list/download consistency.
+- Editable phone-to-watch transfer target and transfer progress.
 - Media/player screens shared UI migration.
