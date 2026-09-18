@@ -9,7 +9,7 @@ data class RemoteValidationResult(
 
 class RemoteRequestValidator(private val config: RemoteConfig) {
     fun validateRead(path: String, pin: String?): RemoteValidationResult {
-        if (!validatePin(pin)) return RemoteValidationResult(false, RemoteWebMessages.invalidPin)
+        if (!validatePinShape(pin)) return RemoteValidationResult(false, RemoteWebMessages.invalidPin)
         if (PathSafety.explainIfBlocked(path) != null) return RemoteValidationResult(false, RemoteWebMessages.invalidPath)
         return RemoteValidationResult(true)
     }
@@ -28,5 +28,5 @@ class RemoteRequestValidator(private val config: RemoteConfig) {
         return RemoteValidationResult(true)
     }
 
-    private fun validatePin(pin: String?): Boolean = !config.requirePin || pin == null || pin.length >= 4
+    private fun validatePinShape(pin: String?): Boolean = !config.requirePin || !pin.isNullOrBlank()
 }

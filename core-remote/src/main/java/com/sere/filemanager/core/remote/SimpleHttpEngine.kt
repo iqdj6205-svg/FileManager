@@ -96,9 +96,15 @@ class SimpleHttpEngine(
     private fun validateRoutePolicy(route: String, pinParam: String?, clientKey: String): HttpResponse? {
         if (route == RemoteRoutes.INDEX) return null
         val validation = routePolicies.validateRoute(route, config, pinParam)
-        if (validation.allowed) return null
-        auditSink.record(RemoteAuditEntry(action = RemoteAuditAction.Denied, path = route, success = false, message = validation.message, client = clientKey))
-        return if (validation.message == RemoteWebMessages.invalidPin) HttpResponseFactory.unauthorized() else HttpResponseFactory.forbidden(validation.message ?: "Denied")
+        if (!validation.allowed) {
+            auditSink.record(RemoteAuditEntry(action = RemoteAuditAction.Denied, path = route, success = false, message = validation.message, client = clientKey))
+            return if (validation.message == RemoteWebMessages.invalidPin) HttpResponseFactory.unauthorized() else HttpResponseFactory.forbidden(validation.message ?: "Denied")
+        }
+        if (config.requirePin && !auth.isPinValid(pin, pinParam)) {
+            auditSink.record(RemoteAuditEntry(action = RemoteAuditAction.Denied, path = route, success = false, message = RemoteWebMessages.invalidPin, client = clientKey))
+            return HttpResponseFactory.unauthorized()
+        }
+        return null
     }
 
     private fun guardedAuditJson(pinParam: String?): HttpResponse = if (!config.requirePin || auth.isPinValid(pin, pinParam)) HttpResponseFactory.json(auditRoutes.latestJson()) else HttpResponseFactory.unauthorized()
