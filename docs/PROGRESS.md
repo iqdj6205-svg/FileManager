@@ -28,6 +28,7 @@ The project is **pre-alpha**.
 - Adding a SAF folder on phone now selects and opens that folder immediately.
 - Wear media library, image preview, and playback controls now use shared rotary UI helpers; playback shows timeline and metadata when available.
 - Wear `RemoteServerService` now reads synced/local Wear remote settings before start and passes them into the embedded server factory, so port/PIN/upload/delete config reaches `SimpleHttpEngine`.
+- Embedded remote server start/stop now publishes its session to `RemoteServerStatusStore`, so service-backed UI can read the actual URL/PIN/running state instead of stale defaults.
 - Wear bridge manifest now includes a `DATA_CHANGED` filter alongside message handling for Data Layer symmetry.
 
 ## Current focus
@@ -40,5 +41,5 @@ The project is **pre-alpha**.
 
 ## Next stabilization block
 
-- Continue build-risk review after recent UI commits.
-- Remote server status/list/download consistency.
+- Continue remote server status/list/download consistency.
+- Build-risk review after recent UI/remote commits.

@@ -13,14 +13,22 @@ class EmbeddedHttpFileServer(
     override suspend fun start(): RemoteSession {
         val url = "http://127.0.0.1:${config.port}"
         val session = sessions.start(url)
-        engine.start(session.pin.orEmpty())
+        RemoteServerStatusStore.update(session)
+        runCatching { engine.start(session.pin.orEmpty()) }
+            .onFailure {
+                RemoteServerStatusStore.clear()
+                sessions.stop()
+                throw it
+            }
         return session
     }
 
     override suspend fun stop(): RemoteSession {
         engine.stop()
-        return sessions.stop()
+        val session = sessions.stop()
+        RemoteServerStatusStore.update(session)
+        return session
     }
 
-    override fun currentSession(): RemoteSession = sessions.current()
+    override fun currentSession(): RemoteSession = RemoteServerStatusStore.current()
 }

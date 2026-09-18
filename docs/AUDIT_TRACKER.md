@@ -27,7 +27,7 @@ Status legend:
 - `[x]` Auto-open added SAF tree — `eba5b2f`.
 - `[x]` Phone settings migrated to shared UI scaffold/cards — `c8ac6a1`.
 - `[x]` Phone media screens migrated to shared UI scaffold/cards — `6def875`.
-- `[x]` Phone storage roots migrated to shared UI scaffold/cards — `pending`.
+- `[x]` Phone storage roots migrated to shared UI scaffold/cards — `e5c672e`.
 
 ### Wear
 
@@ -39,7 +39,7 @@ Status legend:
 - `[x]` Add Wear Data Layer `DATA_CHANGED` manifest filter symmetry — `de834c9`.
 - `[~]` Real Wear rename text input — `8d2fce8` adds editable `BasicTextField` plus explicit save/presets; needs device validation.
 - `[x]` Wear permission rationale explains media vs protected storage and ADB risk — `d26aae7`.
-- `[ ]` Remote server status/list/download consistency.
+- `[~]` Remote server status/list/download consistency — `pending` publishes embedded start/stop session to shared status store; endpoint verification still pending.
 
 ## Full audit history
 
