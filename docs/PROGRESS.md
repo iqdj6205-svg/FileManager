@@ -2,7 +2,7 @@
 
 ## Current honest status
 
-The project is **pre-alpha**.
+The project is **pre-alpha**, but the latest work is now being wrapped into a practical testing checkpoint instead of opening more unfinished areas.
 
 ## Stabilization updates
 
@@ -34,16 +34,16 @@ The project is **pre-alpha**.
 - Remote API routing now requires the exact active PIN for protected API routes instead of accepting any non-empty PIN-shaped value.
 - Remote download failures now return clearer HTTP responses and failed download attempts are written to the remote audit sink.
 - Wear bridge manifest now includes a `DATA_CHANGED` filter alongside message handling for Data Layer symmetry.
+- Smoke-test checklist has been expanded into a focused verification checklist for the next local test pass.
 
 ## Current focus
 
-1. Process Wear, Phone and requirements audit findings by priority.
-2. Stabilize complete vertical flows instead of adding foundation-only code.
-3. Use shared UI components instead of per-screen custom styling.
-4. Make Wear standalone file browsing and remote status/download actually reliable.
-5. Make phone companion remote/transfer flows useful instead of button-only shells.
+1. Stop opening new unfinished surfaces before the user's near-term test pass.
+2. Finish/document the currently started stabilization areas.
+3. Keep deeper core cleanup paused until the core audit arrives.
+4. Use the smoke-test checklist to collect precise build/runtime failures.
 
 ## Next stabilization block
 
 - Build-risk review after recent UI/remote commits.
-- Continue remote server list/status consistency.
+- Only critical fixes after that until the user completes the near-term test pass.
