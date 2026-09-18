@@ -1,22 +1,16 @@
 package com.sere.filemanager.wear
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
-import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.Chip
-import androidx.wear.compose.material.Text
-import com.sere.filemanager.core.media.MediaPlaybackSession
+import androidx.wear.compose.material.CircularProgressIndicator
 import com.sere.filemanager.core.media.MediaNotificationState
+import com.sere.filemanager.core.media.MediaPlaybackSession
 import com.sere.filemanager.core.media.PlaybackState
+import com.sere.filemanager.wear.ui.WearRotaryList
+import com.sere.filemanager.wear.ui.wearBackAction
+import com.sere.filemanager.wear.ui.wearInfo
+import com.sere.filemanager.wear.ui.wearPrimaryAction
+import com.sere.filemanager.wear.ui.wearSecondaryAction
+import com.sere.filemanager.wear.ui.wearTitle
 
 @Composable
 fun WearPlaybackControls(
@@ -28,14 +22,23 @@ fun WearPlaybackControls(
     notification: MediaNotificationState = MediaNotificationState(),
     onBack: () -> Unit,
 ) {
-    ScalingLazyColumn(modifier = Modifier.fillMaxSize().padding(10.dp), contentPadding = PaddingValues(vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        item { Text("Player", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }
-        item { Text(notification.title.takeIf { notification.visible } ?: session.item?.displayName ?: "No media", maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center) }
-        item { Text(notification.subtitle ?: session.state.name, textAlign = TextAlign.Center) }
-        item { Chip(label = { Text(if (session.state == PlaybackState.Playing) "Pause" else "Play") }, onClick = onPlayPause, modifier = Modifier.fillMaxWidth()) }
-        item { Chip(label = { Text("-10s") }, onClick = onSeekBack, modifier = Modifier.fillMaxWidth()) }
-        item { Chip(label = { Text("+10s") }, onClick = onSeekForward, modifier = Modifier.fillMaxWidth()) }
-        item { Chip(label = { Text("Stop") }, onClick = onStop, modifier = Modifier.fillMaxWidth()) }
-        item { Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Back") } }
+    WearRotaryList {
+        wearTitle("Player", notification.title.takeIf { notification.visible } ?: session.item?.displayName ?: "No media")
+        wearInfo(notification.subtitle ?: session.state.name)
+        session.item?.mimeType?.let { wearInfo(it) }
+        val duration = session.durationMillis
+        val position = session.positionMillis
+        if (duration > 0L) {
+            item { CircularProgressIndicator(progress = (position.toFloat() / duration.toFloat()).coerceIn(0f, 1f)) }
+            wearInfo("${position / 1000}s / ${duration / 1000}s")
+        } else {
+            wearInfo("No timeline")
+        }
+        if (session.item == null) wearInfo("Select audio or video first")
+        wearPrimaryAction(if (session.state == PlaybackState.Playing) "Pause" else "Play", onPlayPause)
+        wearSecondaryAction("-10s", onSeekBack)
+        wearSecondaryAction("+10s", onSeekForward)
+        wearSecondaryAction("Stop", onStop)
+        wearBackAction(onBack)
     }
 }

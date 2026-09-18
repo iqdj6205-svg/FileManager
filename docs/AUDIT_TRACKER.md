@@ -9,33 +9,31 @@ Status legend:
 - `[x]` addressed in code
 - `[hold]` postponed intentionally
 
-## Active independent phone fixes while core audit is pending
+## Active independent fixes while core audit is pending
 
-- `[x]` Add editable target path for phone-to-watch file transfer.
-  - Commit: `cea0b06`.
-- `[x]` Add local transfer progress during `WearChannelTransferClient` copy.
-  - Commit: `cea0b06`.
-- `[x]` Close Wear channel in `finally` after transfer.
-  - Commit: `cea0b06`.
-- `[x]` Add Share action for phone files.
-  - Commit: `7bb93ef`.
-- `[~]` Add real Favorite action or remove the placeholder.
-  - Commit: `7bb93ef` exposes the UI action with an honest pending-persistence message.
-  - Remaining: persistent FavoritesRepository/DataStore/Room integration.
-- `[~]` Show media buckets / album filters in phone media UI.
-  - Commit: `e2d2f47` shows bucket chips and row bucket names.
-  - Remaining: make chips selectable filters instead of read-only summary chips.
-- `[~]` Improve media preview with actual image/video preview.
-  - Commit: `e2d2f47` improves metadata details only.
-  - Remaining: visual image/video preview.
-- `[x]` Add theme selector wired to `AppSettingsUseCase.setTheme`.
-  - Commit: `d890764`.
-- `[x]` Make storage root display paths human-readable.
-  - Commit: `d890764`.
-- `[x]` After adding SAF tree, select/open it automatically.
-  - Commit: `pending`.
-- `[ ]` Unify SAF/local operation progress sink.
-- `[ ]` Improve permission rationale/permanently-denied UX.
+### Phone
+
+- `[x]` Editable target path for phone-to-watch file transfer — `cea0b06`.
+- `[x]` Local transfer progress during channel copy — `cea0b06`.
+- `[x]` Close Wear channel in `finally` after transfer — `cea0b06`.
+- `[x]` Share action for phone files — `7bb93ef`.
+- `[~]` Favorite action — UI exposed with honest pending-persistence message in `7bb93ef`; persistence still pending.
+- `[~]` Media buckets — summary chips and row bucket names in `e2d2f47`; selectable filters still pending.
+- `[~]` Media preview — metadata improved in `e2d2f47`; visual preview still pending.
+- `[x]` Theme selector wired to `AppSettingsUseCase.setTheme` — `d890764`.
+- `[x]` Human-readable storage root paths — `d890764`.
+- `[x]` Auto-open added SAF tree — `eba5b2f`.
+
+### Wear
+
+- `[x]` Migrate Wear media library screens to shared `WearRotaryList` — `pending`.
+- `[x]` Migrate Wear playback controls to shared `WearRotaryList` — `pending`.
+- `[x]` Improve Wear playback metadata/timeline display — `pending`.
+- `[x]` Migrate Wear image preview to shared `WearRotaryList` and avoid empty URI rendering — `pending`.
+- `[ ]` Real Wear rename text input.
+- `[ ]` Wear remote settings applied to `RemoteServerService` config.
+- `[ ]` Remote server status/list/download consistency.
+- `[ ]` Permission rationale/permanently-denied UX.
 
 ## Full audit history
 

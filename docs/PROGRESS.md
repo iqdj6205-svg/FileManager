@@ -22,6 +22,7 @@ The project is **pre-alpha**.
 - Phone media library now displays media bucket summaries, bucket names on rows, cleaner text markers, and richer preview metadata.
 - Phone settings now exposes a theme selector wired to persisted settings, and storage roots avoid showing raw `content://` URIs as user-facing paths.
 - Adding a SAF folder on phone now selects and opens that folder immediately.
+- Wear media library, image preview, and playback controls now use shared rotary UI helpers; playback shows timeline and metadata when available.
 
 ## Current focus
 
