@@ -22,6 +22,7 @@ The project is **pre-alpha**.
 - Phone media library now displays selectable media bucket filters, bucket names on rows, cleaner text markers, and richer preview metadata.
 - Phone media preview now has visual media-type preview cards, disables player for unsupported media, and image preview avoids empty URI rendering.
 - Permission UI now explains that media permissions do not unlock protected/system folders and that ADB advanced access is optional/risky.
+- Phone settings now uses the shared Phone UI scaffold and section cards for consistent spacing/layout.
 - Phone settings now exposes a theme selector wired to persisted settings, and storage roots avoid showing raw `content://` URIs as user-facing paths.
 - Adding a SAF folder on phone now selects and opens that folder immediately.
 - Wear media library, image preview, and playback controls now use shared rotary UI helpers; playback shows timeline and metadata when available.
@@ -38,5 +39,5 @@ The project is **pre-alpha**.
 
 ## Next stabilization block
 
-- Remote server status/list/download consistency.
 - Build-risk review after recent UI commits.
+- Remote server status/list/download consistency.
