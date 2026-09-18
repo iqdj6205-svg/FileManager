@@ -4,8 +4,6 @@
 
 The project is **pre-alpha**.
 
-Previous percentage-style progress values were misleading because they measured how many foundations existed, not how many product flows were stable. Percent readiness should not be used until the app has reliable alpha criteria and smoke tests.
-
 ## Stabilization updates
 
 - Wear permission state is now read through `PermissionStateReader` at ViewModel startup/resume.
@@ -13,15 +11,18 @@ Previous percentage-style progress values were misleading because they measured 
 - Wear Permission, ADB guide and Remote dashboard screens now use shared Wear UI components.
 - Wear storage root state is now part of app state.
 - Wear storage roots can be selected from Home/Settings and open the selected practical folder.
+- First Wear audit response committed: permission callbacks/readiness, RemoteSettings back target, and fake ServiceBackedRemoteController status were corrected.
 
 ## Current focus
 
-1. Stabilize complete vertical flows.
-2. Use shared UI components instead of per-screen custom styling.
-3. Make Wear standalone file browsing and remote status/download actually reliable.
+1. Process Wear audit findings by priority.
+2. Stabilize complete vertical flows instead of adding foundation-only code.
+3. Use shared UI components instead of per-screen custom styling.
+4. Make Wear standalone file browsing and remote status/download actually reliable.
 
 ## Next stabilization block
 
+- Real file rename input flow.
 - Migrate Wear Home/Files fully to shared UI components.
-- Real file details and rename input flow.
+- Remote settings -> actual service config.
 - Remote server status/list/download consistency.

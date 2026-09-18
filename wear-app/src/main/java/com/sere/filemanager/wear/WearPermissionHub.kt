@@ -19,9 +19,11 @@ fun WearPermissionHub(
 ) {
     WearRotaryList {
         wearTitle("Permissions", "Missing: ${state.missingCount}")
-        if (state.missingCount == 0) wearInfo("All basic permissions granted")
+        wearInfo(state.storageLabel)
+        wearInfo(state.mediaLabel)
+        if (state.missingCount == 0) wearInfo("Core access is ready")
         if (!state.storageGranted) wearPrimaryAction("Grant files", onGrantStorage)
-        if (!state.mediaGranted) wearPrimaryAction("Grant media", onGrantMedia)
+        if (!state.mediaGranted) wearSecondaryAction("Grant media", onGrantMedia)
         if (!state.notificationsGranted) wearSecondaryAction("Grant notifications", onGrantNotifications)
         wearSecondaryAction("ADB advanced", onAdbGuide)
         wearBackAction(onBack)

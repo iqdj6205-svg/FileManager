@@ -48,13 +48,14 @@ private enum class WearScreen { Home, Files, FileActions, FileDetails, ConfirmDe
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results -> viewModel.onPermissionsResult(results) }
     val permissionActions = remember(permissionLauncher) { RuntimePermissionActions(permissionLauncher) }
     val screen = remember { mutableStateOf(WearScreen.Home) }
+    val returnAfterRemoteSettings = remember { mutableStateOf(WearScreen.Settings) }
     val remoteSettingsController = remember { WearRemoteSettingsController() }
     val remoteSettings = remember { mutableStateOf(remoteSettingsController.currentUiState()) }
     val state by viewModel.state.collectAsState()
     val selected = viewModel.selectedItem()
     val permissionHubState = remember(state.permissions) { WearPermissionHubState(mediaGranted = state.permissions.mediaGranted, storageGranted = state.permissions.storageGranted, notificationsGranted = state.permissions.notificationsGranted) }
 
-    BackHandler(enabled = screen.value != WearScreen.Home) { screen.value = when (screen.value) { WearScreen.FileActions, WearScreen.FileDetails, WearScreen.ConfirmDelete -> WearScreen.Files; WearScreen.Gallery, WearScreen.Audio, WearScreen.Video, WearScreen.ImagePreview, WearScreen.MediaPlayer -> WearScreen.Media; WearScreen.Permissions, WearScreen.StorageAccess, WearScreen.StorageRoots, WearScreen.AdbGuide, WearScreen.RemoteSettings -> WearScreen.Settings; else -> WearScreen.Home } }
+    BackHandler(enabled = screen.value != WearScreen.Home) { screen.value = when (screen.value) { WearScreen.FileActions, WearScreen.FileDetails, WearScreen.ConfirmDelete -> WearScreen.Files; WearScreen.Gallery, WearScreen.Audio, WearScreen.Video, WearScreen.ImagePreview, WearScreen.MediaPlayer -> WearScreen.Media; WearScreen.RemoteSettings -> returnAfterRemoteSettings.value; WearScreen.Permissions, WearScreen.StorageAccess, WearScreen.StorageRoots, WearScreen.AdbGuide -> WearScreen.Settings; else -> WearScreen.Home } }
 
     MaterialTheme { Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
         state.operation.message?.let { OperationMessageScreen(message = it, onDismiss = viewModel::clearMessage); return@Box }
@@ -71,11 +72,11 @@ private enum class WearScreen { Home, Files, FileActions, FileDetails, ConfirmDe
             WearScreen.Video -> WearMediaLibraryScreen("Video", state.media.video, state.media.isLoading, state.media.message, viewModel::loadWearMedia, { item -> viewModel.selectWearMedia(item); screen.value = WearScreen.MediaPlayer }, { screen.value = WearScreen.Media })
             WearScreen.ImagePreview -> WearImagePreviewScreen(state.imagePreview, viewModel::imageZoomToggle, viewModel::imageRotateLeft, viewModel::imageRotateRight) { screen.value = WearScreen.Media }
             WearScreen.MediaPlayer -> WearPlaybackControls(state.playback, viewModel::playbackPlayPause, viewModel::playbackSeekBack, viewModel::playbackSeekForward, viewModel::playbackStop, notification = state.mediaSession.notification) { screen.value = WearScreen.Media }
-            WearScreen.Remote -> WearRemoteDashboard(session = state.remoteSession, networkLabel = NetworkStatus(context).connectionLabel(), batteryPercent = BatteryMonitor(context).batteryPercent(), onStart = viewModel::startRemoteServer, onStop = viewModel::stopRemoteServer, onSettings = { screen.value = WearScreen.RemoteSettings }, onBack = { screen.value = WearScreen.Home })
-            WearScreen.RemoteSettings -> WearRemoteSettingsScreen(remoteSettings.value, { remoteSettings.value = remoteSettingsController.toggleUploads() }, { remoteSettings.value = remoteSettingsController.toggleDelete() }, { remoteSettings.value = remoteSettingsController.togglePin() }, { screen.value = WearScreen.Settings })
-            WearScreen.Settings -> SettingsScreen(state.batterySaverEnabled, viewModel::setBatterySaver, { screen.value = WearScreen.Permissions }, { screen.value = WearScreen.StorageRoots }, { screen.value = WearScreen.RemoteSettings }, { screen.value = WearScreen.Home })
+            WearScreen.Remote -> WearRemoteDashboard(session = state.remoteSession, networkLabel = NetworkStatus(context).connectionLabel(), batteryPercent = BatteryMonitor(context).batteryPercent(), onStart = viewModel::startRemoteServer, onStop = viewModel::stopRemoteServer, onSettings = { returnAfterRemoteSettings.value = WearScreen.Remote; screen.value = WearScreen.RemoteSettings }, onBack = { screen.value = WearScreen.Home })
+            WearScreen.RemoteSettings -> WearRemoteSettingsScreen(remoteSettings.value, { remoteSettings.value = remoteSettingsController.toggleUploads() }, { remoteSettings.value = remoteSettingsController.toggleDelete() }, { remoteSettings.value = remoteSettingsController.togglePin() }, { screen.value = returnAfterRemoteSettings.value })
+            WearScreen.Settings -> SettingsScreen(state.batterySaverEnabled, viewModel::setBatterySaver, { screen.value = WearScreen.Permissions }, { screen.value = WearScreen.StorageRoots }, { returnAfterRemoteSettings.value = WearScreen.Settings; screen.value = WearScreen.RemoteSettings }, { screen.value = WearScreen.Home })
             WearScreen.Advanced -> AdvancedScreen(state.advancedModeEnabled, viewModel::setAdvancedMode, { screen.value = WearScreen.AdbGuide }) { screen.value = WearScreen.Home }
-            WearScreen.Permissions -> WearPermissionHub(permissionHubState, { permissionActions.requestMedia() }, { permissionActions.requestMedia() }, { permissionActions.requestNotifications() }, { screen.value = WearScreen.AdbGuide }, { screen.value = WearScreen.Settings })
+            WearScreen.Permissions -> WearPermissionHub(permissionHubState, { permissionActions.requestMedia() }, { permissionActions.requestStorage() }, { permissionActions.requestNotifications() }, { screen.value = WearScreen.AdbGuide }, { screen.value = WearScreen.Settings })
             WearScreen.AdbGuide -> WearAdbGuideScreen { screen.value = WearScreen.Advanced }
             WearScreen.StorageAccess -> StorageAccessScreen(onMedia = { screen.value = WearScreen.Permissions }, onAdvanced = { screen.value = WearScreen.Advanced }, onBack = { screen.value = WearScreen.Settings })
         }

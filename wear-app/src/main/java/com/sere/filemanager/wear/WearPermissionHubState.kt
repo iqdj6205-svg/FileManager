@@ -8,6 +8,8 @@ data class WearPermissionHubState(
     val storageGranted: Boolean = false,
     val notificationsGranted: Boolean = false,
 ) {
-    val allBasicGranted: Boolean get() = mediaGranted && storageGranted
-    val missingCount: Int get() = listOf(mediaGranted, storageGranted, notificationsGranted).count { !it }
+    val allBasicGranted: Boolean get() = storageGranted
+    val missingCount: Int get() = listOf(storageGranted, notificationsGranted).count { !it }
+    val mediaLabel: String get() = if (mediaGranted) "Media granted" else "Media partially/missing"
+    val storageLabel: String get() = if (storageGranted) "Files visible" else "Files blocked"
 }

@@ -4,29 +4,25 @@ import android.content.Context
 import com.sere.filemanager.core.model.RemoteServerState
 import com.sere.filemanager.core.model.RemoteSession
 import com.sere.filemanager.core.remote.RemoteServerController
+import com.sere.filemanager.core.remote.RemoteServerStatusStore
 
 class ServiceBackedRemoteController(
     context: Context,
 ) : RemoteServerController {
     private val serviceController = RemoteServiceController(context.applicationContext)
-    private var session = RemoteSession(state = RemoteServerState.Stopped)
 
     override suspend fun start(): RemoteSession {
-        serviceController.start()
-        session = RemoteSession(
-            state = RemoteServerState.Running,
-            url = "Shown in notification",
-            pin = "Shown in notification",
-            startedAtMillis = System.currentTimeMillis(),
-        )
-        return session
+        val requested = serviceController.start()
+        return if (requested) RemoteServerStatusStore.current().takeIf { it.state == RemoteServerState.Running }
+            ?: RemoteSession(state = RemoteServerState.Starting, startedAtMillis = System.currentTimeMillis())
+        else RemoteSession(state = RemoteServerState.Stopped)
     }
 
     override suspend fun stop(): RemoteSession {
         serviceController.stop()
-        session = RemoteSession(state = RemoteServerState.Stopped)
-        return session
+        return RemoteServerStatusStore.current().takeIf { it.state != RemoteServerState.Running }
+            ?: RemoteSession(state = RemoteServerState.Stopped)
     }
 
-    override fun currentSession(): RemoteSession = session
+    override fun currentSession(): RemoteSession = RemoteServerStatusStore.current()
 }

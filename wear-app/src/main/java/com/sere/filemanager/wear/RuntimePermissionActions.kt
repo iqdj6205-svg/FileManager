@@ -9,6 +9,10 @@ class RuntimePermissionActions(
         launcher.launch(PermissionHelper.mediaPermissions())
     }
 
+    fun requestStorage() {
+        launcher.launch(PermissionHelper.mediaPermissions())
+    }
+
     fun requestNotifications() {
         val permissions = PermissionHelper.notificationPermissions()
         if (permissions.isNotEmpty()) launcher.launch(permissions)
