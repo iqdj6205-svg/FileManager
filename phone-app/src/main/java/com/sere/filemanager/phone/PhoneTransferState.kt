@@ -9,4 +9,5 @@ data class PhoneTransferState(
     val targetPath: String = "/sdcard/Download",
     val latestProgress: WearFileTransferProgress? = null,
     val message: String? = null,
+    val isSending: Boolean = false,
 )

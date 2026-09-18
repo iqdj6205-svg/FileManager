@@ -97,7 +97,8 @@ Source: user-provided audit of 55 Markdown requirement/status documents (`README
 - `[~]` DataClient snapshots for remote status/settings/transfer.
   - Remaining: symmetry filters, await/onFailure handling, reactive UI proof.
 - `[~]` ChannelClient phone-to-watch file transfer.
-  - Remaining: editable destination, progress, close channel in finally, size limit, path hardening.
+  - Commit: `pending` adds editable destination, local progress, and channel close.
+  - Remaining: receive-side size/path hardening, reverse transfer, public-storage move.
 - `[ ]` Reverse watch-to-phone file transfer.
 - `[ ]` Pair/Ping flow and dashboard storage/battery.
 - `[ ]` Move received file from private to public storage when permissions allow.
@@ -208,9 +209,12 @@ Source: user-provided audit of 55 Markdown requirement/status documents (`README
   - Commit: `8f46985`.
 - `[x]` Remove emoji dependency from Phone Home/File rows.
   - Commit: `8f46985`.
-- `[ ]` Add editable target path for phone-to-watch file transfer.
-- `[ ]` Add real transfer progress during `WearChannelTransferClient` copy.
-- `[ ]` Close Wear channel in `finally` after transfer.
+- `[x]` Add editable target path for phone-to-watch file transfer.
+  - Commit: `pending`.
+- `[x]` Add local transfer progress during `WearChannelTransferClient` copy.
+  - Commit: `pending`.
+- `[x]` Close Wear channel in `finally` after transfer.
+  - Commit: `pending`.
 - `[ ]` Add Share action for phone files.
 - `[ ]` Add real Favorite action or remove the placeholder.
 - `[ ]` Show media buckets / album filters in phone media UI.

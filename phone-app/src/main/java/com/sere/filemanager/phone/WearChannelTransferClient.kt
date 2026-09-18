@@ -10,14 +10,34 @@ import com.sere.filemanager.core.wearbridge.WearTransferState
 import kotlinx.coroutines.tasks.await
 
 class WearChannelTransferClient(private val context: Context) {
-    suspend fun sendFileToFirstWatch(request: WearFileTransferRequest, uri: Uri): Result<WearFileTransferProgress> = runCatching {
+    suspend fun sendFileToFirstWatch(
+        request: WearFileTransferRequest,
+        uri: Uri,
+        onProgress: (WearFileTransferProgress) -> Unit = {},
+    ): Result<WearFileTransferProgress> = runCatching {
         val node = Wearable.getNodeClient(context).connectedNodes.await().firstOrNull() ?: error("No connected Wear OS watch")
-        val channel = Wearable.getChannelClient(context).openChannel(node.id, WearBridgePaths.CHANNEL_FILE_TRANSFER).await()
-        val output = Wearable.getChannelClient(context).getOutputStream(channel).await()
-        context.contentResolver.openInputStream(uri).use { input ->
-            requireNotNull(input) { "Cannot open selected file" }
-            output.use { out -> input.copyTo(out, bufferSize = 32 * 1024) }
+        val channelClient = Wearable.getChannelClient(context)
+        val channel = channelClient.openChannel(node.id, WearBridgePaths.CHANNEL_FILE_TRANSFER).await()
+        val output = channelClient.getOutputStream(channel).await()
+        var transferred = 0L
+        onProgress(WearFileTransferProgress(request.id, WearTransferState.InProgress, transferredBytes = 0L, totalBytes = request.sizeBytes, message = "Sending to ${node.displayName}"))
+        try {
+            context.contentResolver.openInputStream(uri).use { input ->
+                requireNotNull(input) { "Cannot open selected file" }
+                output.use { out ->
+                    val buffer = ByteArray(32 * 1024)
+                    while (true) {
+                        val read = input.read(buffer)
+                        if (read < 0) break
+                        out.write(buffer, 0, read)
+                        transferred += read
+                        onProgress(WearFileTransferProgress(request.id, WearTransferState.InProgress, transferredBytes = transferred, totalBytes = request.sizeBytes, message = "Sending ${request.fileName}"))
+                    }
+                }
+            }
+        } finally {
+            runCatching { channelClient.close(channel).await() }
         }
-        WearFileTransferProgress(request.id, WearTransferState.Completed, totalBytes = request.sizeBytes, message = "Sent to ${node.displayName}")
+        WearFileTransferProgress(request.id, WearTransferState.Completed, transferredBytes = transferred, totalBytes = request.sizeBytes, message = "Sent to ${node.displayName}")
     }
 }

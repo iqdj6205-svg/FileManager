@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import com.sere.filemanager.core.wearbridge.WearBridgeTransferCodec
+import com.sere.filemanager.core.wearbridge.WearFileTransferProgress
 import com.sere.filemanager.core.wearbridge.WearFileTransferRequest
 import com.sere.filemanager.core.wearbridge.WearTransferDirection
 
@@ -26,9 +27,14 @@ class PhoneTransferController(
         return PickedFile(uri, name, size)
     }
 
-    suspend fun sendToWatch(file: PickedFile, targetDirectory: String): Result<com.sere.filemanager.core.wearbridge.WearFileTransferProgress> {
-        val request = WearFileTransferRequest(fileName = file.displayName, targetPath = targetDirectory.trimEnd('/') + "/" + file.displayName, direction = WearTransferDirection.PhoneToWatch, sizeBytes = file.sizeBytes)
+    suspend fun sendToWatch(
+        file: PickedFile,
+        targetDirectory: String,
+        onProgress: (WearFileTransferProgress) -> Unit = {},
+    ): Result<WearFileTransferProgress> {
+        val directory = targetDirectory.trim().ifBlank { "/sdcard/Download" }.trimEnd('/')
+        val request = WearFileTransferRequest(fileName = file.displayName, targetPath = "$directory/${file.displayName}", direction = WearTransferDirection.PhoneToWatch, sizeBytes = file.sizeBytes)
         bridgeClient.prepareFileTransfer(WearBridgeTransferCodec.encode(request)).getOrThrow()
-        return channelClient.sendFileToFirstWatch(request, file.uri)
+        return channelClient.sendFileToFirstWatch(request, file.uri, onProgress)
     }
 }
