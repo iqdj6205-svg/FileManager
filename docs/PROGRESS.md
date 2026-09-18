@@ -30,6 +30,8 @@ See:
 - Permission grant results re-read actual OS state instead of trusting only callback values.
 - File browser refreshes after media/storage permission grants.
 - Shared UI system foundations added for Wear and phone screens.
+- Wear Permission, ADB guide and Remote dashboard screens now use shared Wear UI components.
+- Phone shared scaffold was corrected to use Compose `ColumnScope` safely.
 
 ## Current focus
 
@@ -40,7 +42,7 @@ See:
 
 ## Next stabilization block
 
-- Migrate Wear Remote/Permissions to shared UI components.
+- Migrate Wear Home/Files to shared UI components.
 - Practical storage root screen for Wear.
 - Real file details and rename input flow.
 - Remote server status/list/download consistency.

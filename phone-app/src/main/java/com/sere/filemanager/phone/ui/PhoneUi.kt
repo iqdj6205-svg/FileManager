@@ -2,6 +2,7 @@ package com.sere.filemanager.phone.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,19 +22,20 @@ fun PhoneScreenScaffold(
     title: String,
     subtitle: String? = null,
     modifier: Modifier = Modifier,
-    content: @Composable ColumnScopeContent.() -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(modifier = modifier.fillMaxSize().padding(DesignTokens.PhonePadding), verticalArrangement = Arrangement.spacedBy(DesignTokens.PhoneItemSpacing)) {
+    Column(
+        modifier = modifier.fillMaxSize().padding(DesignTokens.PhonePadding),
+        verticalArrangement = Arrangement.spacedBy(DesignTokens.PhoneItemSpacing),
+    ) {
         Text(title, style = MaterialTheme.typography.headlineSmall)
         subtitle?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-        ColumnScopeContent.content()
+        content()
     }
 }
 
-object ColumnScopeContent
-
 @Composable
-fun PhoneSectionCard(title: String? = null, content: @Composable () -> Unit) {
+fun PhoneSectionCard(title: String? = null, content: @Composable ColumnScope.() -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(DesignTokens.PhoneCompactPadding), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             title?.let { Text(it, style = MaterialTheme.typography.titleMedium) }

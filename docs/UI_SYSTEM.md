@@ -49,10 +49,20 @@ Rules:
 3. Reusable error and empty states.
 4. Avoid one giant screen file when feature screens grow.
 
-## Migration plan
+## Migration status
 
-1. Add shared components.
-2. Migrate Wear Remote and Wear Permissions first.
-3. Migrate Wear Files and Home.
-4. Migrate Phone Home and Phone Files.
-5. Split monolithic `MainActivity` files after common components are stable.
+- Shared core tokens: added.
+- Wear helper components: added.
+- Phone helper components: added and compile-safe with `ColumnScope` content.
+- Wear Permissions screen: migrated.
+- Wear ADB guide: migrated.
+- Wear Remote dashboard: migrated.
+
+## Next migration targets
+
+1. Wear Home.
+2. Wear Files.
+3. Wear Settings.
+4. Phone Home.
+5. Phone Files.
+6. Split large `MainActivity` files after common components are stable.

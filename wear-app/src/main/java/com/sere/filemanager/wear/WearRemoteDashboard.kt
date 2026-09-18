@@ -1,18 +1,14 @@
 package com.sere.filemanager.wear
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.Text
 import com.sere.filemanager.core.model.RemoteSession
 import com.sere.filemanager.core.remote.RemoteServerStatusStore
+import com.sere.filemanager.wear.ui.WearRotaryList
+import com.sere.filemanager.wear.ui.wearBackAction
+import com.sere.filemanager.wear.ui.wearInfo
+import com.sere.filemanager.wear.ui.wearPrimaryAction
+import com.sere.filemanager.wear.ui.wearSecondaryAction
+import com.sere.filemanager.wear.ui.wearTitle
 
 @Composable
 fun WearRemoteDashboard(
@@ -24,17 +20,17 @@ fun WearRemoteDashboard(
     onSettings: () -> Unit,
     onBack: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-        Text("Remote", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-        Text("State: ${session.state}")
-        Text("Network: $networkLabel")
-        if (batteryPercent != null) Text("Battery: $batteryPercent%")
-        session.url?.let { Text("URL: $it") }
-        session.pin?.let { Text("PIN: $it") }
-        if (session.url == null) Text("Connect watch to Wi‑Fi/Bluetooth network and start server.")
-        Button(onClick = onStart, modifier = Modifier.fillMaxWidth()) { Text("Start") }
-        Button(onClick = onStop, modifier = Modifier.fillMaxWidth()) { Text("Stop") }
-        Button(onClick = onSettings, modifier = Modifier.fillMaxWidth()) { Text("Settings") }
-        Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Back") }
+    val subtitle = if (session.url == null) "Server stopped" else "Server running"
+    WearRotaryList {
+        wearTitle("Remote", subtitle)
+        wearInfo("State: ${session.state}")
+        wearInfo("Network: $networkLabel")
+        batteryPercent?.let { wearInfo("Battery: $it%") }
+        session.url?.let { wearInfo("URL: $it") }
+        session.pin?.let { wearInfo("PIN: $it") }
+        if (session.url == null) wearInfo("Connect watch to network and start server.")
+        if (session.url == null) wearPrimaryAction("Start", onStart) else wearPrimaryAction("Stop", onStop)
+        wearSecondaryAction("Settings", onSettings)
+        wearBackAction(onBack)
     }
 }
