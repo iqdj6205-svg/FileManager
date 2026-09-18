@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() { override fun onCreate(savedInstanceSt
         PhoneScreen.WatchCompanion -> WatchCompanionScreen(state.remoteUrl, state.statusMessage, state.transfer, viewModel::setRemoteUrl, viewModel::setTransferTargetPath, viewModel::startPairing, viewModel::startRemoteServer, viewModel::stopRemoteServer, viewModel::requestWatchStatus, viewModel::refreshRemoteSnapshot, viewModel::refreshTransferProgress, { filePicker.launch(arrayOf("*/*")) }) { screen.value = PhoneScreen.Home }
         PhoneScreen.RemoteManager -> RemoteManagerScreen(state.remoteUrl, state.statusMessage, viewModel::setRemoteUrl, { openRemoteManagerInBrowser(context, state.remoteUrl, viewModel) }) { screen.value = PhoneScreen.Home }
         PhoneScreen.RemoteSettings -> RemoteSettingsScreen(state.remoteSettings, viewModel::toggleUploads, viewModel::toggleDelete, viewModel::toggleRequirePin, viewModel::toggleLocalNetworkOnly, viewModel::setRemotePort, viewModel::setRemoteAutoStop, viewModel::toggleSettingsAdvanced, viewModel::toggleShowHidden, viewModel::syncSettingsToWatch) { screen.value = PhoneScreen.Home }
-        PhoneScreen.Settings -> PhoneSettingsScreen(state.appSettings, viewModel::toggleSettingsHidden, viewModel::toggleSettingsAdvanced, viewModel::toggleSettingsBattery, viewModel::toggleSettingsHaptics) { screen.value = PhoneScreen.Home }
+        PhoneScreen.Settings -> PhoneSettingsScreen(state.appSettings, viewModel::toggleSettingsHidden, viewModel::toggleSettingsAdvanced, viewModel::toggleSettingsBattery, viewModel::toggleSettingsHaptics, viewModel::setTheme) { screen.value = PhoneScreen.Home }
     } }
 }
 

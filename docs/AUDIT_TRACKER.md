@@ -23,13 +23,15 @@ Status legend:
   - Commit: `7bb93ef` exposes the UI action with an honest pending-persistence message.
   - Remaining: persistent FavoritesRepository/DataStore/Room integration.
 - `[~]` Show media buckets / album filters in phone media UI.
-  - Commit: `pending` shows bucket chips and row bucket names.
+  - Commit: `e2d2f47` shows bucket chips and row bucket names.
   - Remaining: make chips selectable filters instead of read-only summary chips.
 - `[~]` Improve media preview with actual image/video preview.
-  - Commit: `pending` improves metadata details only.
+  - Commit: `e2d2f47` improves metadata details only.
   - Remaining: visual image/video preview.
-- `[ ]` Add theme selector wired to `AppSettingsUseCase.setTheme`.
-- `[ ]` Make storage root display paths human-readable.
+- `[x]` Add theme selector wired to `AppSettingsUseCase.setTheme`.
+  - Commit: `pending`.
+- `[x]` Make storage root display paths human-readable.
+  - Commit: `pending`.
 - `[ ]` After adding SAF tree, select/open it automatically.
 - `[ ]` Unify SAF/local operation progress sink.
 - `[ ]` Improve permission rationale/permanently-denied UX.
