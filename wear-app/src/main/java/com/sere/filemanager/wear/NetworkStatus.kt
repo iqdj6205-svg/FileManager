@@ -8,16 +8,17 @@ import java.net.NetworkInterface
 
 class NetworkStatus(private val context: Context) {
     fun isConnected(): Boolean {
-        val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = manager.activeNetwork ?: return false
-        val capabilities = manager.getNetworkCapabilities(network) ?: return false
+        val capabilities = activeCapabilities() ?: return false
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
+    fun isLocalNetworkReady(): Boolean {
+        val capabilities = activeCapabilities() ?: return false
+        return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) && localIpv4Address() != null
+    }
+
     fun connectionLabel(): String {
-        val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = manager.activeNetwork ?: return "Offline"
-        val capabilities = manager.getNetworkCapabilities(network) ?: return "Offline"
+        val capabilities = activeCapabilities() ?: return "Offline"
         return when {
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "Wi‑Fi"
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "Cellular"
@@ -37,4 +38,10 @@ class NetworkStatus(private val context: Context) {
     }.getOrNull()
 
     fun remoteBaseUrl(port: Int): String? = localIpv4Address()?.let { "http://$it:$port" }
+
+    private fun activeCapabilities(): NetworkCapabilities? {
+        val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = manager.activeNetwork ?: return null
+        return manager.getNetworkCapabilities(network)
+    }
 }

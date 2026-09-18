@@ -55,7 +55,7 @@ class RemoteServerService : Service() {
         activeConfig = config
         val battery = BatteryMonitor(this).batteryPercent()
         val network = NetworkStatus(this)
-        if (!network.isConnected()) {
+        if (!network.isConnected() || (config.localNetworkOnly && !network.isLocalNetworkReady())) {
             RemoteServerStatusStore.clear()
             WearStatusPublisher(this).publishRemoteStatus()
             stopSelf()

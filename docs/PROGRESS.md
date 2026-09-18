@@ -29,7 +29,7 @@ The project is **pre-alpha**.
 - Wear media library, image preview, and playback controls now use shared rotary UI helpers; playback shows timeline and metadata when available.
 - Wear `RemoteServerService` now reads synced/local Wear remote settings before start and passes them into the embedded server factory, so port/PIN/upload/delete config reaches `SimpleHttpEngine`.
 - Embedded remote server start/stop now publishes its session to `RemoteServerStatusStore`, so service-backed UI can read the actual URL/PIN/running state instead of stale defaults.
-- Wear remote service now exposes a reachable local IPv4 URL instead of loopback-only `127.0.0.1` when possible, and refuses startup while offline.
+- Wear remote service now exposes a reachable local IPv4 URL instead of loopback-only `127.0.0.1` when possible, refuses startup while offline, and enforces Wi‑Fi/local address availability when local-only mode is enabled.
 - Wear bridge manifest now includes a `DATA_CHANGED` filter alongside message handling for Data Layer symmetry.
 
 ## Current focus
