@@ -1,32 +1,37 @@
 # Project Progress
 
-Approximate implementation progress: 82%.
+## Current honest status
 
-## Completed
+The project is **pre-alpha**.
 
-- Repository and Android multi-module project.
-- Successful local Gradle build milestone.
-- Wear standalone file/media/remote foundations.
-- Phone storage roots, SAF, file actions, clipboard, transfer progress, media, analyzer and settings foundations.
-- SAF stream copy/move matrix foundation wired for phone operations.
-- File operation progress surfaced in phone browser.
-- Conflict resolution policy foundation for local and SAF copy/move targets.
-- Reactive phone observation for watch remote status and file transfer progress.
-- Media3 playback controllers, lifecycle release, and shared media session/notification state wired into phone and Wear state.
-- Remote route executor, audit routes, policies, rate limiting and upload persistence foundations.
-- Wear Data Layer command/status/settings and ChannelClient transfer foundations.
+Previous percentage-style progress values were misleading because they measured how many foundations existed, not how many product flows were stable. Percent readiness should not be used until the app has reliable alpha criteria and smoke tests.
+
+## Current reality
+
+- Architecture skeleton: partially complete.
+- Wear app: prototype.
+- Phone app: prototype.
+- Remote server: prototype.
+- Media: demo/prototype.
+- Phone-watch bridge: prototype.
+- End-user alpha readiness: not yet.
+
+See:
+
+- `docs/REAL_STATUS.md`
+- `docs/ALPHA_STABILIZATION_PLAN.md`
+- `docs/SMOKE_TEST_CHECKLIST.md`
 
 ## Current focus
 
-- Add media notification service polish.
-- Prepare build validation pass.
-- Improve round-screen UX polish.
+1. Stabilize complete vertical flows.
+2. Avoid adding disconnected foundation-only code.
+3. Make Wear standalone file browsing and remote status/download actually reliable.
+4. Treat upload/delete/advanced/media extras as experimental until proven stable.
 
-## Remaining major areas
+## Next stabilization block
 
-- Directory recursive copy via SAF.
-- Media notification service polish.
-- Multipart upload compatibility.
-- Persistent DataStore settings wiring in both apps.
-- UI/UX polish for round Wear screens.
-- End-to-end phone-watch file transfer testing.
+- Permission state reader on Wear startup/resume.
+- Practical storage root screen for Wear.
+- Real file details and rename input flow.
+- Remote server status/list/download consistency.
