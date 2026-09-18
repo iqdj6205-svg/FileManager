@@ -12,6 +12,9 @@ The project is **pre-alpha**.
 - Wear storage root state is now part of app state.
 - Wear storage roots can be selected from Home/Settings and open the selected practical folder.
 - First Wear audit response committed: permission callbacks/readiness, RemoteSettings back target, and fake ServiceBackedRemoteController status were corrected.
+- Wear navigation now has a real back stack for current screens instead of hardcoded one-off returns.
+- Wear Home and Files migrated to shared rotary UI helpers.
+- Wear rename action now opens an explicit temporary rename screen instead of silently renaming to `copy-*`.
 
 ## Current focus
 
@@ -22,7 +25,7 @@ The project is **pre-alpha**.
 
 ## Next stabilization block
 
-- Real file rename input flow.
-- Migrate Wear Home/Files fully to shared UI components.
+- Real file rename text input flow.
 - Remote settings -> actual service config.
 - Remote server status/list/download consistency.
+- Media/player screens shared UI migration.
