@@ -18,6 +18,7 @@ class FileManagerViewModelFactory(private val context: Context) : ViewModelProvi
             safeOperations = SafeFileOperations(files),
             mediaController = WearMediaController.create(AndroidMediaStoreRepository(appContext)),
             playbackController = AndroidWearMedia3PlaybackController(appContext),
+            permissionStateReader = PermissionStateReader(appContext),
         ) as T
     }
 }

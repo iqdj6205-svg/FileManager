@@ -22,6 +22,13 @@ See:
 - `docs/ALPHA_STABILIZATION_PLAN.md`
 - `docs/SMOKE_TEST_CHECKLIST.md`
 
+## Stabilization updates
+
+- Wear permission state is now read through `PermissionStateReader` at ViewModel startup.
+- Wear permission state refreshes again on app resume.
+- Permission grant results re-read actual OS state instead of trusting only callback values.
+- File browser refreshes after media/storage permission grants.
+
 ## Current focus
 
 1. Stabilize complete vertical flows.
@@ -31,7 +38,6 @@ See:
 
 ## Next stabilization block
 
-- Permission state reader on Wear startup/resume.
 - Practical storage root screen for Wear.
 - Real file details and rename input flow.
 - Remote server status/list/download consistency.

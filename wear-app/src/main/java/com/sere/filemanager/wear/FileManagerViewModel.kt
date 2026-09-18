@@ -35,6 +35,7 @@ class FileManagerViewModel(
     private val favoritesRepository: InMemoryFavoritesRepository = InMemoryFavoritesRepository(),
     private val mediaController: WearMediaController? = null,
     private val playbackController: MediaPlaybackController? = null,
+    private val permissionStateReader: PermissionStateReader? = null,
 ) : ViewModel() {
     private val wearActions = WearFileManagerActions(safeOperations)
     private val imagePreviewController = ImagePreviewController()
@@ -43,21 +44,25 @@ class FileManagerViewModel(
     val state: StateFlow<WearAppState> = _state.asStateFlow()
 
     init {
+        refreshPermissionState(showMessage = false)
         openPath(_state.value.browser.currentPath)
         playbackController?.let { controller ->
             viewModelScope.launch {
                 controller.session.collect { session ->
-                    _state.update {
-                        it.copy(
-                            playback = session,
-                            mediaSession = WearMediaSessionState(
-                                metadata = session.item?.let(sessionMapper::metadata),
-                                notification = sessionMapper.notification(session),
-                            ),
-                        )
-                    }
+                    _state.update { it.copy(playback = session, mediaSession = WearMediaSessionState(metadata = session.item?.let(sessionMapper::metadata), notification = sessionMapper.notification(session))) }
                 }
             }
+        }
+    }
+
+    fun refreshPermissionState(showMessage: Boolean = true) {
+        val status = permissionStateReader?.status() ?: return
+        val message = permissionSummary(status)
+        _state.update { current ->
+            current.copy(
+                permissions = current.permissions.copy(status = status, lastRequestMessage = message),
+                operation = if (showMessage) current.operation.copy(message = message) else current.operation,
+            )
         }
     }
 
@@ -88,8 +93,9 @@ class FileManagerViewModel(
     fun deleteSelected() { val item = selectedItem() ?: return; execute(BrowserController.deleteOperation(item.path)) }
     fun renameSelected(newName: String) { val item = selectedItem() ?: return; execute(BrowserController.renameOperation(item.path, newName)) }
     fun createQuickFolder(name: String = "New folder") { execute(BrowserController.createFolderOperation(_state.value.browser.currentPath, name)) }
-    fun onPermissionsResult(results: Map<String, Boolean>) { val granted = results.values.count { it }; val total = results.size; val message = if (total == 0) "No permission needed" else "Permissions: $granted/$total granted"; val status = PermissionStatus(mediaImages = stateFor(results, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_EXTERNAL_STORAGE), mediaVideo = stateFor(results, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_EXTERNAL_STORAGE), mediaAudio = stateFor(results, Manifest.permission.READ_MEDIA_AUDIO, Manifest.permission.READ_EXTERNAL_STORAGE), notifications = stateFor(results, Manifest.permission.POST_NOTIFICATIONS)); _state.update { it.copy(permissions = it.permissions.copy(status = status, lastRequestMessage = message), operation = it.operation.copy(message = message)) } }
+    fun onPermissionsResult(results: Map<String, Boolean>) { val status = permissionStateReader?.status() ?: PermissionStatus(mediaImages = stateFor(results, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_EXTERNAL_STORAGE), mediaVideo = stateFor(results, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_EXTERNAL_STORAGE), mediaAudio = stateFor(results, Manifest.permission.READ_MEDIA_AUDIO, Manifest.permission.READ_EXTERNAL_STORAGE), notifications = stateFor(results, Manifest.permission.POST_NOTIFICATIONS)); val message = permissionSummary(status); _state.update { it.copy(permissions = it.permissions.copy(status = status, lastRequestMessage = message), operation = it.operation.copy(message = message)) }; if (status.mediaImages == AppPermissionState.Granted || status.mediaVideo == AppPermissionState.Granted || status.mediaAudio == AppPermissionState.Granted) { openPath(_state.value.browser.currentPath) } }
     private fun stateFor(results: Map<String, Boolean>, permission: String, legacy: String? = null): AppPermissionState = when (results[permission] ?: (if (legacy != null) results[legacy] else null)) { true -> AppPermissionState.Granted; false -> AppPermissionState.Denied; null -> AppPermissionState.Unknown }
+    private fun permissionSummary(status: PermissionStatus): String { val granted = listOf(status.mediaImages, status.mediaVideo, status.mediaAudio, status.notifications).count { it == AppPermissionState.Granted }; return "Permissions: $granted/4 granted" }
     private fun execute(operation: com.sere.filemanager.core.files.FileOperation) { viewModelScope.launch { _state.update { it.copy(operation = it.operation.copy(inProgress = true, message = null)) }; val result = safeOperations.execute(operation); _state.update { it.copy(operation = it.operation.copy(inProgress = false, message = ActionMessages.from(result)), browser = it.browser.copy(selectedPath = null)) }; openPath(_state.value.browser.currentPath) } }
     fun clearMessage() { _state.update { it.copy(operation = it.operation.copy(message = null)) } }
     fun startRemoteServer() { viewModelScope.launch { val session = remoteController.start(); _state.update { it.copy(remoteSession = session) } } }
