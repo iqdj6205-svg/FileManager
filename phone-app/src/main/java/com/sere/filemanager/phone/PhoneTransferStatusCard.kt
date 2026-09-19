@@ -4,17 +4,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.sere.filemanager.phone.ui.PhoneSectionCard
 
 @Composable
 fun PhoneTransferStatusCard(state: PhoneTransferState, onRefresh: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(12.dp)) {
+    PhoneSectionCard(title = "Transfer to watch") {
+        Column(modifier = Modifier.padding(top = 4.dp)) {
             Text("Transfer to watch")
             Text("Target: ${state.targetPath}")
             state.selectedFileName?.let { Text("Selected: $it") }

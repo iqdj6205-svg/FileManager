@@ -1,17 +1,16 @@
 package com.sere.filemanager.phone
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import com.sere.filemanager.core.model.FileItem
+import com.sere.filemanager.phone.ui.PhoneScreenScaffold
+import com.sere.filemanager.phone.ui.PhoneSectionCard
 
 @Composable
 fun PhoneFileActionScreen(
@@ -26,9 +25,8 @@ fun PhoneFileActionScreen(
     onDelete: () -> Unit,
     onBack: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("File actions")
-        Card(modifier = Modifier.fillMaxWidth()) { Column(modifier = Modifier.padding(16.dp)) { Text(item.name); Text(item.path) } }
+    PhoneScreenScaffold(title = "File actions", subtitle = item.name) {
+        PhoneSectionCard { Text(item.path) }
         Button(onClick = onDetails, modifier = Modifier.fillMaxWidth()) { Text("Details") }
         Button(onClick = onRename, modifier = Modifier.fillMaxWidth()) { Text("Rename") }
         Button(onClick = onCopy, modifier = Modifier.fillMaxWidth()) { Text("Copy to…") }
@@ -43,10 +41,8 @@ fun PhoneFileActionScreen(
 
 @Composable
 fun PhoneConfirmDeleteScreen(fileName: String, onConfirm: () -> Unit, onCancel: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Delete file?")
-        Text(fileName)
-        Text("This action cannot be undone.")
+    PhoneScreenScaffold(title = "Delete file?", subtitle = fileName) {
+        PhoneSectionCard { Text("This action cannot be undone.") }
         Button(onClick = onConfirm, modifier = Modifier.fillMaxWidth()) { Text("Delete") }
         Button(onClick = onCancel) { Text("Cancel") }
     }

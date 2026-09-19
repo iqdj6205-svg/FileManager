@@ -1,13 +1,9 @@
 package com.sere.filemanager.phone
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import com.sere.filemanager.core.media.MediaNotificationState
 import com.sere.filemanager.core.media.MediaPlaybackSession
 import com.sere.filemanager.core.media.PlaybackState
+import com.sere.filemanager.phone.ui.PhoneScreenScaffold
+import com.sere.filemanager.phone.ui.PhoneSectionCard
 
 @Composable
 fun PhonePlaybackControls(
@@ -28,14 +26,10 @@ fun PhonePlaybackControls(
     notification: MediaNotificationState = MediaNotificationState(),
     onBack: () -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Media player", style = MaterialTheme.typography.headlineSmall)
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(notification.title.takeIf { notification.visible } ?: session.item?.displayName ?: "No media", maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Text(notification.subtitle ?: "State: ${session.state}")
-                Text("Position: ${session.positionMillis / 1000}s")
-            }
+    PhoneScreenScaffold(title = "Media player", subtitle = notification.subtitle ?: "State: ${session.state}") {
+        PhoneSectionCard(title = "Now playing") {
+            Text(notification.title.takeIf { notification.visible } ?: session.item?.displayName ?: "No media", maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
+            Text("Position: ${session.positionMillis / 1000}s", style = MaterialTheme.typography.bodyMedium)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = onSeekBack) { Text("-10s") }

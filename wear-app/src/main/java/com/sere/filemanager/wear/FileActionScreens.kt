@@ -1,17 +1,13 @@
 package com.sere.filemanager.wear
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.Chip
-import androidx.wear.compose.material.ScalingLazyColumn
-import androidx.wear.compose.material.Text
 import com.sere.filemanager.core.model.FileItem
+import com.sere.filemanager.wear.ui.WearRotaryList
+import com.sere.filemanager.wear.ui.wearBackAction
+import com.sere.filemanager.wear.ui.wearInfo
+import com.sere.filemanager.wear.ui.wearPrimaryAction
+import com.sere.filemanager.wear.ui.wearSecondaryAction
+import com.sere.filemanager.wear.ui.wearTitle
 
 @Composable
 fun FileActionSheet(
@@ -24,46 +20,35 @@ fun FileActionSheet(
     onFavorite: () -> Unit,
     onBack: () -> Unit,
 ) {
-    ScalingLazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 22.dp),
-    ) {
-        item { Text(item.name, maxLines = 2, textAlign = TextAlign.Center) }
-        item { Chip(label = { Text("Details") }, onClick = onDetails, modifier = Modifier.fillMaxWidth()) }
-        item { Chip(label = { Text("Rename") }, onClick = onRename, modifier = Modifier.fillMaxWidth()) }
-        item { Chip(label = { Text("Copy") }, onClick = onCopy, modifier = Modifier.fillMaxWidth()) }
-        item { Chip(label = { Text("Move") }, onClick = onMove, modifier = Modifier.fillMaxWidth()) }
-        item { Chip(label = { Text("Favorite") }, onClick = onFavorite, modifier = Modifier.fillMaxWidth()) }
-        item { Chip(label = { Text("Delete") }, onClick = onDelete, modifier = Modifier.fillMaxWidth()) }
-        item { Button(onClick = onBack) { Text("Back") } }
+    WearRotaryList {
+        wearTitle(item.name)
+        wearPrimaryAction("Details", onDetails)
+        wearPrimaryAction("Rename", onRename)
+        wearPrimaryAction("Copy", onCopy)
+        wearPrimaryAction("Move", onMove)
+        wearPrimaryAction("Favorite", onFavorite)
+        wearSecondaryAction("Delete", onDelete)
+        wearBackAction(onBack)
     }
 }
 
 @Composable
 fun FileDetailsScreen(item: FileItem, size: String, onBack: () -> Unit) {
-    ScalingLazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 22.dp),
-    ) {
-        item { Text("Details", textAlign = TextAlign.Center) }
-        item { Text(item.name, maxLines = 2, textAlign = TextAlign.Center) }
-        item { Text(item.type.name) }
-        item { Text(size.ifBlank { "No size" }) }
-        item { Text(item.path, maxLines = 4, textAlign = TextAlign.Center) }
-        item { Button(onClick = onBack) { Text("Back") } }
+    WearRotaryList {
+        wearTitle("Details", item.name)
+        wearInfo(item.type.name)
+        wearInfo(size.ifBlank { "No size" })
+        wearInfo(item.path)
+        wearBackAction(onBack)
     }
 }
 
 @Composable
 fun ConfirmDeleteScreen(fileName: String, onConfirm: () -> Unit, onCancel: () -> Unit) {
-    ScalingLazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 26.dp),
-    ) {
-        item { Text("Delete?", textAlign = TextAlign.Center) }
-        item { Text(fileName, maxLines = 2, textAlign = TextAlign.Center) }
-        item { Text("This cannot be undone.", textAlign = TextAlign.Center) }
-        item { Chip(label = { Text("Delete") }, onClick = onConfirm, modifier = Modifier.fillMaxWidth()) }
-        item { Button(onClick = onCancel) { Text("Cancel") } }
+    WearRotaryList {
+        wearTitle("Delete?", fileName)
+        wearInfo("This cannot be undone.")
+        wearPrimaryAction("Delete", onConfirm)
+        wearBackAction(onCancel, "Cancel")
     }
 }
