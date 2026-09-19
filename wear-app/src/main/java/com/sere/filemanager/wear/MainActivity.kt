@@ -25,6 +25,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.material.*
 import com.sere.filemanager.core.files.OperationNamePolicy
+import com.sere.filemanager.core.files.PathSafety
+import com.sere.filemanager.core.files.PathTools
 import com.sere.filemanager.core.files.StorageFormatter
 import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
@@ -97,7 +99,32 @@ private class WearNavigator(start: WearScreen = WearScreen.Home) {
 }
 
 @Composable private fun HomeScreen(onOpen: (WearScreen) -> Unit) { WearRotaryList { wearTitle("FileManager", "Standalone Wear file manager"); wearPrimaryAction("Files") { onOpen(WearScreen.Files) }; wearPrimaryAction("Storage") { onOpen(WearScreen.StorageRoots) }; wearPrimaryAction("Media") { onOpen(WearScreen.Media) }; wearPrimaryAction("Remote") { onOpen(WearScreen.Remote) }; wearSecondaryAction("Settings") { onOpen(WearScreen.Settings) }; wearSecondaryAction("Advanced") { onOpen(WearScreen.Advanced) } } }
-@Composable private fun FileBrowserScreen(state: BrowserState, clipboard: WearClipboardState, hasPermissions: Boolean, onOpen: (String, FileItemType) -> Unit, onLongAction: (FileItem) -> Unit, onUp: () -> Unit, onPaste: () -> Unit, onClearClipboard: () -> Unit, onCreateFolder: () -> Unit, onRequestPermissions: () -> Unit, onHome: () -> Unit) { WearRotaryList { wearTitle("Files", state.currentPath); if (clipboard.hasEntry) { wearInfo("${clipboard.mode}: ${clipboard.fileName}"); wearPrimaryAction("Paste here", onPaste); wearSecondaryAction("Clear clipboard", onClearClipboard) }; if (!hasPermissions) wearPrimaryAction("Grant access", onRequestPermissions); wearSecondaryAction("Up", onUp); wearSecondaryAction("New folder", onCreateFolder); wearLoading(state.isLoading); wearError(state.error); wearEmpty(!state.isLoading && state.items.isEmpty(), if (hasPermissions) "No visible files here." else "No visible files. Grant access or choose another folder."); items(state.items.size) { index -> FileRow(state.items[index], onOpen, onLongAction) }; wearBackAction(onHome, "Home") } }
+@Composable private fun FileBrowserScreen(state: BrowserState, clipboard: WearClipboardState, hasPermissions: Boolean, onOpen: (String, FileItemType) -> Unit, onLongAction: (FileItem) -> Unit, onUp: () -> Unit, onPaste: () -> Unit, onClearClipboard: () -> Unit, onCreateFolder: () -> Unit, onRequestPermissions: () -> Unit, onHome: () -> Unit) {
+    WearRotaryList {
+        wearTitle("Files", state.currentPath)
+        if (clipboard.hasEntry) {
+            wearInfo("${clipboard.mode}: ${clipboard.fileName}")
+            wearInfo("→ ${state.currentPath}")
+            val blocked = PathSafety.explainIfBlocked(state.currentPath)
+            val isSameFolder = clipboard.sourcePath?.let { PathTools.parent(it) == state.currentPath } ?: false
+            when {
+                blocked != null -> wearError(blocked)
+                isSameFolder -> wearInfo("Already in source folder")
+            }
+            val canPaste = blocked == null && !isSameFolder
+            if (canPaste) wearPrimaryAction("Paste here", onPaste) else item { Text("Paste disabled", textAlign = TextAlign.Center, color = Color.Gray) }
+            wearSecondaryAction("Clear clipboard", onClearClipboard)
+        }
+        if (!hasPermissions) wearPrimaryAction("Grant access", onRequestPermissions)
+        wearSecondaryAction("Up", onUp)
+        wearSecondaryAction("New folder", onCreateFolder)
+        wearLoading(state.isLoading)
+        wearError(state.error)
+        wearEmpty(!state.isLoading && state.items.isEmpty(), if (hasPermissions) "No visible files here." else "No visible files. Grant access or choose another folder.")
+        items(state.items.size) { index -> FileRow(state.items[index], onOpen, onLongAction) }
+        wearBackAction(onHome, "Home")
+    }
+}
 @Composable private fun FileRow(item: FileItem, onOpen: (String, FileItemType) -> Unit, onLongAction: (FileItem) -> Unit) { val icon = when (item.type) { FileItemType.Directory -> "[DIR]"; FileItemType.Image -> "[IMG]"; FileItemType.Video -> "[VID]"; FileItemType.Audio -> "[AUD]"; FileItemType.Archive -> "[ZIP]"; FileItemType.Document -> "[DOC]"; FileItemType.Other -> "[FILE]" }; Row(modifier = Modifier.fillMaxWidth().clickable { onOpen(item.path, item.type) }.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) { Text(icon, modifier = Modifier.clickable { onLongAction(item) }); Text(item.name, maxLines = 1, overflow = TextOverflow.Ellipsis) } }
 @Composable private fun RenameInputScreen(fileItem: FileItem, onRename: (String) -> Unit, onBack: () -> Unit) {
     var value by remember(fileItem.path) { mutableStateOf(fileItem.name) }
