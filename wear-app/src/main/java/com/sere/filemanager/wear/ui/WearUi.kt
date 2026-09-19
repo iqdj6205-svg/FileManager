@@ -4,6 +4,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -28,7 +29,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun WearRotaryList(
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(horizontal = DesignTokens.WatchEdgePadding, vertical = 24.dp),
+    contentPadding: PaddingValues = PaddingValues(horizontal = DesignTokens.WatchEdgePadding, vertical = 12.dp),
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     content: ScalingLazyListScope.() -> Unit,
 ) {
@@ -51,15 +52,15 @@ fun WearRotaryList(
 }
 
 fun ScalingLazyListScope.wearTitle(title: String, subtitle: String? = null) {
-    item { Text(title, textAlign = TextAlign.Center) }
-    if (!subtitle.isNullOrBlank()) item { Text(subtitle, textAlign = TextAlign.Center) }
+    item { Text(title, textAlign = TextAlign.Center, maxLines = 1, style = androidx.wear.compose.material.MaterialTheme.typography.title3) }
+    if (!subtitle.isNullOrBlank()) item { Text(subtitle, textAlign = TextAlign.Center, maxLines = 1, style = androidx.wear.compose.material.MaterialTheme.typography.caption2) }
 }
 
-fun ScalingLazyListScope.wearInfo(text: String?) { if (!text.isNullOrBlank()) item { Text(text, textAlign = TextAlign.Center) } }
-fun ScalingLazyListScope.wearLoading(isLoading: Boolean) { if (isLoading) item { Text(FileManagerText.Loading, textAlign = TextAlign.Center) } }
-fun ScalingLazyListScope.wearEmpty(show: Boolean, text: String = FileManagerText.Empty) { if (show) item { Text(text, textAlign = TextAlign.Center) } }
-fun ScalingLazyListScope.wearError(text: String?) { if (!text.isNullOrBlank()) item { Text(text, textAlign = TextAlign.Center) } }
+fun ScalingLazyListScope.wearInfo(text: String?) { if (!text.isNullOrBlank()) item { Text(text, textAlign = TextAlign.Center, maxLines = 2, style = androidx.wear.compose.material.MaterialTheme.typography.caption2) } }
+fun ScalingLazyListScope.wearLoading(isLoading: Boolean) { if (isLoading) item { Text(FileManagerText.Loading, textAlign = TextAlign.Center, style = androidx.wear.compose.material.MaterialTheme.typography.caption2) } }
+fun ScalingLazyListScope.wearEmpty(show: Boolean, text: String = FileManagerText.Empty) { if (show) item { Text(text, textAlign = TextAlign.Center, style = androidx.wear.compose.material.MaterialTheme.typography.caption2) } }
+fun ScalingLazyListScope.wearError(text: String?) { if (!text.isNullOrBlank()) item { Text(text, textAlign = TextAlign.Center, color = androidx.wear.compose.material.MaterialTheme.colors.error, maxLines = 2, style = androidx.wear.compose.material.MaterialTheme.typography.caption2) } }
 
-fun ScalingLazyListScope.wearPrimaryAction(label: String, onClick: () -> Unit) { item { Chip(label = { Text(label) }, onClick = onClick) } }
-fun ScalingLazyListScope.wearSecondaryAction(label: String, onClick: () -> Unit) { item { Chip(label = { Text(label) }, onClick = onClick) } }
-fun ScalingLazyListScope.wearBackAction(onBack: () -> Unit, label: String = FileManagerText.Back) { item { Button(onClick = onBack) { Text(label) } } }
+fun ScalingLazyListScope.wearPrimaryAction(label: String, onClick: () -> Unit) { item { Chip(label = { Text(label, maxLines = 1) }, onClick = onClick, modifier = Modifier.height(DesignTokens.WatchChipHeight)) } }
+fun ScalingLazyListScope.wearSecondaryAction(label: String, onClick: () -> Unit) { item { Chip(label = { Text(label, maxLines = 1, style = androidx.wear.compose.material.MaterialTheme.typography.caption1) }, onClick = onClick, modifier = Modifier.height(DesignTokens.WatchChipHeight)) } }
+fun ScalingLazyListScope.wearBackAction(onBack: () -> Unit, label: String = FileManagerText.Back) { item { Button(onClick = onBack, modifier = Modifier.height(36.dp)) { Text(label, maxLines = 1) } } }

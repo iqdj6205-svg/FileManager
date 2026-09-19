@@ -3,11 +3,11 @@ package com.sere.filemanager.core.ui
 import androidx.compose.ui.unit.dp
 
 object DesignTokens {
-    val WatchEdgePadding = 18.dp
-    val WatchCompactPadding = 12.dp
-    val WatchItemSpacing = 8.dp
-    val WatchSectionSpacing = 12.dp
-    val WatchChipHeight = 48.dp
+    val WatchEdgePadding = 12.dp
+    val WatchCompactPadding = 8.dp
+    val WatchItemSpacing = 4.dp
+    val WatchSectionSpacing = 8.dp
+    val WatchChipHeight = 36.dp
 
     val PhonePadding = 24.dp
     val PhoneCompactPadding = 16.dp
