@@ -13,9 +13,14 @@ class ServiceBackedRemoteController(
 
     override suspend fun start(): RemoteSession {
         val requested = serviceController.start()
-        return if (requested) RemoteServerStatusStore.current().takeIf { it.state == RemoteServerState.Running }
+        if (!requested) return RemoteSession(state = RemoteServerState.Stopped)
+        repeat(10) {
+            kotlinx.coroutines.delay(200)
+            val current = RemoteServerStatusStore.current()
+            if (current.state == RemoteServerState.Running) return current
+        }
+        return RemoteServerStatusStore.current().takeIf { it.state == RemoteServerState.Running }
             ?: RemoteSession(state = RemoteServerState.Starting, startedAtMillis = System.currentTimeMillis())
-        else RemoteSession(state = RemoteServerState.Stopped)
     }
 
     override suspend fun stop(): RemoteSession {
