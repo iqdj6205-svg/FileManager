@@ -37,16 +37,17 @@ The project is **pre-alpha**, and the latest work is being wrapped into a practi
 - Smoke-test checklist has been expanded into a focused verification checklist for the next local test pass.
 - Build-risk review checkpoint has been documented for the latest UI/remote changes.
 - External/local core audit has been preserved as `docs/CORE_AUDIT_REPORT.md`; its findings are tracked as unverified until checked against latest `main`.
+- Wear warning cleanup addresses deprecated lifecycle owner access, nullable network addresses, deprecated Wi‑Fi IP access, notification action API, and redundant channel target null check.
 
 ## Current focus
 
 1. Stop opening new unfinished surfaces before the user's near-term test pass.
 2. Finish/document the currently started stabilization areas.
 3. Treat the new core audit as an input queue, not as blindly trusted truth.
-4. Verify core-audit P0 items against current code before deleting or refactoring anything.
+4. Verify core-audit P0 items against current code and build output.
 5. Use the smoke-test checklist to collect precise build/runtime failures.
 
 ## Next stabilization block
 
-- Verify core-audit P0 items without large refactors.
+- Run `./gradlew.bat build` locally after warning cleanup.
 - Only critical fixes after local build/test feedback.

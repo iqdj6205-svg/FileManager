@@ -33,7 +33,7 @@ class NetworkStatus(private val context: Context) {
             .filter { it.isUp && !it.isLoopback }
             .flatMap { it.inetAddresses.asSequence() }
             .filterIsInstance<Inet4Address>()
-            .map { it.hostAddress }
+            .mapNotNull { it.hostAddress }
             .firstOrNull { !it.startsWith("127.") }
     }.getOrNull()
 

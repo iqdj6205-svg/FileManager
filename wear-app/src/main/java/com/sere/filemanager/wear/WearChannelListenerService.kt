@@ -45,7 +45,9 @@ class WearChannelListenerService : WearableListenerService() {
         val safeName = com.sere.filemanager.core.files.OperationNamePolicy.sanitizeInputName(rawName).takeIf { com.sere.filemanager.core.files.OperationNamePolicy.isValidFileName(it) } ?: "received-${System.currentTimeMillis()}.bin"
         val requested = targetPath?.takeIf { it.isNotBlank() && com.sere.filemanager.core.files.PathSafety.explainIfBlocked(it) == null }
         val targetFile = requested?.let { File(it) }
-        val isSafeTarget = targetFile != null && (targetFile.absolutePath.startsWith(filesDir.absolutePath) || targetFile.absolutePath.startsWith("/sdcard/"))
-        return if (isSafeTarget && targetFile != null) File(targetFile.absolutePath) else File(File(filesDir, "received"), safeName)
+        val safeTarget = targetFile?.takeIf { file ->
+            file.absolutePath.startsWith(filesDir.absolutePath) || file.absolutePath.startsWith("/sdcard/")
+        }
+        return safeTarget ?: File(File(filesDir, "received"), safeName)
     }
 }

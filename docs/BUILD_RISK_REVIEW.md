@@ -1,35 +1,26 @@
 # Build Risk Review Checkpoint
 
-This checkpoint records the focused review before the next local test pass.
+## Latest warning cleanup
 
-## Reviewed after recent UI/remote commits
+The following Wear compiler warnings were addressed in commit `pending`:
 
-- `wear-app/src/main/java/com/sere/filemanager/wear/MainActivity.kt`
-- `wear-app/src/main/java/com/sere/filemanager/wear/NetworkStatus.kt`
-- `wear-app/src/main/java/com/sere/filemanager/wear/RemoteServerService.kt`
-- `core-remote/src/main/java/com/sere/filemanager/core/remote/EmbeddedHttpFileServer.kt`
-- `core-remote/src/main/java/com/sere/filemanager/core/remote/RemoteServerControllerFactory.kt`
-- `core-remote/src/main/java/com/sere/filemanager/core/remote/SimpleHttpEngine.kt`
-- `phone-app/src/main/java/com/sere/filemanager/phone/PhoneMediaScreens.kt`
-- `phone-app/src/main/java/com/sere/filemanager/phone/PhoneSettingsScreen.kt`
+- `LocalLifecycleOwner` now comes from `androidx.lifecycle.compose` with `lifecycle-runtime-compose`.
+- `NetworkStatus` filters nullable interface addresses with `mapNotNull`.
+- `RemoteAddressResolver` no longer uses deprecated `WifiManager.connectionInfo.ipAddress`.
+- Notification stop action uses `Notification.Action.Builder` instead of deprecated three-argument `addAction`.
+- Wear channel target selection no longer checks a value that Kotlin already knows is non-null.
 
-## Risks already fixed
+A local `./gradlew.bat build` is still required to confirm the dependency/import change on the user's machine.
+
+## Earlier review
 
 - Wear rename `item` parameter shadowed the lazy-list `item {}` DSL function. Fixed in `06e1bbd`.
 - Wear remote config reached lifecycle policy but not the embedded HTTP engine. Fixed in `78c4ace`.
 - Embedded server session was not consistently published to the shared status store. Fixed in `1ff1d86`.
 - Remote API route policy accepted PIN-shaped values before exact PIN comparison. Fixed in `948de3f`.
 
-## Current review notes
-
-- The latest remote server code intentionally keeps the HTTP engine minimal/prototype and should be tested with real device networking before deeper refactor.
-- The latest phone UI migrations use shared scaffolds/cards and should be verified on phone layout for scroll/overflow.
-- The Wear rename input is compile-safe after the scope-shadowing fix, but actual Wear OS input behavior still needs device validation.
-
 ## Recommended local command
 
 ```powershell
 .\gradlew.bat build
 ```
-
-If it fails, capture the first failing task and the first Kotlin/Java compiler error block.

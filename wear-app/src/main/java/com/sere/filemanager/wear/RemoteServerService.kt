@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -103,7 +104,7 @@ class RemoteServerService : Service() {
     private fun notification(text: String): Notification {
         val stopIntent = PendingIntent.getService(this, 1, Intent(this, RemoteServerService::class.java).setAction(ACTION_STOP), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Notification.Builder(this, CHANNEL_ID) else @Suppress("DEPRECATION") Notification.Builder(this)
-        return builder.setContentTitle("FileManager").setContentText(text).setSmallIcon(android.R.drawable.stat_sys_upload).addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopIntent).setOngoing(true).build()
+        return builder.setContentTitle("FileManager").setContentText(text).setSmallIcon(android.R.drawable.stat_sys_upload).addAction(Notification.Action.Builder(Icon.createWithResource(this, android.R.drawable.ic_menu_close_clear_cancel), "Stop", stopIntent).build()).setOngoing(true).build()
     }
 
     companion object {
