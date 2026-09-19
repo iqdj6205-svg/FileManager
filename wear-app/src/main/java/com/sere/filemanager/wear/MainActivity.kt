@@ -24,6 +24,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.wear.compose.material.*
+import com.sere.filemanager.core.files.OperationNamePolicy
 import com.sere.filemanager.core.files.StorageFormatter
 import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
@@ -98,7 +99,28 @@ private class WearNavigator(start: WearScreen = WearScreen.Home) {
 @Composable private fun HomeScreen(onOpen: (WearScreen) -> Unit) { WearRotaryList { wearTitle("FileManager", "Standalone Wear file manager"); wearPrimaryAction("Files") { onOpen(WearScreen.Files) }; wearPrimaryAction("Storage") { onOpen(WearScreen.StorageRoots) }; wearPrimaryAction("Media") { onOpen(WearScreen.Media) }; wearPrimaryAction("Remote") { onOpen(WearScreen.Remote) }; wearSecondaryAction("Settings") { onOpen(WearScreen.Settings) }; wearSecondaryAction("Advanced") { onOpen(WearScreen.Advanced) } } }
 @Composable private fun FileBrowserScreen(state: BrowserState, clipboard: WearClipboardState, hasPermissions: Boolean, onOpen: (String, FileItemType) -> Unit, onLongAction: (FileItem) -> Unit, onUp: () -> Unit, onPaste: () -> Unit, onClearClipboard: () -> Unit, onCreateFolder: () -> Unit, onRequestPermissions: () -> Unit, onHome: () -> Unit) { WearRotaryList { wearTitle("Files", state.currentPath); if (clipboard.hasEntry) { wearInfo("${clipboard.mode}: ${clipboard.fileName}"); wearPrimaryAction("Paste here", onPaste); wearSecondaryAction("Clear clipboard", onClearClipboard) }; if (!hasPermissions) wearPrimaryAction("Grant access", onRequestPermissions); wearSecondaryAction("Up", onUp); wearSecondaryAction("New folder", onCreateFolder); wearLoading(state.isLoading); wearError(state.error); wearEmpty(!state.isLoading && state.items.isEmpty(), if (hasPermissions) "No visible files here." else "No visible files. Grant access or choose another folder."); items(state.items.size) { index -> FileRow(state.items[index], onOpen, onLongAction) }; wearBackAction(onHome, "Home") } }
 @Composable private fun FileRow(item: FileItem, onOpen: (String, FileItemType) -> Unit, onLongAction: (FileItem) -> Unit) { val icon = when (item.type) { FileItemType.Directory -> "[DIR]"; FileItemType.Image -> "[IMG]"; FileItemType.Video -> "[VID]"; FileItemType.Audio -> "[AUD]"; FileItemType.Archive -> "[ZIP]"; FileItemType.Document -> "[DOC]"; FileItemType.Other -> "[FILE]" }; Row(modifier = Modifier.fillMaxWidth().clickable { onOpen(item.path, item.type) }.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) { Text(icon, modifier = Modifier.clickable { onLongAction(item) }); Text(item.name, maxLines = 1, overflow = TextOverflow.Ellipsis) } }
-@Composable private fun RenameInputScreen(fileItem: FileItem, onRename: (String) -> Unit, onBack: () -> Unit) { var value by remember(fileItem.path) { mutableStateOf(fileItem.name) }; WearRotaryList { wearTitle("Rename", fileItem.name); item { BasicTextField(value = value, onValueChange = { value = it.take(120) }, textStyle = TextStyle(color = Color.White, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth().background(Color.DarkGray).padding(8.dp)) }; wearInfo("Tap field to edit with system input."); wearPrimaryAction("Save") { if (value.isNotBlank() && value != fileItem.name) onRename(value.trim()) }; wearSecondaryAction(QuickTextInputPresets.copyName(fileItem.name)) { value = QuickTextInputPresets.copyName(fileItem.name) }; wearSecondaryAction("lowercase") { value = fileItem.name.lowercase() }; wearSecondaryAction("UPPERCASE") { value = fileItem.name.uppercase() }; wearBackAction(onBack) } }
+@Composable private fun RenameInputScreen(fileItem: FileItem, onRename: (String) -> Unit, onBack: () -> Unit) {
+    var value by remember(fileItem.path) { mutableStateOf(fileItem.name) }
+    val isValid = OperationNamePolicy.isValidFileName(value)
+    val clean = OperationNamePolicy.sanitizeInputName(value)
+    val isChanged = clean != fileItem.name
+    val error = when {
+        value.isBlank() -> "Name cannot be empty"
+        !isValid -> "Invalid name (\".\", \"..\", \"/\" or >160 chars)"
+        !isChanged -> "Enter a new name"
+        else -> null
+    }
+    WearRotaryList {
+        wearTitle("Rename", fileItem.name)
+        item { BasicTextField(value = value, onValueChange = { value = it.take(160) }, textStyle = TextStyle(color = Color.White, textAlign = TextAlign.Center), modifier = Modifier.fillMaxWidth().background(Color.DarkGray).padding(8.dp)) }
+        if (error != null) wearError(error) else wearInfo("Tap field to edit with system input.")
+        if (isValid && isChanged) wearPrimaryAction("Save") { onRename(clean) } else item { Text("Save disabled", textAlign = TextAlign.Center, color = Color.Gray) }
+        wearSecondaryAction(QuickTextInputPresets.copyName(fileItem.name)) { value = QuickTextInputPresets.copyName(fileItem.name).take(160) }
+        wearSecondaryAction("lowercase") { value = fileItem.name.lowercase() }
+        wearSecondaryAction("UPPERCASE") { value = fileItem.name.uppercase() }
+        wearBackAction(onBack)
+    }
+}
 @Composable private fun OperationMessageScreen(message: String, inProgress: Boolean, onDismiss: () -> Unit) { WearRotaryList { wearTitle(if (inProgress) "Please wait" else "Message"); wearInfo(message); if (inProgress) item { CircularProgressIndicator() } else wearBackAction(onDismiss, "OK") } }
 @Composable private fun MediaHomeScreen(mediaGranted: Boolean, message: String?, onRefresh: () -> Unit, onGallery: () -> Unit, onAudio: () -> Unit, onVideo: () -> Unit, onRequestPermissions: () -> Unit, onBack: () -> Unit) { WearRotaryList { wearTitle("Media"); wearInfo(message); wearPrimaryAction("Refresh", onRefresh); if (!mediaGranted) wearSecondaryAction("Grant media", onRequestPermissions); wearPrimaryAction("Gallery", onGallery); wearPrimaryAction("Audio", onAudio); wearPrimaryAction("Video", onVideo); wearBackAction(onBack) } }
 @Composable private fun SettingsScreen(batterySaver: Boolean, onBatterySaver: (Boolean) -> Unit, onPermissions: () -> Unit, onStorage: () -> Unit, onRemoteSettings: () -> Unit, onBack: () -> Unit) { WearRotaryList { wearTitle("Settings"); item { ToggleRow("Battery safe", batterySaver, onBatterySaver) }; wearPrimaryAction("Permissions", onPermissions); wearPrimaryAction("Storage roots", onStorage); wearSecondaryAction("Remote settings", onRemoteSettings); wearInfo("Theme: dark"); wearInfo("Haptics: on"); wearBackAction(onBack) } }
