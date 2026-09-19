@@ -7,7 +7,8 @@ object DesignTokens {
     val WatchCompactPadding = 8.dp
     val WatchItemSpacing = 4.dp
     val WatchSectionSpacing = 8.dp
-    val WatchChipHeight = 36.dp
+    val WatchChipHeight = 38.dp
+    const val WatchControlWidthFraction = 0.86f
 
     val PhonePadding = 24.dp
     val PhoneCompactPadding = 16.dp

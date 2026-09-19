@@ -30,6 +30,7 @@ import com.sere.filemanager.core.files.PathTools
 import com.sere.filemanager.core.files.StorageFormatter
 import com.sere.filemanager.core.model.FileItem
 import com.sere.filemanager.core.model.FileItemType
+import com.sere.filemanager.core.ui.AppPalette
 import com.sere.filemanager.wear.ui.WearRotaryList
 import com.sere.filemanager.wear.ui.wearBackAction
 import com.sere.filemanager.wear.ui.wearEmpty
@@ -39,6 +40,21 @@ import com.sere.filemanager.wear.ui.wearLoading
 import com.sere.filemanager.wear.ui.wearPrimaryAction
 import com.sere.filemanager.wear.ui.wearSecondaryAction
 import com.sere.filemanager.wear.ui.wearTitle
+
+private val WearColors = darkColors(
+    primary = AppPalette.NeonYellow,
+    primaryVariant = AppPalette.NeonYellowDim,
+    secondary = AppPalette.NeonCyan,
+    secondaryVariant = AppPalette.NeonPink,
+    background = AppPalette.Black,
+    surface = AppPalette.Surface,
+    error = AppPalette.Danger,
+    onPrimary = AppPalette.Black,
+    onSecondary = AppPalette.Black,
+    onBackground = AppPalette.Text,
+    onSurface = AppPalette.Text,
+    onError = AppPalette.Black,
+)
 
 class MainActivity : ComponentActivity() { override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); setContent { WearFileManagerApp() } } }
 
@@ -71,7 +87,7 @@ private class WearNavigator(start: WearScreen = WearScreen.Home) {
 
     BackHandler(enabled = nav.current != WearScreen.Home) { nav.back() }
 
-    MaterialTheme { Box(modifier = Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
+    MaterialTheme(colors = WearColors) { Box(modifier = Modifier.fillMaxSize().background(AppPalette.Black), contentAlignment = Alignment.Center) {
         state.operation.message?.let { OperationMessageScreen(message = it, inProgress = state.operation.inProgress, onDismiss = viewModel::clearMessage); return@Box }
         if (state.operation.inProgress) { OperationMessageScreen(message = "Working…", inProgress = true, onDismiss = {}) ; return@Box }
         when (nav.current) {
