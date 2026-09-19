@@ -17,9 +17,13 @@ data class StorageAnalysis(
     val largestFiles: List<FileItem>,
 )
 
-class StorageAnalyzer(private val repository: FileRepository) {
+class StorageAnalyzer(
+    private val repository: FileRepository,
+    private val scanner: RecursiveScanner = RecursiveScanner(maxFiles = 1_000),
+) {
     suspend fun analyze(path: String): StorageAnalysis {
-        val items = repository.list(path)
+        if (PathSafety.explainIfBlocked(path) != null) return StorageAnalysis(path, 0, 0, emptyList(), emptyList())
+        val items = try { scanner.scan(path) } catch (_: Exception) { repository.list(path) }
         val files = items.filter { it.type != FileItemType.Directory }
         val categories = files
             .groupBy { it.type }
