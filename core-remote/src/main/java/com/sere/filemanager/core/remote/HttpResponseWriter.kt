@@ -26,6 +26,6 @@ object HttpResponseWriter {
         output.write("Content-Length: ${file.length()}\r\n".toByteArray())
         output.write("Content-Disposition: attachment; filename=\"${response.downloadName.replace("\"", "")}\"\r\n".toByteArray())
         output.write("Connection: close\r\n\r\n".toByteArray())
-        file.inputStream().use { input -> input.copyTo(output, bufferSize = 16 * 1024) }
+        file.inputStream().use { input -> input.copyTo(output, bufferSize = 32 * 1024) }
     }
 }
