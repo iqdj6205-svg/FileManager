@@ -21,12 +21,5 @@ class SafTreeRepository(private val context: Context) {
         }.sortedWith(compareBy<FileItem> { it.type != FileItemType.Directory }.thenBy { it.name.lowercase() })
     }
 
-    private fun classify(mime: String?): FileItemType = when {
-        mime == null -> FileItemType.Other
-        mime.startsWith("image/") -> FileItemType.Image
-        mime.startsWith("video/") -> FileItemType.Video
-        mime.startsWith("audio/") -> FileItemType.Audio
-        mime.contains("pdf") || mime.startsWith("text/") -> FileItemType.Document
-        else -> FileItemType.Other
-    }
+    private fun classify(mime: String?): FileItemType = com.sere.filemanager.core.model.FileTypeClassifier.fromMime(mime)
 }
