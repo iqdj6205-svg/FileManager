@@ -16,7 +16,10 @@ class WearBridgeListenerService : WearableListenerService() {
         if (messageEvent.path != WearBridgePaths.MESSAGE_COMMAND) return
         val command = WearBridgeCodec.decodeCommand(messageEvent.data) ?: return
         val result = handle(command)
-        Wearable.getMessageClient(this).sendMessage(messageEvent.sourceNodeId, WearBridgePaths.MESSAGE_COMMAND_RESULT, WearBridgeCodec.encode(result))
+        runCatching { Wearable.getMessageClient(this).sendMessage(messageEvent.sourceNodeId, WearBridgePaths.MESSAGE_COMMAND_RESULT, WearBridgeCodec.encode(result)) }
+        if (command.type == WearBridgeCommandType.GetWatchServerStatus) {
+            WearStatusPublisher(this).publishRemoteStatus()
+        }
     }
 
     private fun handle(command: WearBridgeCommand): WearBridgeCommandResult = when (command.type) {

@@ -34,7 +34,9 @@ class AndroidMediaStoreRepository(private val context: Context) : MediaRepositor
                 while (cursor.moveToNext() && size < 300) {
                     val id = cursor.getLong(idColumn).toString()
                     val name = cursor.getString(nameColumn) ?: "media-$id"
-                    val path = if (dataColumn >= 0) cursor.getString(dataColumn).orEmpty() else name
+                    val rawPath = if (dataColumn >= 0) cursor.getString(dataColumn) else null
+                    val contentUri = ContentUris.withAppendedId(collection, id.toLong()).toString()
+                    val path = if (!rawPath.isNullOrBlank()) rawPath else contentUri
                     val mime = if (mimeColumn >= 0) cursor.getString(mimeColumn) else "$fallbackMimePrefix/*"
                     val size = if (sizeColumn >= 0) cursor.getLong(sizeColumn) else -1L
                     val bucket = if (bucketColumn >= 0) cursor.getString(bucketColumn) else null
@@ -47,7 +49,7 @@ class AndroidMediaStoreRepository(private val context: Context) : MediaRepositor
                             mimeType = mime,
                             durationMillis = if (duration > 0) duration else null,
                             displayName = name,
-                            uri = ContentUris.withAppendedId(collection, id.toLong()).toString(),
+                            uri = contentUri,
                             bucketName = bucket,
                             sizeBytes = if (size >= 0) size else null,
                         )
