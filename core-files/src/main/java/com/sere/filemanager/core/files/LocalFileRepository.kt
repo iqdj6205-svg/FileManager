@@ -25,5 +25,5 @@ class LocalFileRepository(
     }
     override suspend fun move(sourcePath: String, targetPath: String): Result<Unit> = runCatching { copy(sourcePath, targetPath).getOrThrow(); delete(sourcePath).getOrThrow() }
     fun childToItem(file: File): FileItem = FileItem(name = file.name, path = file.absolutePath, type = file.detectType(), sizeBytes = file.length().takeIf { file.isFile }, modifiedAt = Instant.ofEpochMilli(file.lastModified()), isHidden = file.isHidden)
-    private fun File.detectType(): FileItemType { if (isDirectory) return FileItemType.Directory; return when (extension.lowercase()) { "jpg", "jpeg", "png", "webp", "gif", "bmp", "heic" -> FileItemType.Image; "mp4", "mkv", "webm", "avi", "mov" -> FileItemType.Video; "mp3", "m4a", "wav", "ogg", "flac" -> FileItemType.Audio; "zip", "rar", "7z", "tar", "gz" -> FileItemType.Archive; "pdf", "txt", "md", "doc", "docx", "xls", "xlsx" -> FileItemType.Document; else -> FileItemType.Other } }
+    private fun File.detectType(): FileItemType { if (isDirectory) return FileItemType.Directory; return com.sere.filemanager.core.model.FileTypeClassifier.fromExtension(extension) }
 }
