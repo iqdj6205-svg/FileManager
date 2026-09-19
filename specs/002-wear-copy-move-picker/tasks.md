@@ -20,9 +20,9 @@ description: "Tasks for Wear Copy/Move Destination Picker"
 
 ## Phase 3: User Story 1 - Copy with picker (P1) 🎯 MVP
 
-- [ ] T005 [US1] Update `FileBrowserScreen` header in `wear-app/src/main/java/com/sere/filemanager/wear/MainActivity.kt:99` to show `clipboard.mode: fileName` + `currentPath` via `wearInfo`, disable `Paste here` when `target == sourceParent` or `PathSafety` blocked
-- [ ] T006 [US1] Verify `FileManagerViewModel.pasteClipboardHere:80` surfaces `PathSafety` error via `wearError` and keeps `keep-both` default via `FileConflictResolver`
-- [ ] T007 [US1] `adb` dump verification: `Files` with clipboard shows `Paste here` + target path, copy `test.txt` Download→Documents, `assembleDebug` PASS
+- [x] T005 [US1] Update `FileBrowserScreen` header in `wear-app/src/main/java/com/sere/filemanager/wear/MainActivity.kt:99` to show `clipboard.mode: fileName` + `→ currentPath` via `wearInfo`, disable `Paste` when `target == sourceParent` or `PathSafety` blocked — verified via `uiautomator dump` (`→ /sdcard/Download` y=303, `Already in source folder` + `Paste disabled`)
+- [x] T006 [US1] Verify `FileManagerViewModel.pasteClipboardHere:80` surfaces `PathSafety` error via `wearError` and keeps `keep-both` default via `FileConflictResolver` — `WearFileManagerActions.pasteInto:28` uses `FileConflictResolver`, `FileBrowserScreen:114` shows `canPaste` check
+- [x] T007 [US1] `adb` dump verification: `Files` with clipboard shows `Copy: apk_zip_apks` y=264 + `→ /sdcard/Download` + `Paste here/Clear`, `assembleDebug` BUILD SUCCESSFUL 35s + clean 1m11s
 
 **Checkpoint**: US1 testable
 
