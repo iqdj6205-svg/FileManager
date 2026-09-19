@@ -15,7 +15,7 @@ class WearFileManagerActions(
 ) {
     fun mark(item: FileItem, mode: FileClipboardMode): WearClipboardState {
         clipboard.set(item, mode)
-        return WearClipboardState(item.name, mode, "Queued ${item.name}")
+        return WearClipboardState(item.name, mode, "Queued ${item.name}", sourcePath = item.path)
     }
 
     fun clear(): WearClipboardState {
@@ -30,7 +30,7 @@ class WearFileManagerActions(
             FileClipboardMode.Move -> operations.execute(FileOperation.Move(entry.item.path, PathTools.child(targetDirectory, entry.item.name)))
         }
         if (result.success) clipboard.clear()
-        val state = if (result.success) WearClipboardState(message = "Clipboard cleared") else WearClipboardState(entry.item.name, entry.mode, result.message)
+        val state = if (result.success) WearClipboardState(message = "Clipboard cleared") else WearClipboardState(entry.item.name, entry.mode, result.message, sourcePath = entry.item.path)
         return result to state
     }
 

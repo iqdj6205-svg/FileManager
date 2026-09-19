@@ -8,6 +8,7 @@ data class WearClipboardState(
     val fileName: String? = null,
     val mode: FileClipboardMode? = null,
     val message: String? = null,
+    val sourcePath: String? = null,
 ) {
     val hasEntry: Boolean get() = fileName != null && mode != null
 }
