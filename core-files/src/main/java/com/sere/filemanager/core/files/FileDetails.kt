@@ -11,11 +11,15 @@ data class FileDetails(
 )
 
 class FileDetailsReader {
-    fun details(item: FileItem): FileDetails = FileDetails(
-        item = item,
-        readableSize = StorageFormatter.bytes(item.sizeBytes),
-        canRead = true,
-        canWrite = true,
-        absolutePath = item.path,
-    )
+    fun details(item: FileItem): FileDetails {
+        val file = try { java.io.File(item.path) } catch (_: Exception) { null }
+        val exists = file?.exists() == true
+        return FileDetails(
+            item = item,
+            readableSize = StorageFormatter.bytes(item.sizeBytes),
+            canRead = exists && file.canRead(),
+            canWrite = exists && file.canWrite(),
+            absolutePath = item.path,
+        )
+    }
 }
