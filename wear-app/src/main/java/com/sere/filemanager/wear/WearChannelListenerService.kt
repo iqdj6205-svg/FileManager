@@ -41,8 +41,11 @@ class WearChannelListenerService : WearableListenerService() {
     }
 
     private fun resolveTargetFile(targetPath: String?, fileName: String?): File {
-        val safeName = (fileName ?: "received-${System.currentTimeMillis()}.bin").replace('/', '_').replace('\\', '_')
-        val requested = targetPath?.takeIf { it.isNotBlank() }
-        return if (requested != null && requested.startsWith(filesDir.absolutePath)) File(requested) else File(File(filesDir, "received"), safeName)
+        val rawName = fileName ?: "received-${System.currentTimeMillis()}.bin"
+        val safeName = com.sere.filemanager.core.files.OperationNamePolicy.sanitizeInputName(rawName).takeIf { com.sere.filemanager.core.files.OperationNamePolicy.isValidFileName(it) } ?: "received-${System.currentTimeMillis()}.bin"
+        val requested = targetPath?.takeIf { it.isNotBlank() && com.sere.filemanager.core.files.PathSafety.explainIfBlocked(it) == null }
+        val targetFile = requested?.let { File(it) }
+        val isSafeTarget = targetFile != null && (targetFile.absolutePath.startsWith(filesDir.absolutePath) || targetFile.absolutePath.startsWith("/sdcard/"))
+        return if (isSafeTarget && targetFile != null) File(targetFile.absolutePath) else File(File(filesDir, "received"), safeName)
     }
 }
