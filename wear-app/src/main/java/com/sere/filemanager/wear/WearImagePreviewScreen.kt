@@ -29,12 +29,13 @@ fun WearImagePreviewScreen(
 ) {
     WearRotaryList {
         wearTitle(state.title ?: "Image")
-        if (state.uri.isNullOrBlank()) {
+        val uri = state.uri
+        if (uri.isNullOrBlank()) {
             wearInfo("No image selected")
         } else {
             item {
                 Image(
-                    painter = rememberAsyncImagePainter(state.uri.toUri()),
+                    painter = rememberAsyncImagePainter(uri.toUri()),
                     contentDescription = state.title,
                     contentScale = if (state.isZoomed) ContentScale.Crop else ContentScale.Fit,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp).clipToBounds().rotate(state.rotationDegrees),

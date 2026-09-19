@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.sere.filemanager.core.media.ImagePreviewState
@@ -25,11 +26,12 @@ import com.sere.filemanager.phone.ui.PhoneSectionCard
 fun PhoneImagePreviewScreen(state: ImagePreviewState, onZoom: () -> Unit, onRotateLeft: () -> Unit, onRotateRight: () -> Unit, onBack: () -> Unit) {
     PhoneScreenScaffold(title = state.title ?: "Image", subtitle = state.message) {
         Card(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            if (state.uri.isNullOrBlank()) {
+            val uri = state.uri
+            if (uri.isNullOrBlank()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No image selected") }
             } else {
                 Image(
-                    painter = rememberAsyncImagePainter(state.uri.toUri()),
+                    painter = rememberAsyncImagePainter(uri.toUri()),
                     contentDescription = state.title,
                     contentScale = if (state.isZoomed) ContentScale.Crop else ContentScale.Fit,
                     modifier = Modifier.fillMaxSize().clipToBounds().rotate(state.rotationDegrees),

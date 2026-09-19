@@ -20,7 +20,7 @@ class WearChannelTransferClient(private val context: Context) {
         val channel = channelClient.openChannel(node.id, WearBridgePaths.CHANNEL_FILE_TRANSFER).await()
         val output = channelClient.getOutputStream(channel).await()
         var transferred = 0L
-        onProgress(WearFileTransferProgress(request.id, WearTransferState.InProgress, transferredBytes = 0L, totalBytes = request.sizeBytes, message = "Sending to ${node.displayName}"))
+        onProgress(WearFileTransferProgress(request.id, WearTransferState.Transferring, transferredBytes = 0L, totalBytes = request.sizeBytes, message = "Sending to ${node.displayName}"))
         try {
             context.contentResolver.openInputStream(uri).use { input ->
                 requireNotNull(input) { "Cannot open selected file" }
@@ -31,7 +31,7 @@ class WearChannelTransferClient(private val context: Context) {
                         if (read < 0) break
                         out.write(buffer, 0, read)
                         transferred += read
-                        onProgress(WearFileTransferProgress(request.id, WearTransferState.InProgress, transferredBytes = transferred, totalBytes = request.sizeBytes, message = "Sending ${request.fileName}"))
+                        onProgress(WearFileTransferProgress(request.id, WearTransferState.Transferring, transferredBytes = transferred, totalBytes = request.sizeBytes, message = "Sending ${request.fileName}"))
                     }
                 }
             }

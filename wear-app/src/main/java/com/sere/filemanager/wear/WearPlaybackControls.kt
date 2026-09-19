@@ -28,9 +28,9 @@ fun WearPlaybackControls(
         session.item?.mimeType?.let { wearInfo(it) }
         val duration = session.durationMillis
         val position = session.positionMillis
-        if (duration > 0L) {
-            item { CircularProgressIndicator(progress = (position.toFloat() / duration.toFloat()).coerceIn(0f, 1f)) }
-            wearInfo("${position / 1000}s / ${duration / 1000}s")
+        if ((duration ?: 0L) > 0L) {
+            item { CircularProgressIndicator(progress = (position.toFloat() / (duration ?: 1L).toFloat()).coerceIn(0f, 1f)) }
+            wearInfo("${position / 1000}s / ${(duration ?: 0L) / 1000}s")
         } else {
             wearInfo("No timeline")
         }

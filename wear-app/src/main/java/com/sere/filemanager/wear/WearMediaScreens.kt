@@ -1,7 +1,9 @@
 package com.sere.filemanager.wear
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.wear.compose.material.Chip
 import androidx.wear.compose.material.Text
 import com.sere.filemanager.core.media.MediaItem
 import com.sere.filemanager.core.ui.UiFormatters
@@ -31,8 +33,10 @@ fun WearMediaLibraryScreen(
         wearEmpty(!isLoading && items.isEmpty(), "No media visible")
         items(items.size) { index ->
             val item = items[index]
-            wearPrimaryAction(mediaRowLabel(item)) { onOpen(item) }
-            item.bucketName?.let { bucket -> wearInfo(bucket) }
+            Chip(label = { Text(mediaRowLabel(item)) }, onClick = { onOpen(item) })
+            item.bucketName?.let { bucket ->
+                Text(bucket, textAlign = TextAlign.Center)
+            }
         }
         wearBackAction(onBack)
     }
