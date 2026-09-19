@@ -24,6 +24,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":core-model"))
     implementation(project(":core-files"))
     implementation("androidx.compose.ui:ui:1.7.4")
     implementation("androidx.compose.material3:material3:1.3.0")

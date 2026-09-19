@@ -32,8 +32,10 @@ class PhoneTransferController(
         targetDirectory: String,
         onProgress: (WearFileTransferProgress) -> Unit = {},
     ): Result<WearFileTransferProgress> {
-        val directory = targetDirectory.trim().ifBlank { "/sdcard/Download" }.trimEnd('/')
-        val request = WearFileTransferRequest(fileName = file.displayName, targetPath = "$directory/${file.displayName}", direction = WearTransferDirection.PhoneToWatch, sizeBytes = file.sizeBytes)
+        val rawDir = targetDirectory.trim().ifBlank { "/sdcard/Download" }.trimEnd('/')
+        val safeDir = if (com.sere.filemanager.core.files.PathSafety.explainIfBlocked(rawDir) != null) "/sdcard/Download" else rawDir
+        val safeFileName = com.sere.filemanager.core.files.OperationNamePolicy.sanitizeInputName(file.displayName).takeIf { com.sere.filemanager.core.files.OperationNamePolicy.isValidFileName(it) } ?: "received-${System.currentTimeMillis()}.bin"
+        val request = WearFileTransferRequest(fileName = safeFileName, targetPath = "$safeDir/$safeFileName", direction = WearTransferDirection.PhoneToWatch, sizeBytes = file.sizeBytes)
         bridgeClient.prepareFileTransfer(WearBridgeTransferCodec.encode(request)).getOrThrow()
         return channelClient.sendFileToFirstWatch(request, file.uri, onProgress)
     }
